@@ -38,7 +38,15 @@ export default function Footer() {
 
           {/* Tech Credit */}
           <p className="text-[10px] text-white/15 font-barlow-condensed tracking-wider">
-            Feito com Supabase + Vercel
+            Desenvolvido por{' '}
+            <a
+              href="https://neobyte.site"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/30 hover:text-white/50 transition-colors"
+            >
+              NeoByte
+            </a>
           </p>
         </div>
       </div>
