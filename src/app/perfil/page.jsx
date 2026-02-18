@@ -38,7 +38,8 @@ export default function PerfilPage() {
 
   // Coach-specific
   const [experiences, setExperiences] = useState([]);
-  const [showAddExp, setShowAddExp] = useState(false);
+  const [showExpModal, setShowExpModal] = useState(false);
+  const [editingExpId, setEditingExpId] = useState(null);
   const [expForm, setExpForm] = useState({
     title: '',
     organization: '',
@@ -117,28 +118,59 @@ export default function PerfilPage() {
     }
   }
 
-  async function handleAddExperience(e) {
+  function openAddExp() {
+    setEditingExpId(null);
+    setExpForm({ title: '', organization: '', period_start: '', period_end: '', description: '' });
+    setShowExpModal(true);
+  }
+
+  function openEditExp(exp) {
+    setEditingExpId(exp.id);
+    setExpForm({
+      title: exp.title || '',
+      organization: exp.organization || '',
+      period_start: exp.period_start || '',
+      period_end: exp.period_end || '',
+      description: exp.description || '',
+    });
+    setShowExpModal(true);
+  }
+
+  async function handleSaveExperience(e) {
     e.preventDefault();
-    const { error } = await supabase.from('coach_experiences').insert({
-      coach_id: user.id,
+    const payload = {
       title: expForm.title,
       organization: expForm.organization,
       period_start: expForm.period_start,
-      period_end: expForm.period_end,
+      period_end: expForm.period_end || null,
       description: expForm.description,
-    });
+    };
+
+    let error;
+    if (editingExpId) {
+      ({ error } = await supabase
+        .from('coach_experiences')
+        .update(payload)
+        .eq('id', editingExpId));
+    } else {
+      ({ error } = await supabase
+        .from('coach_experiences')
+        .insert({ ...payload, coach_id: user.id }));
+    }
 
     if (!error) {
-      setShowAddExp(false);
-      setExpForm({
-        title: '',
-        organization: '',
-        period_start: '',
-        period_end: '',
-        description: '',
-      });
+      setShowExpModal(false);
       fetchUserAndProfile();
     }
+  }
+
+  async function handleDeleteExperience(expId) {
+    if (!confirm('Tem certeza que deseja excluir esta experiência?')) return;
+    const { error } = await supabase
+      .from('coach_experiences')
+      .delete()
+      .eq('id', expId);
+    if (!error) fetchUserAndProfile();
   }
 
   function openEditProfile() {
@@ -449,7 +481,7 @@ export default function PerfilPage() {
                 MINHAS EXPERIÊNCIAS
               </h3>
               <button
-                onClick={() => setShowAddExp(true)}
+                onClick={openAddExp}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37]/20 transition-all font-barlow-condensed text-sm uppercase tracking-wider"
               >
                 <Icon name="plus" size={14} />
@@ -465,16 +497,36 @@ export default function PerfilPage() {
                     <div className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-[#D4AF37]/30 border-2 border-[#D4AF37]" />
 
                     <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-5 border border-white/10">
-                      <h4 className="font-barlow-condensed text-white font-semibold uppercase tracking-wider">
-                        {exp.title}
-                      </h4>
-                      <p className="font-barlow text-[#D4AF37] text-sm mt-1">
-                        {exp.organization}
-                      </p>
-                      <p className="font-barlow text-white/40 text-xs mt-1">
-                        {exp.period_start}
-                        {exp.period_end ? ` - ${exp.period_end}` : ' - Atual'}
-                      </p>
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h4 className="font-barlow-condensed text-white font-semibold uppercase tracking-wider">
+                            {exp.title}
+                          </h4>
+                          <p className="font-barlow text-[#D4AF37] text-sm mt-1">
+                            {exp.organization}
+                          </p>
+                          <p className="font-barlow text-white/40 text-xs mt-1">
+                            {exp.period_start}
+                            {exp.period_end ? ` - ${exp.period_end}` : ' - Atual'}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            onClick={() => openEditExp(exp)}
+                            className="p-1.5 rounded-lg text-white/30 hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all"
+                            title="Editar"
+                          >
+                            <Icon name="settings" size={14} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteExperience(exp.id)}
+                            className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                            title="Excluir"
+                          >
+                            <Icon name="x" size={14} />
+                          </button>
+                        </div>
+                      </div>
                       {exp.description && (
                         <p className="font-barlow text-white/30 text-sm mt-3">
                           {exp.description}
@@ -547,10 +599,10 @@ export default function PerfilPage() {
         </Modal>
       )}
 
-      {/* Add Experience Modal (Coach) */}
-      {showAddExp && (
-        <Modal onClose={() => setShowAddExp(false)} title="Adicionar Experiência">
-          <form onSubmit={handleAddExperience} className="space-y-4">
+      {/* Add/Edit Experience Modal (Coach) */}
+      {showExpModal && (
+        <Modal onClose={() => setShowExpModal(false)} title={editingExpId ? 'Editar Experiência' : 'Adicionar Experiência'}>
+          <form onSubmit={handleSaveExperience} className="space-y-4">
             <InputField
               label="Título"
               type="text"
