@@ -1,23 +1,27 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Icon from '@/components/Icon';
+import { createPublicClient } from '@/lib/supabase/public';
+
+export const dynamic = 'force-dynamic';
 
 async function getFighter(id) {
   try {
-    const { createPublicClient } = await import('@/lib/supabase/public');
     const supabase = createPublicClient();
     if (!supabase) return null;
     const { data: fighter, error } = await supabase
       .from('profiles')
-      .select('*, fighter_martial_arts(*), fight_records!fight_records_fighter_id_fkey(*), fighter_coaches(*), fighter_videos(*)')
+      .select('*, fighter_martial_arts(*), fight_records!fight_records_fighter_id_fkey(*), fighter_coaches!fighter_coaches_fighter_id_fkey(*), fighter_videos(*)')
       .eq('id', id)
       .single();
 
     if (error || !fighter) {
+      console.error('Erro ao buscar lutador:', error);
       return null;
     }
     return fighter;
-  } catch {
+  } catch (e) {
+    console.error('Erro ao buscar lutador:', e);
     return null;
   }
 }
