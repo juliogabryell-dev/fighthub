@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Icon from '@/components/Icon';
 import { createClient } from '@supabase/supabase-js';
+import ChallengeButton from './ChallengeButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -121,6 +122,104 @@ export default async function FighterProfile({ params }) {
             </div>
           </div>
         </div>
+
+        {/* Social Info */}
+        {(fighter.bio || fighter.city || fighter.state || fighter.phone || fighter.instagram || fighter.facebook || fighter.youtube || fighter.tiktok) && (
+          <div className="px-10 pt-6 pb-2 border-t border-white/[0.06]">
+            {fighter.bio && (
+              <p className="font-barlow text-sm text-white/60 leading-relaxed mb-4">
+                {fighter.bio}
+              </p>
+            )}
+
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+              {(fighter.city || fighter.state) && (
+                <div className="flex items-center gap-2 text-white/50">
+                  <Icon name="map-pin" size={16} />
+                  <span className="font-barlow text-sm">
+                    {[fighter.city, fighter.state].filter(Boolean).join(', ')}
+                  </span>
+                </div>
+              )}
+
+              {fighter.phone && (
+                <div className="flex items-center gap-2 text-white/50">
+                  <Icon name="phone" size={16} />
+                  <span className="font-barlow text-sm">{fighter.phone}</span>
+                </div>
+              )}
+            </div>
+
+            {(fighter.instagram || fighter.facebook || fighter.youtube || fighter.tiktok) && (
+              <div className="flex flex-wrap items-center gap-3 mt-4">
+                {fighter.instagram && (() => {
+                  const handle = fighter.instagram.replace(/^@/, '');
+                  return (
+                    <a
+                      href={`https://instagram.com/${handle}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/50 hover:text-pink-400 hover:border-pink-400/30 hover:bg-pink-400/10 transition-all"
+                    >
+                      <Icon name="instagram" size={16} />
+                      <span className="font-barlow text-xs">@{handle}</span>
+                    </a>
+                  );
+                })()}
+
+                {fighter.facebook && (() => {
+                  const isUrl = fighter.facebook.startsWith('http');
+                  const href = isUrl ? fighter.facebook : `https://facebook.com/${fighter.facebook}`;
+                  const displayName = isUrl ? 'Facebook' : fighter.facebook;
+                  return (
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/50 hover:text-blue-400 hover:border-blue-400/30 hover:bg-blue-400/10 transition-all"
+                    >
+                      <Icon name="facebook" size={16} />
+                      <span className="font-barlow text-xs">{displayName}</span>
+                    </a>
+                  );
+                })()}
+
+                {fighter.youtube && (() => {
+                  const isUrl = fighter.youtube.startsWith('http');
+                  const handle = fighter.youtube.replace(/^@/, '');
+                  const href = isUrl ? fighter.youtube : `https://youtube.com/@${handle}`;
+                  const displayName = isUrl ? 'YouTube' : `@${handle}`;
+                  return (
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/50 hover:text-red-400 hover:border-red-400/30 hover:bg-red-400/10 transition-all"
+                    >
+                      <Icon name="youtube" size={16} />
+                      <span className="font-barlow text-xs">{displayName}</span>
+                    </a>
+                  );
+                })()}
+
+                {fighter.tiktok && (() => {
+                  const handle = fighter.tiktok.replace(/^@/, '');
+                  return (
+                    <a
+                      href={`https://tiktok.com/@${handle}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/50 hover:text-white hover:border-white/30 hover:bg-white/10 transition-all"
+                    >
+                      <Icon name="tiktok" size={16} />
+                      <span className="font-barlow text-xs">@{handle}</span>
+                    </a>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Content */}
         <div className="p-10">
@@ -246,6 +345,11 @@ export default async function FighterProfile({ params }) {
               </div>
             </div>
           )}
+
+          {/* Challenge Button */}
+          <div className="mt-10 pt-8 border-t border-white/[0.06] flex justify-center">
+            <ChallengeButton fighterId={id} />
+          </div>
         </div>
       </div>
     </main>

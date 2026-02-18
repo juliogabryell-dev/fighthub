@@ -27,6 +27,14 @@ CREATE TABLE profiles (
   rg TEXT,
   role TEXT NOT NULL CHECK (role IN ('fighter', 'coach', 'admin')),
   avatar_url TEXT,
+  phone TEXT,
+  city TEXT,
+  state TEXT,
+  bio TEXT,
+  instagram TEXT,
+  facebook TEXT,
+  youtube TEXT,
+  tiktok TEXT,
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'inactive', 'rejected')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -71,6 +79,7 @@ CREATE TABLE fighter_coaches (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   fighter_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   coach_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'rejected')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(fighter_id, coach_id)
 );
@@ -110,7 +119,25 @@ CREATE TRIGGER set_fight_records_updated_at
   EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================================
--- 7. Notícias
+-- 7. Desafios entre lutadores
+-- ============================================================
+CREATE TABLE challenges (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  challenger_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  challenged_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  message TEXT,
+  modality TEXT,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined', 'cancelled')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TRIGGER set_challenges_updated_at
+  BEFORE UPDATE ON challenges FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================================
+-- 8. Notícias
 -- ============================================================
 CREATE TABLE news (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -135,6 +162,7 @@ ALTER TABLE coach_experiences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE fighter_coaches ENABLE ROW LEVEL SECURITY;
 ALTER TABLE fighter_videos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE fight_records ENABLE ROW LEVEL SECURITY;
+ALTER TABLE challenges ENABLE ROW LEVEL SECURITY;
 ALTER TABLE news ENABLE ROW LEVEL SECURITY;
 
 -- ============================================================
@@ -260,6 +288,31 @@ CREATE POLICY "Lutador ou treinador pode criar relacionamento"
 CREATE POLICY "Lutador ou treinador pode remover relacionamento"
   ON fighter_coaches FOR DELETE
   USING (auth.uid() = fighter_id OR auth.uid() = coach_id);
+
+-- Treinador pode atualizar vinculo (aprovar/rejeitar)
+CREATE POLICY "Treinador pode atualizar vinculo"
+  ON fighter_coaches FOR UPDATE
+  USING (auth.uid() = coach_id)
+  WITH CHECK (auth.uid() = coach_id);
+
+-- ============================================================
+-- POLÍTICAS: challenges
+-- ============================================================
+
+-- Leitura: quem enviou ou recebeu
+CREATE POLICY "Ver proprios desafios"
+  ON challenges FOR SELECT
+  USING (auth.uid() = challenger_id OR auth.uid() = challenged_id);
+
+-- Inserir: qualquer autenticado (como challenger)
+CREATE POLICY "Criar desafio"
+  ON challenges FOR INSERT
+  WITH CHECK (auth.uid() = challenger_id);
+
+-- Update: quem recebeu (aceitar/recusar) ou quem enviou (cancelar)
+CREATE POLICY "Responder desafio"
+  ON challenges FOR UPDATE
+  USING (auth.uid() = challenger_id OR auth.uid() = challenged_id);
 
 -- ============================================================
 -- POLÍTICAS: fighter_videos

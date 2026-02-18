@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Avatar from './Avatar';
 
 export default function CoachCard({ coach }) {
-  const { id, full_name, status, avatar_url } = coach;
+  const { id, full_name, status, avatar_url, city } = coach;
   const experiences = coach.coach_experiences || [];
   const displayExperiences = experiences.slice(0, 2);
 
@@ -16,6 +16,11 @@ export default function CoachCard({ coach }) {
             <h3 className="font-bebas text-xl text-white tracking-wide truncate group-hover:text-brand-red transition-colors">
               {full_name}
             </h3>
+            {city && (
+              <p className="text-xs text-white/35 font-barlow truncate -mt-0.5 mb-0.5">
+                {city}
+              </p>
+            )}
             <div className="flex items-center gap-1.5">
               <span
                 className={`w-2 h-2 rounded-full ${

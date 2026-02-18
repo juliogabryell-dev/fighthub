@@ -19,7 +19,18 @@ export default function PerfilPage() {
 
   // Edit Profile
   const [showEditProfile, setShowEditProfile] = useState(false);
-  const [editForm, setEditForm] = useState({ full_name: '', birth_date: '' });
+  const [editForm, setEditForm] = useState({
+    full_name: '',
+    birth_date: '',
+    phone: '',
+    city: '',
+    state: '',
+    bio: '',
+    instagram: '',
+    facebook: '',
+    youtube: '',
+    tiktok: '',
+  });
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -48,6 +59,20 @@ export default function PerfilPage() {
     period_end: '',
     description: '',
   });
+
+  // Challenges (Fighter)
+  const [challenges, setChallenges] = useState([]);
+  const [showChallengesSection, setShowChallengesSection] = useState(false);
+
+  // Coach management (Fighter)
+  const [showCoachModal, setShowCoachModal] = useState(false);
+  const [availableCoaches, setAvailableCoaches] = useState([]);
+  const [myCoaches, setMyCoaches] = useState([]);
+  const [loadingCoaches, setLoadingCoaches] = useState(false);
+
+  // Binding requests (Coach)
+  const [bindingRequests, setBindingRequests] = useState([]);
+  const [activeBindings, setActiveBindings] = useState([]);
 
   useEffect(() => {
     fetchUserAndProfile();
@@ -88,6 +113,21 @@ export default function PerfilPage() {
         .select('*')
         .eq('fighter_id', currentUser.id);
       setFightRecords(records || []);
+
+      // Fetch challenges
+      const { data: challengeData } = await supabase
+        .from('challenges')
+        .select('*, challenger:challenger_id(id, full_name, avatar_url), challenged:challenged_id(id, full_name, avatar_url)')
+        .or(`challenger_id.eq.${currentUser.id},challenged_id.eq.${currentUser.id}`)
+        .order('created_at', { ascending: false });
+      setChallenges(challengeData || []);
+
+      // Fetch my coaches (fighter_coaches)
+      const { data: coachLinks } = await supabase
+        .from('fighter_coaches')
+        .select('*, coach:coach_id(id, full_name, avatar_url)')
+        .eq('fighter_id', currentUser.id);
+      setMyCoaches(coachLinks || []);
     }
 
     if (profileData?.role === 'coach') {
@@ -97,11 +137,28 @@ export default function PerfilPage() {
         .eq('coach_id', currentUser.id)
         .order('period_start', { ascending: false });
       setExperiences(exps || []);
+
+      // Fetch binding requests (pending)
+      const { data: pendingReqs } = await supabase
+        .from('fighter_coaches')
+        .select('*, fighter:fighter_id(id, full_name, avatar_url)')
+        .eq('coach_id', currentUser.id)
+        .eq('status', 'pending');
+      setBindingRequests(pendingReqs || []);
+
+      // Fetch active bindings
+      const { data: activeReqs } = await supabase
+        .from('fighter_coaches')
+        .select('*, fighter:fighter_id(id, full_name, avatar_url)')
+        .eq('coach_id', currentUser.id)
+        .eq('status', 'active');
+      setActiveBindings(activeReqs || []);
     }
 
     setLoading(false);
   }
 
+  // ===== Martial Arts =====
   function openAddArt() {
     setEditingArtId(null);
     setArtForm({ art_name: '', level: '', started_at: '', description: '' });
@@ -155,6 +212,7 @@ export default function PerfilPage() {
     if (!error) fetchUserAndProfile();
   }
 
+  // ===== Experiences (Coach) =====
   function openAddExp() {
     setEditingExpId(null);
     setExpForm({ title: '', organization: '', period_start: '', period_end: '', description: '' });
@@ -210,10 +268,19 @@ export default function PerfilPage() {
     if (!error) fetchUserAndProfile();
   }
 
+  // ===== Edit Profile =====
   function openEditProfile() {
     setEditForm({
       full_name: profile?.full_name || '',
       birth_date: profile?.birth_date || '',
+      phone: profile?.phone || '',
+      city: profile?.city || '',
+      state: profile?.state || '',
+      bio: profile?.bio || '',
+      instagram: profile?.instagram || '',
+      facebook: profile?.facebook || '',
+      youtube: profile?.youtube || '',
+      tiktok: profile?.tiktok || '',
     });
     setAvatarFile(null);
     setAvatarPreview(profile?.avatar_url || null);
@@ -261,6 +328,14 @@ export default function PerfilPage() {
           full_name: editForm.full_name,
           birth_date: editForm.birth_date || null,
           avatar_url,
+          phone: editForm.phone || null,
+          city: editForm.city || null,
+          state: editForm.state || null,
+          bio: editForm.bio || null,
+          instagram: editForm.instagram || null,
+          facebook: editForm.facebook || null,
+          youtube: editForm.youtube || null,
+          tiktok: editForm.tiktok || null,
         })
         .eq('id', user.id);
 
@@ -275,6 +350,62 @@ export default function PerfilPage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  // ===== Challenges =====
+  async function handleRespondChallenge(challengeId, newStatus) {
+    const { error } = await supabase
+      .from('challenges')
+      .update({ status: newStatus })
+      .eq('id', challengeId);
+    if (!error) fetchUserAndProfile();
+  }
+
+  // ===== Coach Management (Fighter) =====
+  async function openCoachModal() {
+    setShowCoachModal(true);
+    setLoadingCoaches(true);
+    const { data: coaches } = await supabase
+      .from('profiles')
+      .select('id, full_name, avatar_url')
+      .eq('role', 'coach')
+      .eq('status', 'active');
+    setAvailableCoaches(coaches || []);
+    setLoadingCoaches(false);
+  }
+
+  async function handleRequestCoach(coachId) {
+    const { error } = await supabase
+      .from('fighter_coaches')
+      .insert({ fighter_id: user.id, coach_id: coachId, status: 'pending' });
+    if (error) {
+      if (error.code === '23505') {
+        alert('Você já possui um vínculo com este treinador.');
+      } else {
+        alert('Erro ao solicitar vínculo: ' + error.message);
+      }
+    } else {
+      setShowCoachModal(false);
+      fetchUserAndProfile();
+    }
+  }
+
+  async function handleRemoveCoach(linkId) {
+    if (!confirm('Tem certeza que deseja remover este vínculo?')) return;
+    const { error } = await supabase
+      .from('fighter_coaches')
+      .delete()
+      .eq('id', linkId);
+    if (!error) fetchUserAndProfile();
+  }
+
+  // ===== Binding Requests (Coach) =====
+  async function handleRespondBinding(linkId, newStatus) {
+    const { error } = await supabase
+      .from('fighter_coaches')
+      .update({ status: newStatus })
+      .eq('id', linkId);
+    if (!error) fetchUserAndProfile();
   }
 
   function getStatusBadge(status) {
@@ -297,6 +428,43 @@ export default function PerfilPage() {
         {labels[status] || status}
       </span>
     );
+  }
+
+  function getChallengeStatusBadge(status) {
+    const styles = {
+      pending: 'bg-[#D4AF37]/20 text-[#D4AF37] border-[#D4AF37]/30',
+      accepted: 'bg-green-500/20 text-green-400 border-green-500/30',
+      declined: 'bg-red-500/20 text-red-400 border-red-500/30',
+      cancelled: 'bg-white/10 text-white/40 border-white/10',
+    };
+    const labels = {
+      pending: 'Pendente',
+      accepted: 'Aceito',
+      declined: 'Recusado',
+      cancelled: 'Cancelado',
+    };
+    return (
+      <span
+        className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-barlow-condensed uppercase tracking-wider border ${
+          styles[status] || styles.pending
+        }`}
+      >
+        {labels[status] || status}
+      </span>
+    );
+  }
+
+  function formatSocialUrl(type, handle) {
+    if (!handle) return null;
+    const clean = handle.replace(/^@/, '');
+    if (handle.startsWith('http')) return handle;
+    switch (type) {
+      case 'instagram': return `https://instagram.com/${clean}`;
+      case 'facebook': return `https://facebook.com/${clean}`;
+      case 'youtube': return `https://youtube.com/@${clean}`;
+      case 'tiktok': return `https://tiktok.com/@${clean}`;
+      default: return handle;
+    }
   }
 
   if (loading) {
@@ -331,6 +499,9 @@ export default function PerfilPage() {
   const wins = fightRecords.reduce((sum, r) => sum + (r.wins || 0), 0);
   const losses = fightRecords.reduce((sum, r) => sum + (r.losses || 0), 0);
   const draws = fightRecords.reduce((sum, r) => sum + (r.draws || 0), 0);
+
+  const receivedChallenges = challenges.filter(c => c.challenged_id === user?.id);
+  const sentChallenges = challenges.filter(c => c.challenger_id === user?.id);
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] px-4 py-10">
@@ -373,13 +544,82 @@ export default function PerfilPage() {
                 <h2 className="font-bebas text-3xl tracking-wide text-white">
                   {profile?.full_name}
                 </h2>
+                {(profile?.city || profile?.state) && (
+                  <p className="font-barlow text-sm text-white/40 flex items-center gap-1.5 mt-0.5">
+                    <Icon name="map-pin" size={13} />
+                    {[profile.city, profile.state].filter(Boolean).join(', ')}
+                  </p>
+                )}
                 <p className="font-barlow-condensed text-sm uppercase tracking-wider text-white/60 mt-1">
-                  {isFighter ? '🥊 Lutador' : '🏅 Treinador'}
+                  {isFighter ? 'Lutador' : 'Treinador'}
                 </p>
                 <div className="mt-2">{getStatusBadge(profile?.status)}</div>
               </div>
             </div>
           </div>
+
+          {/* Social Info */}
+          {(profile?.bio || profile?.phone || profile?.instagram || profile?.facebook || profile?.youtube || profile?.tiktok) && (
+            <div className="px-6 py-4 border-t border-white/5">
+              {profile.bio && (
+                <p className="font-barlow text-sm text-white/50 mb-3 leading-relaxed">
+                  {profile.bio}
+                </p>
+              )}
+              <div className="flex flex-wrap gap-3">
+                {profile.phone && (
+                  <span className="flex items-center gap-1.5 text-xs text-white/40 font-barlow">
+                    <Icon name="phone" size={13} />
+                    {profile.phone}
+                  </span>
+                )}
+                {profile.instagram && (
+                  <a
+                    href={formatSocialUrl('instagram', profile.instagram)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-xs text-white/40 hover:text-pink-400 transition-colors font-barlow"
+                  >
+                    <Icon name="instagram" size={13} />
+                    {profile.instagram}
+                  </a>
+                )}
+                {profile.facebook && (
+                  <a
+                    href={formatSocialUrl('facebook', profile.facebook)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-xs text-white/40 hover:text-blue-400 transition-colors font-barlow"
+                  >
+                    <Icon name="facebook" size={13} />
+                    {profile.facebook}
+                  </a>
+                )}
+                {profile.youtube && (
+                  <a
+                    href={formatSocialUrl('youtube', profile.youtube)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-xs text-white/40 hover:text-red-400 transition-colors font-barlow"
+                  >
+                    <Icon name="youtube" size={13} />
+                    {profile.youtube}
+                  </a>
+                )}
+                {profile.tiktok && (
+                  <a
+                    href={formatSocialUrl('tiktok', profile.tiktok)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white transition-colors font-barlow"
+                  >
+                    <Icon name="tiktok" size={13} />
+                    {profile.tiktok}
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Fighter Record Summary */}
           {isFighter && (
@@ -467,6 +707,45 @@ export default function PerfilPage() {
           </div>
         )}
 
+        {/* Fighter: My Coaches */}
+        {isFighter && myCoaches.length > 0 && (
+          <div className="mb-8">
+            <h3 className="font-bebas text-xl tracking-wider text-white/80 mb-4">
+              MEUS TREINADORES
+            </h3>
+            <div className="space-y-3">
+              {myCoaches.map((link) => (
+                <div
+                  key={link.id}
+                  className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-4 border border-white/10 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar name={link.coach?.full_name} url={link.coach?.avatar_url} size={40} />
+                    <div>
+                      <Link
+                        href={`/treinadores/${link.coach?.id}`}
+                        className="font-barlow-condensed text-white font-semibold hover:text-[#D4AF37] transition-colors"
+                      >
+                        {link.coach?.full_name || 'Treinador'}
+                      </Link>
+                      <div className="mt-0.5">
+                        {getChallengeStatusBadge(link.status === 'active' ? 'accepted' : link.status)}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleRemoveCoach(link.id)}
+                    className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                    title="Remover"
+                  >
+                    <Icon name="x" size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Fighter: Action Cards */}
         {isFighter && (
           <div className="grid grid-cols-2 gap-4 mb-8">
@@ -490,30 +769,38 @@ export default function PerfilPage() {
                 <Icon name="video" size={18} className="text-[#C41E3A]" />
               </div>
               <p className="font-barlow-condensed text-white font-semibold text-sm uppercase tracking-wider">
-                Adicionar Vídeo
+                Adicionar Video
               </p>
               <p className="font-barlow text-white/40 text-xs mt-1">
                 Fase 2 - Em breve
               </p>
             </div>
 
-            <Link
-              href="/lutadores"
-              className="group bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-5 border border-white/10 hover:border-[#C41E3A]/30 transition-all text-left"
+            <button
+              onClick={() => setShowChallengesSection(!showChallengesSection)}
+              className="group bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-5 border border-white/10 hover:border-[#C41E3A]/30 transition-all text-left relative"
             >
               <div className="w-10 h-10 rounded-full bg-[#C41E3A]/20 flex items-center justify-center mb-3 group-hover:bg-[#C41E3A]/30 transition-colors">
                 <Icon name="swords" size={18} className="text-[#C41E3A]" />
               </div>
               <p className="font-barlow-condensed text-white font-semibold text-sm uppercase tracking-wider">
-                Desafiar Lutador
+                Meus Desafios
               </p>
               <p className="font-barlow text-white/40 text-xs mt-1">
-                Encontre oponentes para lutar
+                {challenges.length > 0 ? `${challenges.length} desafio(s)` : 'Nenhum desafio ainda'}
               </p>
-            </Link>
+              {receivedChallenges.filter(c => c.status === 'pending').length > 0 && (
+                <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#C41E3A] text-white text-xs flex items-center justify-center font-barlow-condensed">
+                  {receivedChallenges.filter(c => c.status === 'pending').length}
+                </span>
+              )}
+            </button>
 
-            <div className="group bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-5 border border-white/10 opacity-60 cursor-not-allowed text-left">
-              <div className="w-10 h-10 rounded-full bg-[#C41E3A]/20 flex items-center justify-center mb-3">
+            <button
+              onClick={openCoachModal}
+              className="group bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-5 border border-white/10 hover:border-[#C41E3A]/30 transition-all text-left"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#C41E3A]/20 flex items-center justify-center mb-3 group-hover:bg-[#C41E3A]/30 transition-colors">
                 <Icon name="users" size={18} className="text-[#C41E3A]" />
               </div>
               <p className="font-barlow-condensed text-white font-semibold text-sm uppercase tracking-wider">
@@ -522,6 +809,205 @@ export default function PerfilPage() {
               <p className="font-barlow text-white/40 text-xs mt-1">
                 Vincule-se a treinadores
               </p>
+            </button>
+          </div>
+        )}
+
+        {/* Fighter: Challenges Section */}
+        {isFighter && showChallengesSection && (
+          <div className="mb-8">
+            <h3 className="font-bebas text-xl tracking-wider text-white/80 mb-4">
+              MEUS DESAFIOS
+            </h3>
+
+            {/* Received Challenges */}
+            {receivedChallenges.length > 0 && (
+              <div className="mb-6">
+                <p className="font-barlow-condensed text-xs uppercase tracking-widest text-white/40 mb-3">
+                  Desafios Recebidos
+                </p>
+                <div className="space-y-3">
+                  {receivedChallenges.map((ch) => (
+                    <div
+                      key={ch.id}
+                      className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-4 border border-white/10"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <Avatar name={ch.challenger?.full_name} url={ch.challenger?.avatar_url} size={36} />
+                          <div className="min-w-0">
+                            <p className="font-barlow-condensed text-white font-semibold text-sm truncate">
+                              {ch.challenger?.full_name}
+                            </p>
+                            {ch.modality && (
+                              <p className="font-barlow text-white/40 text-xs">
+                                {ch.modality}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        {ch.status === 'pending' ? (
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              onClick={() => handleRespondChallenge(ch.id, 'accepted')}
+                              className="px-3 py-1.5 rounded-lg bg-green-500/20 border border-green-500/30 text-green-400 text-xs font-barlow-condensed uppercase tracking-wider hover:bg-green-500/30 transition-all"
+                            >
+                              Aceitar
+                            </button>
+                            <button
+                              onClick={() => handleRespondChallenge(ch.id, 'declined')}
+                              className="px-3 py-1.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-barlow-condensed uppercase tracking-wider hover:bg-red-500/30 transition-all"
+                            >
+                              Recusar
+                            </button>
+                          </div>
+                        ) : (
+                          getChallengeStatusBadge(ch.status)
+                        )}
+                      </div>
+                      {ch.message && (
+                        <p className="font-barlow text-white/30 text-sm mt-2 italic">
+                          &ldquo;{ch.message}&rdquo;
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sent Challenges */}
+            {sentChallenges.length > 0 && (
+              <div>
+                <p className="font-barlow-condensed text-xs uppercase tracking-widest text-white/40 mb-3">
+                  Desafios Enviados
+                </p>
+                <div className="space-y-3">
+                  {sentChallenges.map((ch) => (
+                    <div
+                      key={ch.id}
+                      className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-4 border border-white/10"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <Avatar name={ch.challenged?.full_name} url={ch.challenged?.avatar_url} size={36} />
+                          <div className="min-w-0">
+                            <p className="font-barlow-condensed text-white font-semibold text-sm truncate">
+                              {ch.challenged?.full_name}
+                            </p>
+                            {ch.modality && (
+                              <p className="font-barlow text-white/40 text-xs">
+                                {ch.modality}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {getChallengeStatusBadge(ch.status)}
+                          {ch.status === 'pending' && (
+                            <button
+                              onClick={() => handleRespondChallenge(ch.id, 'cancelled')}
+                              className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                              title="Cancelar"
+                            >
+                              <Icon name="x" size={14} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      {ch.message && (
+                        <p className="font-barlow text-white/30 text-sm mt-2 italic">
+                          &ldquo;{ch.message}&rdquo;
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {challenges.length === 0 && (
+              <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-8 border border-white/10 text-center">
+                <p className="font-barlow text-white/30">
+                  Nenhum desafio ainda. Visite o perfil de um lutador para desafia-lo!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Coach: Binding Requests */}
+        {isCoach && bindingRequests.length > 0 && (
+          <div className="mb-8">
+            <h3 className="font-bebas text-xl tracking-wider text-white/80 mb-4">
+              PEDIDOS DE VINCULO
+            </h3>
+            <div className="space-y-3">
+              {bindingRequests.map((req) => (
+                <div
+                  key={req.id}
+                  className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-4 border border-[#D4AF37]/20"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar name={req.fighter?.full_name} url={req.fighter?.avatar_url} size={40} />
+                      <div>
+                        <Link
+                          href={`/lutadores/${req.fighter?.id}`}
+                          className="font-barlow-condensed text-white font-semibold hover:text-[#D4AF37] transition-colors"
+                        >
+                          {req.fighter?.full_name || 'Lutador'}
+                        </Link>
+                        <p className="font-barlow text-white/40 text-xs">
+                          Solicitou vinculo
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => handleRespondBinding(req.id, 'active')}
+                        className="px-3 py-1.5 rounded-lg bg-green-500/20 border border-green-500/30 text-green-400 text-xs font-barlow-condensed uppercase tracking-wider hover:bg-green-500/30 transition-all"
+                      >
+                        Aceitar
+                      </button>
+                      <button
+                        onClick={() => handleRespondBinding(req.id, 'rejected')}
+                        className="px-3 py-1.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-barlow-condensed uppercase tracking-wider hover:bg-red-500/30 transition-all"
+                      >
+                        Rejeitar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Coach: Active Bindings */}
+        {isCoach && activeBindings.length > 0 && (
+          <div className="mb-8">
+            <h3 className="font-bebas text-xl tracking-wider text-white/80 mb-4">
+              LUTADORES VINCULADOS
+            </h3>
+            <div className="space-y-3">
+              {activeBindings.map((bind) => (
+                <div
+                  key={bind.id}
+                  className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-4 border border-white/10 flex items-center gap-3"
+                >
+                  <Avatar name={bind.fighter?.full_name} url={bind.fighter?.avatar_url} size={40} />
+                  <Link
+                    href={`/lutadores/${bind.fighter?.id}`}
+                    className="font-barlow-condensed text-white font-semibold hover:text-[#D4AF37] transition-colors"
+                  >
+                    {bind.fighter?.full_name || 'Lutador'}
+                  </Link>
+                  <span className="ml-auto">
+                    {getStatusBadge('active')}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -531,7 +1017,7 @@ export default function PerfilPage() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bebas text-xl tracking-wider text-white/80">
-                MINHAS EXPERIÊNCIAS
+                MINHAS EXPERIENCIAS
               </h3>
               <button
                 onClick={openAddExp}
@@ -613,15 +1099,15 @@ export default function PerfilPage() {
               required
             />
             <InputField
-              label="Nível"
+              label="Nivel"
               type="text"
               value={artForm.level}
               onChange={(e) => setArtForm({ ...artForm, level: e.target.value })}
-              placeholder="Ex: Iniciante, Intermediário, Avançado"
+              placeholder="Ex: Iniciante, Intermediario, Avancado"
               required
             />
             <InputField
-              label="Data de Início"
+              label="Data de Inicio"
               type="date"
               value={artForm.started_at}
               onChange={(e) =>
@@ -630,7 +1116,7 @@ export default function PerfilPage() {
             />
             <div>
               <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-white/50 mb-2">
-                Descrição
+                Descricao
               </label>
               <textarea
                 value={artForm.description}
@@ -657,7 +1143,7 @@ export default function PerfilPage() {
         <Modal onClose={() => setShowExpModal(false)} title={editingExpId ? 'Editar Experiência' : 'Adicionar Experiência'}>
           <form onSubmit={handleSaveExperience} className="space-y-4">
             <InputField
-              label="Título"
+              label="Titulo"
               type="text"
               value={expForm.title}
               onChange={(e) => setExpForm({ ...expForm, title: e.target.value })}
@@ -665,7 +1151,7 @@ export default function PerfilPage() {
               required
             />
             <InputField
-              label="Organização"
+              label="Organizacao"
               type="text"
               value={expForm.organization}
               onChange={(e) =>
@@ -676,7 +1162,7 @@ export default function PerfilPage() {
             />
             <div className="grid grid-cols-2 gap-4">
               <InputField
-                label="Início"
+                label="Inicio"
                 type="date"
                 value={expForm.period_start}
                 onChange={(e) =>
@@ -695,7 +1181,7 @@ export default function PerfilPage() {
             </div>
             <div>
               <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-white/50 mb-2">
-                Descrição
+                Descricao
               </label>
               <textarea
                 value={expForm.description}
@@ -719,7 +1205,7 @@ export default function PerfilPage() {
 
       {/* Edit Profile Modal */}
       {showEditProfile && (
-        <Modal onClose={() => setShowEditProfile(false)} title="Editar Perfil">
+        <Modal onClose={() => setShowEditProfile(false)} title="Editar Perfil" maxWidth="max-w-2xl">
           <form onSubmit={handleEditProfile} className="space-y-5">
             {/* Avatar Upload */}
             <div className="flex flex-col items-center gap-3">
@@ -775,6 +1261,82 @@ export default function PerfilPage() {
               }
             />
 
+            {/* Bio */}
+            <div>
+              <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-white/50 mb-1.5 font-semibold">
+                Bio
+              </label>
+              <textarea
+                value={editForm.bio}
+                onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                rows={3}
+                placeholder="Conte um pouco sobre voce..."
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-barlow text-sm placeholder:text-white/20 focus:outline-none focus:border-[#C41E3A]/50 transition-colors resize-none"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <InputField
+                label="Telefone"
+                type="tel"
+                value={editForm.phone}
+                onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                placeholder="(11) 99999-9999"
+              />
+              <InputField
+                label="Cidade"
+                type="text"
+                value={editForm.city}
+                onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
+                placeholder="Sua cidade"
+              />
+            </div>
+
+            <InputField
+              label="Estado"
+              type="text"
+              value={editForm.state}
+              onChange={(e) => setEditForm({ ...editForm, state: e.target.value })}
+              placeholder="Ex: SP, RJ, MG"
+            />
+
+            {/* Social Separator */}
+            <div className="border-t border-white/10 pt-4">
+              <p className="font-barlow-condensed text-xs uppercase tracking-widest text-white/40 mb-3 font-semibold">
+                Redes Sociais
+              </p>
+              <div className="space-y-3">
+                <InputField
+                  label="Instagram"
+                  type="text"
+                  value={editForm.instagram}
+                  onChange={(e) => setEditForm({ ...editForm, instagram: e.target.value })}
+                  placeholder="@seu_usuario"
+                />
+                <InputField
+                  label="Facebook"
+                  type="text"
+                  value={editForm.facebook}
+                  onChange={(e) => setEditForm({ ...editForm, facebook: e.target.value })}
+                  placeholder="seu.perfil ou URL"
+                />
+                <InputField
+                  label="YouTube"
+                  type="text"
+                  value={editForm.youtube}
+                  onChange={(e) => setEditForm({ ...editForm, youtube: e.target.value })}
+                  placeholder="@seu_canal ou URL"
+                />
+                <InputField
+                  label="TikTok"
+                  type="text"
+                  value={editForm.tiktok}
+                  onChange={(e) => setEditForm({ ...editForm, tiktok: e.target.value })}
+                  placeholder="@seu_usuario"
+                />
+              </div>
+            </div>
+
             <button
               type="submit"
               disabled={saving}
@@ -783,6 +1345,62 @@ export default function PerfilPage() {
               {saving ? 'SALVANDO...' : 'SALVAR'}
             </button>
           </form>
+        </Modal>
+      )}
+
+      {/* Coach Management Modal (Fighter) */}
+      {showCoachModal && (
+        <Modal onClose={() => setShowCoachModal(false)} title="Selecionar Treinador">
+          {loadingCoaches ? (
+            <div className="flex justify-center py-8">
+              <svg
+                className="animate-spin h-8 w-8 text-[#C41E3A]"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            </div>
+          ) : availableCoaches.length > 0 ? (
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+              {availableCoaches.map((coach) => {
+                const existing = myCoaches.find(mc => mc.coach_id === coach.id);
+                return (
+                  <div
+                    key={coach.id}
+                    className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar name={coach.full_name} url={coach.avatar_url} size={36} />
+                      <p className="font-barlow-condensed text-white font-semibold text-sm">
+                        {coach.full_name}
+                      </p>
+                    </div>
+                    {existing ? (
+                      <span className="text-xs font-barlow-condensed text-white/40 uppercase tracking-wider">
+                        {existing.status === 'active' ? 'Vinculado' : existing.status === 'pending' ? 'Pendente' : 'Rejeitado'}
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => handleRequestCoach(coach.id)}
+                        className="px-3 py-1.5 rounded-lg bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-barlow-condensed uppercase tracking-wider hover:bg-[#D4AF37]/30 transition-all"
+                      >
+                        Solicitar
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="font-barlow text-white/30">
+                Nenhum treinador disponivel na plataforma.
+              </p>
+            </div>
+          )}
         </Modal>
       )}
     </div>

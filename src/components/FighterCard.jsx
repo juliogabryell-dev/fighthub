@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Avatar from './Avatar';
 
 export default function FighterCard({ fighter }) {
-  const { id, full_name, status, avatar_url } = fighter;
+  const { id, full_name, status, avatar_url, city } = fighter;
   const martial_arts = fighter.fighter_martial_arts || [];
   const fight_records = fighter.fight_records || [];
 
@@ -21,6 +21,11 @@ export default function FighterCard({ fighter }) {
             <h3 className="font-bebas text-xl text-white tracking-wide truncate group-hover:text-brand-red transition-colors">
               {full_name}
             </h3>
+            {city && (
+              <p className="text-xs text-white/35 font-barlow truncate -mt-0.5 mb-0.5">
+                {city}
+              </p>
+            )}
             <div className="flex items-center gap-1.5">
               <span
                 className={`w-2 h-2 rounded-full ${
