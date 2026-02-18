@@ -1,14 +1,16 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Icon from '@/components/Icon';
-import { createPublicClient } from '@/lib/supabase/public';
+import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
 async function getCoach(id) {
   try {
-    const supabase = createPublicClient();
-    if (!supabase) return null;
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) return null;
+    const supabase = createClient(url, key);
     const { data: coach, error } = await supabase
       .from('profiles')
       .select('*, coach_experiences(*)')

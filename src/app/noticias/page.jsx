@@ -1,7 +1,7 @@
+import { createClient } from '@supabase/supabase-js';
 import NewsCard from '@/components/NewsCard';
 import { SAMPLE_NEWS } from '@/lib/constants';
 import { scrapeNews } from '@/lib/scrapeNews';
-import { createPublicClient } from '@/lib/supabase/public';
 
 export const revalidate = 3600;
 
@@ -20,8 +20,10 @@ async function getNews() {
 
   // 2. Fallback: try Supabase
   try {
-    const supabase = createPublicClient();
-    if (supabase) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (url && key) {
+      const supabase = createClient(url, key);
       const { data, error } = await supabase
         .from('news')
         .select('*')

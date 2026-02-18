@@ -1,5 +1,5 @@
+import { createClient } from '@supabase/supabase-js';
 import CoachCard from '@/components/CoachCard';
-import { createPublicClient } from '@/lib/supabase/public';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,8 +9,10 @@ export const metadata = {
 
 async function getCoaches() {
   try {
-    const supabase = createPublicClient();
-    if (!supabase) return [];
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) return [];
+    const supabase = createClient(url, key);
     const { data: coaches, error } = await supabase
       .from('profiles')
       .select('*, coach_experiences(*)')
