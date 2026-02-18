@@ -9,7 +9,7 @@ const FOOTER_LINKS = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/5 mt-auto">
+    <footer className="border-t border-white/10 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Logo + Copyright */}
@@ -18,7 +18,7 @@ export default function Footer() {
               <span className="text-white">FIGHT</span>
               <span className="text-brand-red">HUB</span>
             </span>
-            <p className="text-xs text-white/25 font-barlow">
+            <p className="text-xs text-white/50 font-barlow">
               Portal de Artes Marciais &copy; 2026
             </p>
           </div>
@@ -29,7 +29,7 @@ export default function Footer() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-xs text-white/30 hover:text-white/60 font-barlow-condensed uppercase tracking-wider transition-colors"
+                className="text-xs text-white/60 hover:text-white font-barlow-condensed uppercase tracking-wider transition-colors"
               >
                 {link.label}
               </Link>
@@ -37,13 +37,13 @@ export default function Footer() {
           </div>
 
           {/* Tech Credit */}
-          <p className="text-[10px] text-white/15 font-barlow-condensed tracking-wider">
+          <p className="text-[11px] text-white/40 font-barlow-condensed tracking-wider">
             Desenvolvido por{' '}
             <a
               href="https://neobyte.site"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-white/30 hover:text-white/50 transition-colors"
+              className="text-brand-gold hover:text-brand-gold/80 transition-colors"
             >
               NeoByte
             </a>
