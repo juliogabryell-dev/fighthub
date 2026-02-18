@@ -16,10 +16,13 @@ export default function AdminPage() {
     activeFighters: 0,
     activeCoaches: 0,
     total: 0,
+    unverifiedRecords: 0,
   });
   const [pendingUsers, setPendingUsers] = useState([]);
+  const [unverifiedRecords, setUnverifiedRecords] = useState([]);
   const [actionLoading, setActionLoading] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [adminId, setAdminId] = useState(null);
 
   useEffect(() => {
     checkAdminAndFetch();
@@ -48,6 +51,7 @@ export default function AdminPage() {
       return;
     }
 
+    setAdminId(user.id);
     await fetchData();
     setLoading(false);
   }
@@ -75,11 +79,17 @@ export default function AdminPage() {
       .from('profiles')
       .select('*', { count: 'exact', head: true });
 
+    const { count: unverifiedCount } = await supabase
+      .from('fight_records')
+      .select('*', { count: 'exact', head: true })
+      .eq('verified', false);
+
     setStats({
       pending: pendingCount || 0,
       activeFighters: fighterCount || 0,
       activeCoaches: coachCount || 0,
       total: totalCount || 0,
+      unverifiedRecords: unverifiedCount || 0,
     });
 
     // Fetch pending users
@@ -90,6 +100,15 @@ export default function AdminPage() {
       .order('created_at', { ascending: false });
 
     setPendingUsers(pending || []);
+
+    // Fetch unverified fight records
+    const { data: records } = await supabase
+      .from('fight_records')
+      .select('*, fighter:fighter_id(id, full_name, avatar_url)')
+      .eq('verified', false)
+      .order('updated_at', { ascending: false });
+
+    setUnverifiedRecords(records || []);
   }
 
   async function handleApprove(userId) {
@@ -108,6 +127,27 @@ export default function AdminPage() {
       .from('profiles')
       .update({ status: 'rejected' })
       .eq('id', userId);
+    await fetchData();
+    setActionLoading(null);
+  }
+
+  async function handleVerifyRecord(recordId) {
+    setActionLoading(recordId);
+    await supabase
+      .from('fight_records')
+      .update({ verified: true, verified_by: adminId })
+      .eq('id', recordId);
+    await fetchData();
+    setActionLoading(null);
+  }
+
+  async function handleDeleteRecord(recordId) {
+    if (!confirm('Tem certeza que deseja excluir este cartel? Esta ação não pode ser desfeita.')) return;
+    setActionLoading(recordId);
+    await supabase
+      .from('fight_records')
+      .delete()
+      .eq('id', recordId);
     await fetchData();
     setActionLoading(null);
   }
@@ -173,6 +213,12 @@ export default function AdminPage() {
       color: '#C41E3A',
       icon: 'users',
     },
+    {
+      label: 'Cartéis Pendentes',
+      value: stats.unverifiedRecords,
+      color: '#f97316',
+      icon: 'trophy',
+    },
   ];
 
   return (
@@ -194,7 +240,7 @@ export default function AdminPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
           {statCards.map((stat) => (
             <div
               key={stat.label}
@@ -303,6 +349,88 @@ export default function AdminPage() {
               <span className="text-4xl mb-3 block">✅</span>
               <p className="font-barlow text-white/40 text-sm">
                 Nenhum cadastro pendente!
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Unverified Fight Records */}
+        <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl overflow-hidden mt-8">
+          <div className="p-6 border-b border-white/5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h2 className="font-bebas text-xl tracking-wider text-white">
+                CARTÉIS PENDENTES DE VERIFICAÇÃO
+              </h2>
+              {stats.unverifiedRecords > 0 && (
+                <span className="px-2.5 py-0.5 rounded-full bg-orange-500/20 text-orange-400 font-barlow-condensed text-xs font-semibold border border-orange-500/30">
+                  {stats.unverifiedRecords}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {unverifiedRecords.length > 0 ? (
+            <div className="divide-y divide-white/5">
+              {unverifiedRecords.map((record) => (
+                <div
+                  key={record.id}
+                  className="p-5 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
+                >
+                  <div className="flex items-center gap-4 flex-1">
+                    <Avatar name={record.fighter?.full_name} url={record.fighter?.avatar_url} size={44} />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-barlow-condensed text-white font-semibold truncate">
+                        {record.fighter?.full_name || 'Lutador'}
+                      </p>
+                      <p className="font-barlow text-white/40 text-sm">
+                        {record.modality}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-6">
+                      <div className="flex items-center gap-4 text-center">
+                        <div>
+                          <p className="font-bebas text-xl text-green-400">{record.wins || 0}</p>
+                          <p className="font-barlow-condensed text-[10px] uppercase tracking-wider text-green-400/60">V</p>
+                        </div>
+                        <div>
+                          <p className="font-bebas text-xl text-red-400">{record.losses || 0}</p>
+                          <p className="font-barlow-condensed text-[10px] uppercase tracking-wider text-red-400/60">D</p>
+                        </div>
+                        <div>
+                          <p className="font-bebas text-xl text-[#D4AF37]">{record.draws || 0}</p>
+                          <p className="font-barlow-condensed text-[10px] uppercase tracking-wider text-[#D4AF37]/60">E</p>
+                        </div>
+                      </div>
+                      <span className="font-barlow text-white/30 text-xs">
+                        {formatDate(record.updated_at)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 ml-6">
+                    <button
+                      onClick={() => handleVerifyRecord(record.id)}
+                      disabled={actionLoading === record.id}
+                      className="px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 hover:bg-green-500/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider disabled:opacity-50"
+                    >
+                      {actionLoading === record.id ? '...' : 'Verificar'}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteRecord(record.id)}
+                      disabled={actionLoading === record.id}
+                      className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider disabled:opacity-50"
+                    >
+                      {actionLoading === record.id ? '...' : 'Excluir'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-12 text-center">
+              <span className="text-4xl mb-3 block">✅</span>
+              <p className="font-barlow text-white/40 text-sm">
+                Todos os cartéis estão verificados!
               </p>
             </div>
           )}
