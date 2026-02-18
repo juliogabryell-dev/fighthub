@@ -1,4 +1,5 @@
 import FighterCard from '@/components/FighterCard';
+import { createPublicClient } from '@/lib/supabase/public';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,7 +9,6 @@ export const metadata = {
 
 async function getFighters() {
   try {
-    const { createPublicClient } = await import('@/lib/supabase/public');
     const supabase = createPublicClient();
     if (!supabase) return [];
     const { data: fighters, error } = await supabase

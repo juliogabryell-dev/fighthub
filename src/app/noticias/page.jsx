@@ -1,6 +1,7 @@
 import NewsCard from '@/components/NewsCard';
 import { SAMPLE_NEWS } from '@/lib/constants';
 import { scrapeNews } from '@/lib/scrapeNews';
+import { createPublicClient } from '@/lib/supabase/public';
 
 export const metadata = {
   title: 'Notícias | FightHub',
@@ -17,7 +18,6 @@ async function getNews() {
 
   // 2. Fallback: try Supabase
   try {
-    const { createPublicClient } = await import('@/lib/supabase/public');
     const supabase = createPublicClient();
     if (supabase) {
       const { data, error } = await supabase
