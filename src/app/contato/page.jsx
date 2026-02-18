@@ -1,8 +1,6 @@
-import Icon from '@/components/Icon';
+'use client';
 
-export const metadata = {
-  title: 'Contato | FightHub',
-};
+import Icon from '@/components/Icon';
 
 const contacts = [
   {
