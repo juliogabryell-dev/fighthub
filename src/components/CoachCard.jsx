@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Avatar from './Avatar';
 
 export default function CoachCard({ coach }) {
-  const { id, full_name, status } = coach;
+  const { id, full_name, status, avatar_url } = coach;
   const experiences = coach.coach_experiences || [];
   const displayExperiences = experiences.slice(0, 2);
 
@@ -11,7 +11,7 @@ export default function CoachCard({ coach }) {
       <div className="card-hover bg-gradient-to-b from-dark-card to-dark-card2 rounded-xl border border-white/5 p-5 transition-all duration-300 hover:border-brand-red/30 group">
         {/* Header: Avatar + Name + Status */}
         <div className="flex items-center gap-3 mb-4">
-          <Avatar name={full_name} size={48} />
+          <Avatar name={full_name} url={avatar_url} size={48} />
           <div className="flex-1 min-w-0">
             <h3 className="font-bebas text-xl text-white tracking-wide truncate group-hover:text-brand-red transition-colors">
               {full_name}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Modal from '@/components/Modal';
@@ -16,6 +16,14 @@ export default function PerfilPage() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Edit Profile
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [editForm, setEditForm] = useState({ full_name: '', birth_date: '' });
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const fileInputRef = useRef(null);
 
   // Fighter-specific
   const [martialArts, setMartialArts] = useState([]);
@@ -133,6 +141,73 @@ export default function PerfilPage() {
     }
   }
 
+  function openEditProfile() {
+    setEditForm({
+      full_name: profile?.full_name || '',
+      birth_date: profile?.birth_date || '',
+    });
+    setAvatarFile(null);
+    setAvatarPreview(profile?.avatar_url || null);
+    setShowEditProfile(true);
+  }
+
+  function handleFileSelect(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  }
+
+  async function handleEditProfile(e) {
+    e.preventDefault();
+    setSaving(true);
+
+    try {
+      let avatar_url = profile?.avatar_url || null;
+
+      if (avatarFile) {
+        const fileExt = avatarFile.name.split('.').pop();
+        const filePath = `${user.id}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(filePath, avatarFile, { upsert: true });
+
+        if (uploadError) {
+          alert('Erro ao enviar foto: ' + uploadError.message);
+          setSaving(false);
+          return;
+        }
+
+        const { data: urlData } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(filePath);
+
+        avatar_url = urlData.publicUrl;
+      }
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: editForm.full_name,
+          birth_date: editForm.birth_date || null,
+          avatar_url,
+        })
+        .eq('id', user.id);
+
+      if (error) {
+        alert('Erro ao salvar perfil: ' + error.message);
+      } else {
+        setShowEditProfile(false);
+        fetchUserAndProfile();
+      }
+    } catch (err) {
+      alert('Erro inesperado: ' + err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   function getStatusBadge(status) {
     const styles = {
       active: 'bg-green-500/20 text-green-400 border-green-500/30',
@@ -199,7 +274,10 @@ export default function PerfilPage() {
               PERFIL
             </span>
           </h1>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all font-barlow text-sm">
+          <button
+            onClick={openEditProfile}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all font-barlow text-sm"
+          >
             <Icon name="settings" size={16} />
             Editar Perfil
           </button>
@@ -218,6 +296,7 @@ export default function PerfilPage() {
             <div className="flex items-center gap-5">
               <Avatar
                 name={profile?.full_name}
+                url={profile?.avatar_url}
                 size={80}
                 className="border-2 border-white/20"
               />
@@ -528,6 +607,75 @@ export default function PerfilPage() {
               className="w-full py-3 rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#b8962e] text-black font-barlow-condensed uppercase tracking-widest text-sm font-semibold hover:from-[#e0bd45] hover:to-[#c4a035] transition-all"
             >
               SALVAR
+            </button>
+          </form>
+        </Modal>
+      )}
+
+      {/* Edit Profile Modal */}
+      {showEditProfile && (
+        <Modal onClose={() => setShowEditProfile(false)} title="Editar Perfil">
+          <form onSubmit={handleEditProfile} className="space-y-5">
+            {/* Avatar Upload */}
+            <div className="flex flex-col items-center gap-3">
+              <div
+                className="relative group cursor-pointer"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {avatarPreview ? (
+                  <img
+                    src={avatarPreview}
+                    alt="Preview"
+                    className="w-24 h-24 rounded-full object-cover border-2 border-white/20"
+                  />
+                ) : (
+                  <Avatar name={editForm.full_name} size={96} />
+                )}
+                <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Icon name="camera" size={24} className="text-white" />
+                </div>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="text-xs text-white/40 hover:text-white/60 font-barlow-condensed uppercase tracking-wider transition-colors"
+              >
+                Alterar foto
+              </button>
+            </div>
+
+            <InputField
+              label="Nome Completo"
+              type="text"
+              value={editForm.full_name}
+              onChange={(e) =>
+                setEditForm({ ...editForm, full_name: e.target.value })
+              }
+              placeholder="Seu nome completo"
+              required
+            />
+            <InputField
+              label="Data de Nascimento"
+              type="date"
+              value={editForm.birth_date}
+              onChange={(e) =>
+                setEditForm({ ...editForm, birth_date: e.target.value })
+              }
+            />
+
+            <button
+              type="submit"
+              disabled={saving}
+              className="w-full py-3 rounded-lg bg-gradient-to-r from-[#C41E3A] to-[#a01830] text-white font-barlow-condensed uppercase tracking-widest text-sm font-semibold hover:from-[#d42a46] hover:to-[#b82040] transition-all disabled:opacity-50"
+            >
+              {saving ? 'SALVANDO...' : 'SALVAR'}
             </button>
           </form>
         </Modal>

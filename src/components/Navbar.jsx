@@ -28,7 +28,7 @@ export default function Navbar() {
         if (session?.user) {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('full_name, role, status')
+            .select('full_name, role, status, avatar_url')
             .eq('id', session.user.id)
             .single();
           setUser({
@@ -36,6 +36,7 @@ export default function Navbar() {
             email: session.user.email,
             full_name: profile?.full_name || session.user.email,
             role: profile?.role || 'user',
+            avatar_url: profile?.avatar_url || null,
           });
         }
       } catch {
@@ -117,7 +118,7 @@ export default function Navbar() {
             ) : (
               <div className="hidden md:flex items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <Avatar name={user.full_name} size={32} />
+                  <Avatar name={user.full_name} url={user.avatar_url} size={32} />
                   <div className="flex flex-col leading-none">
                     <span className="text-sm text-white font-barlow font-medium truncate max-w-[120px]">
                       {user.full_name}
@@ -190,7 +191,7 @@ export default function Navbar() {
               ) : (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 px-3 py-2">
-                    <Avatar name={user.full_name} size={32} />
+                    <Avatar name={user.full_name} url={user.avatar_url} size={32} />
                     <div className="flex flex-col leading-none">
                       <span className="text-sm text-white font-barlow font-medium">
                         {user.full_name}

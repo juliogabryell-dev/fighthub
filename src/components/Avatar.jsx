@@ -1,3 +1,7 @@
+'use client';
+
+import { useState } from 'react';
+
 const COLORS = ['#C41E3A', '#D4AF37', '#1a1a2e', '#16213e', '#0f3460', '#533483', '#e94560'];
 
 function getInitials(name) {
@@ -16,10 +20,23 @@ function getColor(name) {
   return COLORS[code % COLORS.length];
 }
 
-export default function Avatar({ name, size = 48 }) {
+export default function Avatar({ name, url, size = 48 }) {
+  const [imgError, setImgError] = useState(false);
   const initials = getInitials(name);
   const bgColor = getColor(name);
   const fontSize = Math.round(size * 0.38);
+
+  if (url && !imgError) {
+    return (
+      <img
+        src={url}
+        alt={name || 'Avatar'}
+        className="rounded-full object-cover shrink-0"
+        style={{ width: size, height: size }}
+        onError={() => setImgError(true)}
+      />
+    );
+  }
 
   return (
     <div
