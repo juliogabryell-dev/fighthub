@@ -19,6 +19,7 @@ export default function AdminPage() {
   });
   const [pendingUsers, setPendingUsers] = useState([]);
   const [actionLoading, setActionLoading] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
     checkAdminAndFetch();
@@ -273,6 +274,7 @@ export default function AdminPage() {
                   {/* Action Buttons */}
                   <div className="flex items-center gap-2 ml-6">
                     <button
+                      onClick={() => setSelectedUser(user)}
                       className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider"
                       disabled={actionLoading === user.id}
                     >
@@ -306,6 +308,90 @@ export default function AdminPage() {
           )}
         </div>
       </div>
+
+      {/* Modal - Detalhes do Usuário */}
+      {selectedUser && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
+          onClick={() => setSelectedUser(null)}
+        >
+          <div
+            className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl w-full max-w-md p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <Avatar name={selectedUser.full_name} size={48} />
+                <div>
+                  <h3 className="font-bebas text-xl tracking-wider text-white">
+                    {selectedUser.full_name}
+                  </h3>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border ${
+                      selectedUser.role === 'fighter'
+                        ? 'bg-[#C41E3A]/20 text-[#C41E3A] border-[#C41E3A]/30'
+                        : 'bg-[#D4AF37]/20 text-[#D4AF37] border-[#D4AF37]/30'
+                    }`}
+                  >
+                    {selectedUser.role === 'fighter' ? 'Lutador' : 'Treinador'}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedUser(null)}
+                className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 transition-all"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Dados Cadastrais */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center py-2 border-b border-white/5">
+                <span className="font-barlow text-white/40 text-sm">Data de Nascimento</span>
+                <span className="font-barlow text-white text-sm">{formatDate(selectedUser.birth_date)}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-white/5">
+                <span className="font-barlow text-white/40 text-sm">CPF</span>
+                <span className="font-barlow text-white text-sm">{selectedUser.cpf || 'Não informado'}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-white/5">
+                <span className="font-barlow text-white/40 text-sm">RG</span>
+                <span className="font-barlow text-white text-sm">{selectedUser.rg || 'Não informado'}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-white/5">
+                <span className="font-barlow text-white/40 text-sm">Tipo</span>
+                <span className="font-barlow text-white text-sm capitalize">{selectedUser.role === 'fighter' ? 'Lutador' : 'Treinador'}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-white/5">
+                <span className="font-barlow text-white/40 text-sm">Status</span>
+                <span className="font-barlow text-[#D4AF37] text-sm capitalize">{selectedUser.status}</span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="font-barlow text-white/40 text-sm">Cadastrado em</span>
+                <span className="font-barlow text-white text-sm">{formatDate(selectedUser.created_at)}</span>
+              </div>
+            </div>
+
+            {/* Ações */}
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => { handleApprove(selectedUser.id); setSelectedUser(null); }}
+                className="flex-1 py-2.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 hover:bg-green-500/20 transition-all font-barlow-condensed text-sm uppercase tracking-wider"
+              >
+                Aprovar
+              </button>
+              <button
+                onClick={() => { handleReject(selectedUser.id); setSelectedUser(null); }}
+                className="flex-1 py-2.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all font-barlow-condensed text-sm uppercase tracking-wider"
+              >
+                Rejeitar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

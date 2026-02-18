@@ -1,5 +1,7 @@
 import FighterCard from '@/components/FighterCard';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Lutadores | FightHub',
 };

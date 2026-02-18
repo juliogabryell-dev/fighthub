@@ -1,5 +1,7 @@
 import CoachCard from '@/components/CoachCard';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Treinadores | FightHub',
 };

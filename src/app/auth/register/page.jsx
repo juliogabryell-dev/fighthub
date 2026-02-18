@@ -160,20 +160,18 @@ export default function RegisterPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <InputField
-                label="CPF"
+                label="CPF (opcional)"
                 type="text"
                 value={cpf}
                 onChange={(e) => setCpf(e.target.value)}
                 placeholder="000.000.000-00"
-                required
               />
               <InputField
-                label="RG"
+                label="RG (opcional)"
                 type="text"
                 value={rg}
                 onChange={(e) => setRg(e.target.value)}
                 placeholder="00.000.000-0"
-                required
               />
             </div>
 
