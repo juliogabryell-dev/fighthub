@@ -4,8 +4,8 @@ import Icon from '@/components/Icon';
 
 async function getCoach(id) {
   try {
-    const { createClient } = await import('@/lib/supabase/server');
-    const supabase = await createClient();
+    const { createPublicClient } = await import('@/lib/supabase/public');
+    const supabase = createPublicClient();
     if (!supabase) return null;
     const { data: coach, error } = await supabase
       .from('profiles')

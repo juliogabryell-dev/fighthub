@@ -13,7 +13,7 @@ async function getFighters() {
     if (!supabase) return [];
     const { data: fighters, error } = await supabase
       .from('profiles')
-      .select('*, fighter_martial_arts(*), fight_records(*)')
+      .select('*, fighter_martial_arts(*), fight_records!fight_records_fighter_id_fkey(*)')
       .eq('role', 'fighter')
       .eq('status', 'active');
 

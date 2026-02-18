@@ -4,12 +4,12 @@ import Icon from '@/components/Icon';
 
 async function getFighter(id) {
   try {
-    const { createClient } = await import('@/lib/supabase/server');
-    const supabase = await createClient();
+    const { createPublicClient } = await import('@/lib/supabase/public');
+    const supabase = createPublicClient();
     if (!supabase) return null;
     const { data: fighter, error } = await supabase
       .from('profiles')
-      .select('*, fighter_martial_arts(*), fight_records(*), fighter_coaches(*), fighter_videos(*)')
+      .select('*, fighter_martial_arts(*), fight_records!fight_records_fighter_id_fkey(*), fighter_coaches(*), fighter_videos(*)')
       .eq('id', id)
       .single();
 
