@@ -8,8 +8,8 @@ export const metadata = {
 
 async function getFighters() {
   try {
-    const { createClient } = await import('@/lib/supabase/server');
-    const supabase = await createClient();
+    const { createPublicClient } = await import('@/lib/supabase/server');
+    const supabase = createPublicClient();
     if (!supabase) return [];
     const { data: fighters, error } = await supabase
       .from('profiles')
@@ -18,10 +18,12 @@ async function getFighters() {
       .eq('status', 'active');
 
     if (error || !fighters) {
+      console.error('Erro ao buscar lutadores:', error);
       return [];
     }
     return fighters;
-  } catch {
+  } catch (e) {
+    console.error('Erro ao buscar lutadores:', e);
     return [];
   }
 }

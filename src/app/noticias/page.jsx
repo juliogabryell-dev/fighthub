@@ -17,8 +17,8 @@ async function getNews() {
 
   // 2. Fallback: try Supabase
   try {
-    const { createClient } = await import('@/lib/supabase/server');
-    const supabase = await createClient();
+    const { createPublicClient } = await import('@/lib/supabase/server');
+    const supabase = createPublicClient();
     if (supabase) {
       const { data, error } = await supabase
         .from('news')

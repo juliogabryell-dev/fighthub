@@ -8,8 +8,8 @@ export const metadata = {
 
 async function getCoaches() {
   try {
-    const { createClient } = await import('@/lib/supabase/server');
-    const supabase = await createClient();
+    const { createPublicClient } = await import('@/lib/supabase/server');
+    const supabase = createPublicClient();
     if (!supabase) return [];
     const { data: coaches, error } = await supabase
       .from('profiles')
@@ -18,10 +18,12 @@ async function getCoaches() {
       .eq('status', 'active');
 
     if (error || !coaches) {
+      console.error('Erro ao buscar treinadores:', error);
       return [];
     }
     return coaches;
-  } catch {
+  } catch (e) {
+    console.error('Erro ao buscar treinadores:', e);
     return [];
   }
 }
