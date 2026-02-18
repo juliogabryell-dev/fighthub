@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import Avatar from './Avatar';
+import Icon from './Icon';
 
 export default function FighterCard({ fighter }) {
-  const { id, full_name, status, avatar_url, city } = fighter;
+  const { id, full_name, status, avatar_url, city, phone, instagram, facebook, youtube, tiktok } = fighter;
+  const hasSocials = instagram || facebook || youtube || tiktok;
   const martial_arts = fighter.fighter_martial_arts || [];
   const fight_records = fighter.fight_records || [];
 
@@ -55,6 +57,42 @@ export default function FighterCard({ fighter }) {
                 )}
               </span>
             ))}
+          </div>
+        )}
+
+        {/* Contact & Social */}
+        {(phone || hasSocials) && (
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            {phone && (
+              <span className="flex items-center gap-1 text-[10px] text-white/35 font-barlow">
+                <Icon name="phone" size={11} />
+                {phone}
+              </span>
+            )}
+            {instagram && (
+              <span className="flex items-center gap-1 text-[10px] text-white/35 font-barlow">
+                <Icon name="instagram" size={11} />
+                {instagram}
+              </span>
+            )}
+            {facebook && (
+              <span className="flex items-center gap-1 text-[10px] text-white/35 font-barlow">
+                <Icon name="facebook" size={11} />
+                {facebook.startsWith('http') ? 'Facebook' : facebook}
+              </span>
+            )}
+            {youtube && (
+              <span className="flex items-center gap-1 text-[10px] text-white/35 font-barlow">
+                <Icon name="youtube" size={11} />
+                {youtube.startsWith('http') ? 'YouTube' : youtube}
+              </span>
+            )}
+            {tiktok && (
+              <span className="flex items-center gap-1 text-[10px] text-white/35 font-barlow">
+                <Icon name="tiktok" size={11} />
+                {tiktok}
+              </span>
+            )}
           </div>
         )}
 

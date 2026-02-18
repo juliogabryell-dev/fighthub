@@ -127,7 +127,9 @@ CREATE TABLE challenges (
   challenged_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   message TEXT,
   modality TEXT,
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined', 'cancelled')),
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined', 'cancelled', 'result_pending', 'completed')),
+  winner_id UUID REFERENCES profiles(id),
+  result_reported_by UUID REFERENCES profiles(id),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

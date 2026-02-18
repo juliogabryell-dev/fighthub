@@ -48,6 +48,17 @@ export default function PerfilPage() {
     description: '',
   });
 
+  // Videos (Fighter)
+  const [videos, setVideos] = useState([]);
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [editingVideoId, setEditingVideoId] = useState(null);
+  const [videoForm, setVideoForm] = useState({
+    youtube_url: '',
+    title: '',
+    modality: '',
+    fight_date: '',
+  });
+
   // Coach-specific
   const [experiences, setExperiences] = useState([]);
   const [showExpModal, setShowExpModal] = useState(false);
@@ -63,6 +74,11 @@ export default function PerfilPage() {
   // Challenges (Fighter)
   const [challenges, setChallenges] = useState([]);
   const [showChallengesSection, setShowChallengesSection] = useState(false);
+
+  // Result reporting
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [resultChallenge, setResultChallenge] = useState(null);
+  const [resultSaving, setResultSaving] = useState(false);
 
   // Coach management (Fighter)
   const [showCoachModal, setShowCoachModal] = useState(false);
@@ -107,6 +123,13 @@ export default function PerfilPage() {
         .eq('fighter_id', currentUser.id)
         .order('created_at', { ascending: false });
       setMartialArts(arts || []);
+
+      const { data: vids } = await supabase
+        .from('fighter_videos')
+        .select('*')
+        .eq('fighter_id', currentUser.id)
+        .order('created_at', { ascending: false });
+      setVideos(vids || []);
 
       const { data: records } = await supabase
         .from('fight_records')
@@ -210,6 +233,66 @@ export default function PerfilPage() {
       .delete()
       .eq('id', artId);
     if (!error) fetchUserAndProfile();
+  }
+
+  // ===== Videos =====
+  function openAddVideo() {
+    setEditingVideoId(null);
+    setVideoForm({ youtube_url: '', title: '', modality: '', fight_date: '' });
+    setShowVideoModal(true);
+  }
+
+  function openEditVideo(video) {
+    setEditingVideoId(video.id);
+    setVideoForm({
+      youtube_url: video.youtube_url || '',
+      title: video.title || '',
+      modality: video.modality || '',
+      fight_date: video.fight_date || '',
+    });
+    setShowVideoModal(true);
+  }
+
+  async function handleSaveVideo(e) {
+    e.preventDefault();
+    const payload = {
+      youtube_url: videoForm.youtube_url,
+      title: videoForm.title || null,
+      modality: videoForm.modality || null,
+      fight_date: videoForm.fight_date || null,
+    };
+
+    let error;
+    if (editingVideoId) {
+      ({ error } = await supabase
+        .from('fighter_videos')
+        .update(payload)
+        .eq('id', editingVideoId));
+    } else {
+      ({ error } = await supabase
+        .from('fighter_videos')
+        .insert({ ...payload, fighter_id: user.id }));
+    }
+
+    if (!error) {
+      setShowVideoModal(false);
+      fetchUserAndProfile();
+    }
+  }
+
+  async function handleDeleteVideo(videoId) {
+    if (!confirm('Tem certeza que deseja excluir este video?')) return;
+    const { error } = await supabase
+      .from('fighter_videos')
+      .delete()
+      .eq('id', videoId);
+    if (!error) fetchUserAndProfile();
+  }
+
+  function getYoutubeId(url) {
+    if (!url) return null;
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/))([^&?\s]+)/);
+    return match ? match[1] : null;
   }
 
   // ===== Experiences (Coach) =====
@@ -361,6 +444,116 @@ export default function PerfilPage() {
     if (!error) fetchUserAndProfile();
   }
 
+  // ===== Result Reporting =====
+  function openResultModal(challenge) {
+    setResultChallenge(challenge);
+    setShowResultModal(true);
+  }
+
+  async function handleReportResult(challenge, result) {
+    // result: 'win', 'loss', or 'draw'
+    setResultSaving(true);
+    let winnerId = null;
+    if (result === 'win') {
+      winnerId = user.id;
+    } else if (result === 'loss') {
+      winnerId = challenge.challenger_id === user.id ? challenge.challenged_id : challenge.challenger_id;
+    }
+    // result === 'draw' → winnerId stays null
+
+    const { error } = await supabase
+      .from('challenges')
+      .update({
+        winner_id: winnerId,
+        result_reported_by: user.id,
+        status: 'result_pending',
+      })
+      .eq('id', challenge.id);
+
+    setResultSaving(false);
+    if (!error) {
+      setShowResultModal(false);
+      setResultChallenge(null);
+      fetchUserAndProfile();
+    }
+  }
+
+  async function handleConfirmResult(challenge) {
+    setResultSaving(true);
+
+    // 1. Mark challenge as completed
+    const { error: updateError } = await supabase
+      .from('challenges')
+      .update({ status: 'completed' })
+      .eq('id', challenge.id);
+
+    if (updateError) {
+      setResultSaving(false);
+      return;
+    }
+
+    // 2. Update fight_records for both fighters
+    const fighters = [challenge.challenger_id, challenge.challenged_id];
+    const modality = challenge.modality || 'Geral';
+
+    for (const fighterId of fighters) {
+      // Check existing record for this modality
+      const { data: existing } = await supabase
+        .from('fight_records')
+        .select('*')
+        .eq('fighter_id', fighterId)
+        .eq('modality', modality)
+        .single();
+
+      if (existing) {
+        const updates = {};
+        if (challenge.winner_id === null) {
+          updates.draws = (existing.draws || 0) + 1;
+        } else if (challenge.winner_id === fighterId) {
+          updates.wins = (existing.wins || 0) + 1;
+        } else {
+          updates.losses = (existing.losses || 0) + 1;
+        }
+        await supabase
+          .from('fight_records')
+          .update(updates)
+          .eq('id', existing.id);
+      } else {
+        const newRecord = {
+          fighter_id: fighterId,
+          modality,
+          wins: challenge.winner_id === fighterId ? 1 : 0,
+          losses: challenge.winner_id !== null && challenge.winner_id !== fighterId ? 1 : 0,
+          draws: challenge.winner_id === null ? 1 : 0,
+        };
+        await supabase.from('fight_records').insert(newRecord);
+      }
+    }
+
+    setResultSaving(false);
+    fetchUserAndProfile();
+  }
+
+  async function handleContestResult(challenge) {
+    const { error } = await supabase
+      .from('challenges')
+      .update({
+        status: 'accepted',
+        winner_id: null,
+        result_reported_by: null,
+      })
+      .eq('id', challenge.id);
+    if (!error) fetchUserAndProfile();
+  }
+
+  function getResultLabel(challenge) {
+    if (challenge.winner_id === null) return 'Empate';
+    if (challenge.winner_id === challenge.challenger_id) {
+      return `${challenge.challenger?.full_name || 'Desafiante'} venceu`;
+    }
+    return `${challenge.challenged?.full_name || 'Desafiado'} venceu`;
+  }
+
   // ===== Coach Management (Fighter) =====
   async function openCoachModal() {
     setShowCoachModal(true);
@@ -436,12 +629,16 @@ export default function PerfilPage() {
       accepted: 'bg-green-500/20 text-green-400 border-green-500/30',
       declined: 'bg-red-500/20 text-red-400 border-red-500/30',
       cancelled: 'bg-white/10 text-white/40 border-white/10',
+      result_pending: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+      completed: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
     };
     const labels = {
       pending: 'Pendente',
       accepted: 'Aceito',
       declined: 'Recusado',
       cancelled: 'Cancelado',
+      result_pending: 'Aguardando Resultado',
+      completed: 'Concluido',
     };
     return (
       <span
@@ -707,6 +904,87 @@ export default function PerfilPage() {
           </div>
         )}
 
+        {/* Fighter: Videos List */}
+        {isFighter && videos.length > 0 && (
+          <div className="mb-8">
+            <h3 className="font-bebas text-xl tracking-wider text-white/80 mb-4">
+              VIDEOS
+            </h3>
+            <div className="space-y-3">
+              {videos.map((video) => {
+                const ytId = getYoutubeId(video.youtube_url);
+                return (
+                  <div
+                    key={video.id}
+                    className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl border border-white/10 overflow-hidden"
+                  >
+                    {ytId && (
+                      <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                        <iframe
+                          className="absolute inset-0 w-full h-full"
+                          src={`https://www.youtube.com/embed/${ytId}`}
+                          title={video.title || 'Video'}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    )}
+                    <div className="p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          {video.title && (
+                            <p className="font-barlow-condensed text-white font-semibold">
+                              {video.title}
+                            </p>
+                          )}
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            {video.modality && (
+                              <span className="font-barlow text-white/40 text-xs">
+                                {video.modality}
+                              </span>
+                            )}
+                            {video.fight_date && (
+                              <span className="font-barlow text-white/40 text-xs">
+                                {video.fight_date}
+                              </span>
+                            )}
+                          </div>
+                          {!ytId && (
+                            <a
+                              href={video.youtube_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-barlow text-[#C41E3A] text-sm hover:underline mt-1 inline-block"
+                            >
+                              Assistir no YouTube
+                            </a>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            onClick={() => openEditVideo(video)}
+                            className="p-1.5 rounded-lg text-white/30 hover:text-[#C41E3A] hover:bg-[#C41E3A]/10 transition-all"
+                            title="Editar"
+                          >
+                            <Icon name="settings" size={14} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteVideo(video.id)}
+                            className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                            title="Excluir"
+                          >
+                            <Icon name="x" size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Fighter: My Coaches */}
         {isFighter && myCoaches.length > 0 && (
           <div className="mb-8">
@@ -764,17 +1042,20 @@ export default function PerfilPage() {
               </p>
             </button>
 
-            <div className="group bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-5 border border-white/10 opacity-60 cursor-not-allowed text-left">
-              <div className="w-10 h-10 rounded-full bg-[#C41E3A]/20 flex items-center justify-center mb-3">
+            <button
+              onClick={openAddVideo}
+              className="group bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-5 border border-white/10 hover:border-[#C41E3A]/30 transition-all text-left"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#C41E3A]/20 flex items-center justify-center mb-3 group-hover:bg-[#C41E3A]/30 transition-colors">
                 <Icon name="video" size={18} className="text-[#C41E3A]" />
               </div>
               <p className="font-barlow-condensed text-white font-semibold text-sm uppercase tracking-wider">
                 Adicionar Video
               </p>
               <p className="font-barlow text-white/40 text-xs mt-1">
-                Fase 2 - Em breve
+                {videos.length > 0 ? `${videos.length} video(s)` : 'Registre suas lutas'}
               </p>
-            </div>
+            </button>
 
             <button
               onClick={() => setShowChallengesSection(!showChallengesSection)}
@@ -789,11 +1070,16 @@ export default function PerfilPage() {
               <p className="font-barlow text-white/40 text-xs mt-1">
                 {challenges.length > 0 ? `${challenges.length} desafio(s)` : 'Nenhum desafio ainda'}
               </p>
-              {receivedChallenges.filter(c => c.status === 'pending').length > 0 && (
-                <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#C41E3A] text-white text-xs flex items-center justify-center font-barlow-condensed">
-                  {receivedChallenges.filter(c => c.status === 'pending').length}
-                </span>
-              )}
+              {(() => {
+                const pendingCount = receivedChallenges.filter(c => c.status === 'pending').length;
+                const resultPendingCount = challenges.filter(c => c.status === 'result_pending' && c.result_reported_by !== user?.id).length;
+                const total = pendingCount + resultPendingCount;
+                return total > 0 ? (
+                  <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[#C41E3A] text-white text-xs flex items-center justify-center font-barlow-condensed">
+                    {total}
+                  </span>
+                ) : null;
+              })()}
             </button>
 
             <button
@@ -861,6 +1147,56 @@ export default function PerfilPage() {
                               Recusar
                             </button>
                           </div>
+                        ) : ch.status === 'accepted' ? (
+                          <button
+                            onClick={() => openResultModal(ch)}
+                            className="px-3 py-1.5 rounded-lg bg-[#C41E3A]/20 border border-[#C41E3A]/30 text-[#C41E3A] text-xs font-barlow-condensed uppercase tracking-wider hover:bg-[#C41E3A]/30 transition-all shrink-0"
+                          >
+                            Registrar Resultado
+                          </button>
+                        ) : ch.status === 'result_pending' ? (
+                          ch.result_reported_by === user?.id ? (
+                            <div className="text-right shrink-0">
+                              {getChallengeStatusBadge(ch.status)}
+                              <p className="font-barlow text-white/30 text-xs mt-1">
+                                Aguardando confirmacao
+                              </p>
+                              <p className="font-barlow text-white/50 text-xs">
+                                {getResultLabel(ch)}
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-end gap-2 shrink-0">
+                              <p className="font-barlow text-orange-400 text-xs font-semibold">
+                                Resultado: {getResultLabel(ch)}
+                              </p>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleConfirmResult(ch)}
+                                  disabled={resultSaving}
+                                  className="px-3 py-1.5 rounded-lg bg-green-500/20 border border-green-500/30 text-green-400 text-xs font-barlow-condensed uppercase tracking-wider hover:bg-green-500/30 transition-all disabled:opacity-50"
+                                >
+                                  Confirmar
+                                </button>
+                                <button
+                                  onClick={() => handleContestResult(ch)}
+                                  disabled={resultSaving}
+                                  className="px-3 py-1.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-barlow-condensed uppercase tracking-wider hover:bg-red-500/30 transition-all disabled:opacity-50"
+                                >
+                                  Contestar
+                                </button>
+                              </div>
+                            </div>
+                          )
+                        ) : ch.status === 'completed' ? (
+                          <div className="text-right shrink-0">
+                            <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-barlow-condensed uppercase tracking-wider border bg-green-500/20 text-green-400 border-green-500/30">
+                              Concluido
+                            </span>
+                            <p className="font-barlow text-green-400/70 text-xs mt-1">
+                              {getResultLabel(ch)}
+                            </p>
+                          </div>
                         ) : (
                           getChallengeStatusBadge(ch.status)
                         )}
@@ -902,18 +1238,70 @@ export default function PerfilPage() {
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          {getChallengeStatusBadge(ch.status)}
-                          {ch.status === 'pending' && (
-                            <button
-                              onClick={() => handleRespondChallenge(ch.id, 'cancelled')}
-                              className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                              title="Cancelar"
-                            >
-                              <Icon name="x" size={14} />
-                            </button>
-                          )}
-                        </div>
+                        {ch.status === 'accepted' ? (
+                          <button
+                            onClick={() => openResultModal(ch)}
+                            className="px-3 py-1.5 rounded-lg bg-[#C41E3A]/20 border border-[#C41E3A]/30 text-[#C41E3A] text-xs font-barlow-condensed uppercase tracking-wider hover:bg-[#C41E3A]/30 transition-all shrink-0"
+                          >
+                            Registrar Resultado
+                          </button>
+                        ) : ch.status === 'result_pending' ? (
+                          ch.result_reported_by === user?.id ? (
+                            <div className="text-right shrink-0">
+                              {getChallengeStatusBadge(ch.status)}
+                              <p className="font-barlow text-white/30 text-xs mt-1">
+                                Aguardando confirmacao
+                              </p>
+                              <p className="font-barlow text-white/50 text-xs">
+                                {getResultLabel(ch)}
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-end gap-2 shrink-0">
+                              <p className="font-barlow text-orange-400 text-xs font-semibold">
+                                Resultado: {getResultLabel(ch)}
+                              </p>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleConfirmResult(ch)}
+                                  disabled={resultSaving}
+                                  className="px-3 py-1.5 rounded-lg bg-green-500/20 border border-green-500/30 text-green-400 text-xs font-barlow-condensed uppercase tracking-wider hover:bg-green-500/30 transition-all disabled:opacity-50"
+                                >
+                                  Confirmar
+                                </button>
+                                <button
+                                  onClick={() => handleContestResult(ch)}
+                                  disabled={resultSaving}
+                                  className="px-3 py-1.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-barlow-condensed uppercase tracking-wider hover:bg-red-500/30 transition-all disabled:opacity-50"
+                                >
+                                  Contestar
+                                </button>
+                              </div>
+                            </div>
+                          )
+                        ) : ch.status === 'completed' ? (
+                          <div className="text-right shrink-0">
+                            <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-barlow-condensed uppercase tracking-wider border bg-green-500/20 text-green-400 border-green-500/30">
+                              Concluido
+                            </span>
+                            <p className="font-barlow text-green-400/70 text-xs mt-1">
+                              {getResultLabel(ch)}
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 shrink-0">
+                            {getChallengeStatusBadge(ch.status)}
+                            {ch.status === 'pending' && (
+                              <button
+                                onClick={() => handleRespondChallenge(ch.id, 'cancelled')}
+                                className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                                title="Cancelar"
+                              >
+                                <Icon name="x" size={14} />
+                              </button>
+                            )}
+                          </div>
+                        )}
                       </div>
                       {ch.message && (
                         <p className="font-barlow text-white/30 text-sm mt-2 italic">
@@ -1345,6 +1733,95 @@ export default function PerfilPage() {
               {saving ? 'SALVANDO...' : 'SALVAR'}
             </button>
           </form>
+        </Modal>
+      )}
+
+      {/* Add/Edit Video Modal (Fighter) */}
+      {showVideoModal && (
+        <Modal onClose={() => setShowVideoModal(false)} title={editingVideoId ? 'Editar Video' : 'Adicionar Video'}>
+          <form onSubmit={handleSaveVideo} className="space-y-4">
+            <InputField
+              label="URL do YouTube"
+              type="url"
+              value={videoForm.youtube_url}
+              onChange={(e) => setVideoForm({ ...videoForm, youtube_url: e.target.value })}
+              placeholder="https://www.youtube.com/watch?v=..."
+              required
+            />
+            <InputField
+              label="Titulo"
+              type="text"
+              value={videoForm.title}
+              onChange={(e) => setVideoForm({ ...videoForm, title: e.target.value })}
+              placeholder="Ex: Luta no Campeonato Estadual"
+            />
+            <InputField
+              label="Modalidade"
+              type="text"
+              value={videoForm.modality}
+              onChange={(e) => setVideoForm({ ...videoForm, modality: e.target.value })}
+              placeholder="Ex: Muay Thai, Jiu-Jitsu"
+            />
+            <InputField
+              label="Data da Luta"
+              type="date"
+              value={videoForm.fight_date}
+              onChange={(e) => setVideoForm({ ...videoForm, fight_date: e.target.value })}
+            />
+            <button
+              type="submit"
+              className="w-full py-3 rounded-lg bg-gradient-to-r from-[#C41E3A] to-[#a01830] text-white font-barlow-condensed uppercase tracking-widest text-sm font-semibold hover:from-[#d42a46] hover:to-[#b82040] transition-all"
+            >
+              SALVAR
+            </button>
+          </form>
+        </Modal>
+      )}
+
+      {/* Result Reporting Modal */}
+      {showResultModal && resultChallenge && (
+        <Modal onClose={() => { setShowResultModal(false); setResultChallenge(null); }} title="Registrar Resultado">
+          <div className="space-y-4">
+            <div className="text-center mb-4">
+              <p className="font-barlow text-white/60 text-sm">
+                Desafio contra{' '}
+                <span className="text-white font-semibold">
+                  {resultChallenge.challenger_id === user?.id
+                    ? resultChallenge.challenged?.full_name
+                    : resultChallenge.challenger?.full_name}
+                </span>
+              </p>
+              {resultChallenge.modality && (
+                <p className="font-barlow text-white/40 text-xs mt-1">
+                  Modalidade: {resultChallenge.modality}
+                </p>
+              )}
+            </div>
+
+            <button
+              onClick={() => handleReportResult(resultChallenge, 'win')}
+              disabled={resultSaving}
+              className="w-full py-3 rounded-lg bg-green-500/20 border border-green-500/30 text-green-400 font-barlow-condensed uppercase tracking-widest text-sm font-semibold hover:bg-green-500/30 transition-all disabled:opacity-50"
+            >
+              Eu Venci
+            </button>
+
+            <button
+              onClick={() => handleReportResult(resultChallenge, 'loss')}
+              disabled={resultSaving}
+              className="w-full py-3 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 font-barlow-condensed uppercase tracking-widest text-sm font-semibold hover:bg-red-500/30 transition-all disabled:opacity-50"
+            >
+              Meu Oponente Venceu
+            </button>
+
+            <button
+              onClick={() => handleReportResult(resultChallenge, 'draw')}
+              disabled={resultSaving}
+              className="w-full py-3 rounded-lg bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-[#D4AF37] font-barlow-condensed uppercase tracking-widest text-sm font-semibold hover:bg-[#D4AF37]/30 transition-all disabled:opacity-50"
+            >
+              Empate
+            </button>
+          </div>
         </Modal>
       )}
 
