@@ -14,7 +14,7 @@ export async function GET() {
     const supabase = createClient(url, key);
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, full_name, role, status, coach_experiences(*)')
+      .select('id, full_name, role, status, coach_experiences!coach_experiences_coach_id_fkey(*)')
       .eq('role', 'coach')
       .eq('status', 'active');
 

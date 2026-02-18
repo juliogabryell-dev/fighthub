@@ -13,7 +13,7 @@ async function getCoach(id) {
     const supabase = createClient(url, key);
     const { data: coach, error } = await supabase
       .from('profiles')
-      .select('*, coach_experiences(*)')
+      .select('*, coach_experiences!coach_experiences_coach_id_fkey(*)')
       .eq('id', id)
       .single();
 

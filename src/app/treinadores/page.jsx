@@ -15,7 +15,7 @@ async function getCoaches() {
     const supabase = createClient(url, key);
     const { data: coaches, error } = await supabase
       .from('profiles')
-      .select('*, coach_experiences(*)')
+      .select('*, coach_experiences!coach_experiences_coach_id_fkey(*)')
       .eq('role', 'coach')
       .eq('status', 'active');
 
