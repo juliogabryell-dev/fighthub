@@ -1,0 +1,62 @@
+import NewsCard from '@/components/NewsCard';
+import { SAMPLE_NEWS } from '@/lib/constants';
+import { scrapeNews } from '@/lib/scrapeNews';
+
+export const metadata = {
+  title: 'Notícias | FightHub',
+};
+
+async function getNews() {
+  // 1. Try scraping AgFight
+  try {
+    const scraped = await scrapeNews();
+    if (scraped && scraped.length > 0) return scraped;
+  } catch {
+    // fall through
+  }
+
+  // 2. Fallback: try Supabase
+  try {
+    const { createClient } = await import('@/lib/supabase/server');
+    const supabase = await createClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('news')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data && data.length > 0) return data;
+    }
+  } catch {
+    // fall through
+  }
+
+  // 3. Final fallback: sample data
+  return SAMPLE_NEWS;
+}
+
+export default async function NoticiasPage() {
+  const news = await getNews();
+
+  return (
+    <main className="min-h-screen px-6 py-16 max-w-7xl mx-auto">
+      {/* Page Header */}
+      <div className="text-center mb-12">
+        <h1 className="font-bebas text-5xl text-white tracking-wider">
+          NOTÍCIAS &{' '}
+          <span className="text-brand-red">DIVULGAÇÕES</span>
+        </h1>
+        <p className="font-barlow text-white/50 mt-3 text-lg">
+          Fique por dentro de tudo sobre o mundo das lutas
+        </p>
+      </div>
+
+      {/* News Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {news.map((item) => (
+          <NewsCard key={item.id} news={item} />
+        ))}
+      </div>
+    </main>
+  );
+}
