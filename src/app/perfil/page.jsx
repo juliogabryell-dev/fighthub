@@ -28,7 +28,8 @@ export default function PerfilPage() {
   // Fighter-specific
   const [martialArts, setMartialArts] = useState([]);
   const [fightRecords, setFightRecords] = useState([]);
-  const [showAddArt, setShowAddArt] = useState(false);
+  const [showArtModal, setShowArtModal] = useState(false);
+  const [editingArtId, setEditingArtId] = useState(null);
   const [artForm, setArtForm] = useState({
     art_name: '',
     level: '',
@@ -101,21 +102,57 @@ export default function PerfilPage() {
     setLoading(false);
   }
 
-  async function handleAddMartialArt(e) {
+  function openAddArt() {
+    setEditingArtId(null);
+    setArtForm({ art_name: '', level: '', started_at: '', description: '' });
+    setShowArtModal(true);
+  }
+
+  function openEditArt(art) {
+    setEditingArtId(art.id);
+    setArtForm({
+      art_name: art.art_name || '',
+      level: art.level || '',
+      started_at: art.started_at || '',
+      description: art.description || '',
+    });
+    setShowArtModal(true);
+  }
+
+  async function handleSaveMartialArt(e) {
     e.preventDefault();
-    const { error } = await supabase.from('fighter_martial_arts').insert({
-      fighter_id: user.id,
+    const payload = {
       art_name: artForm.art_name,
       level: artForm.level,
-      started_at: artForm.started_at,
+      started_at: artForm.started_at || null,
       description: artForm.description,
-    });
+    };
+
+    let error;
+    if (editingArtId) {
+      ({ error } = await supabase
+        .from('fighter_martial_arts')
+        .update(payload)
+        .eq('id', editingArtId));
+    } else {
+      ({ error } = await supabase
+        .from('fighter_martial_arts')
+        .insert({ ...payload, fighter_id: user.id }));
+    }
 
     if (!error) {
-      setShowAddArt(false);
-      setArtForm({ art_name: '', level: '', started_at: '', description: '' });
+      setShowArtModal(false);
       fetchUserAndProfile();
     }
+  }
+
+  async function handleDeleteMartialArt(artId) {
+    if (!confirm('Tem certeza que deseja excluir esta arte marcial?')) return;
+    const { error } = await supabase
+      .from('fighter_martial_arts')
+      .delete()
+      .eq('id', artId);
+    if (!error) fetchUserAndProfile();
   }
 
   function openAddExp() {
@@ -392,7 +429,7 @@ export default function PerfilPage() {
                   key={art.id}
                   className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-4 border border-white/10"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="font-barlow-condensed text-white font-semibold">
                         {art.art_name}
@@ -401,6 +438,22 @@ export default function PerfilPage() {
                         {art.level}
                         {art.started_at && ` · Desde ${art.started_at}`}
                       </p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        onClick={() => openEditArt(art)}
+                        className="p-1.5 rounded-lg text-white/30 hover:text-[#C41E3A] hover:bg-[#C41E3A]/10 transition-all"
+                        title="Editar"
+                      >
+                        <Icon name="settings" size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteMartialArt(art.id)}
+                        className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                        title="Excluir"
+                      >
+                        <Icon name="x" size={14} />
+                      </button>
                     </div>
                   </div>
                   {art.description && (
@@ -418,7 +471,7 @@ export default function PerfilPage() {
         {isFighter && (
           <div className="grid grid-cols-2 gap-4 mb-8">
             <button
-              onClick={() => setShowAddArt(true)}
+              onClick={openAddArt}
               className="group bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-5 border border-white/10 hover:border-[#C41E3A]/30 transition-all text-left"
             >
               <div className="w-10 h-10 rounded-full bg-[#C41E3A]/20 flex items-center justify-center mb-3 group-hover:bg-[#C41E3A]/30 transition-colors">
@@ -547,10 +600,10 @@ export default function PerfilPage() {
         )}
       </div>
 
-      {/* Add Martial Art Modal (Fighter) */}
-      {showAddArt && (
-        <Modal onClose={() => setShowAddArt(false)} title="Adicionar Arte Marcial">
-          <form onSubmit={handleAddMartialArt} className="space-y-4">
+      {/* Add/Edit Martial Art Modal (Fighter) */}
+      {showArtModal && (
+        <Modal onClose={() => setShowArtModal(false)} title={editingArtId ? 'Editar Arte Marcial' : 'Adicionar Arte Marcial'}>
+          <form onSubmit={handleSaveMartialArt} className="space-y-4">
             <InputField
               label="Nome da Arte Marcial"
               type="text"
