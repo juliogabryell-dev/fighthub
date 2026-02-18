@@ -8,7 +8,7 @@ export const metadata = {
 
 async function getFighters() {
   try {
-    const { createPublicClient } = await import('@/lib/supabase/server');
+    const { createPublicClient } = await import('@/lib/supabase/public');
     const supabase = createPublicClient();
     if (!supabase) return [];
     const { data: fighters, error } = await supabase
