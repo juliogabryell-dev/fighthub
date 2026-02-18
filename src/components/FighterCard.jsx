@@ -2,8 +2,14 @@ import Link from 'next/link';
 import Avatar from './Avatar';
 
 export default function FighterCard({ fighter }) {
-  const { id, full_name, avatar_url, status, martial_arts = [], record = {} } = fighter;
-  const { wins = 0, losses = 0, draws = 0 } = record;
+  const { id, full_name, avatar_url, status } = fighter;
+  const martial_arts = fighter.fighter_martial_arts || [];
+  const fight_records = fighter.fight_records || [];
+
+  // Somar wins/losses/draws de todos os registros de cartel
+  const wins = fight_records.reduce((sum, r) => sum + (r.wins || 0), 0);
+  const losses = fight_records.reduce((sum, r) => sum + (r.losses || 0), 0);
+  const draws = fight_records.reduce((sum, r) => sum + (r.draws || 0), 0);
 
   return (
     <Link href={`/lutadores/${id}`}>

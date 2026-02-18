@@ -1,10 +1,12 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Icon from '@/components/Icon';
+import { createPublicClient } from '@/lib/supabase/public';
+
+export const dynamic = 'force-dynamic';
 
 async function getCoach(id) {
   try {
-    const { createPublicClient } = await import('@/lib/supabase/public');
     const supabase = createPublicClient();
     if (!supabase) return null;
     const { data: coach, error } = await supabase
@@ -14,10 +16,12 @@ async function getCoach(id) {
       .single();
 
     if (error || !coach) {
+      console.error('Erro ao buscar treinador:', error);
       return null;
     }
     return coach;
-  } catch {
+  } catch (e) {
+    console.error('Erro ao buscar treinador:', e);
     return null;
   }
 }
@@ -60,7 +64,7 @@ export default async function CoachProfile({ params }) {
 
   const experiences = coach.coach_experiences || [];
   const sortedExperiences = [...experiences].sort((a, b) => {
-    if (a.start_year && b.start_year) return b.start_year - a.start_year;
+    if (a.period_start && b.period_start) return b.period_start.localeCompare(a.period_start);
     return 0;
   });
 
@@ -148,10 +152,10 @@ export default async function CoachProfile({ params }) {
                             {exp.organization}
                           </p>
                         )}
-                        {(exp.start_year || exp.end_year) && (
+                        {(exp.period_start || exp.period_end) && (
                           <p className="font-barlow text-xs text-white/30 mt-1">
-                            {exp.start_year}
-                            {exp.end_year ? ` - ${exp.end_year}` : ' - Presente'}
+                            {exp.period_start}
+                            {exp.period_end ? ` - ${exp.period_end}` : ' - Presente'}
                           </p>
                         )}
                         {exp.description && (

@@ -62,9 +62,10 @@ export default async function FighterProfile({ params }) {
     );
   }
 
-  const wins = fighter.fight_records?.filter((r) => r.result === 'win').length || 0;
-  const losses = fighter.fight_records?.filter((r) => r.result === 'loss').length || 0;
-  const draws = fighter.fight_records?.filter((r) => r.result === 'draw').length || 0;
+  const records = fighter.fight_records || [];
+  const wins = records.reduce((sum, r) => sum + (r.wins || 0), 0);
+  const losses = records.reduce((sum, r) => sum + (r.losses || 0), 0);
+  const draws = records.reduce((sum, r) => sum + (r.draws || 0), 0);
 
   return (
     <main className="min-h-screen px-6 py-12 max-w-4xl mx-auto">

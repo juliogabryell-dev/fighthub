@@ -2,7 +2,8 @@ import Link from 'next/link';
 import Avatar from './Avatar';
 
 export default function CoachCard({ coach }) {
-  const { id, full_name, avatar_url, status, experiences = [] } = coach;
+  const { id, full_name, avatar_url, status } = coach;
+  const experiences = coach.coach_experiences || [];
   const displayExperiences = experiences.slice(0, 2);
 
   return (
@@ -29,7 +30,7 @@ export default function CoachCard({ coach }) {
         </div>
 
         {/* Experiences */}
-        {displayExperiences.length > 0 && (
+        {displayExperiences.length > 0 ? (
           <div className="space-y-2.5">
             {displayExperiences.map((exp, i) => (
               <div
@@ -51,9 +52,7 @@ export default function CoachCard({ coach }) {
               </div>
             ))}
           </div>
-        )}
-
-        {displayExperiences.length === 0 && (
+        ) : (
           <p className="text-xs text-white/25 font-barlow italic">
             Nenhuma experiência cadastrada
           </p>
