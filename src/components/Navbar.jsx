@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import Icon from './Icon';
 import Avatar from './Avatar';
 
@@ -22,7 +23,6 @@ export default function Navbar() {
   useEffect(() => {
     async function checkAuth() {
       try {
-        const { createClient } = await import('@/lib/supabase/client');
         const supabase = createClient();
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
@@ -47,7 +47,6 @@ export default function Navbar() {
 
   async function handleLogout() {
     try {
-      const { createClient } = await import('@/lib/supabase/client');
       const supabase = createClient();
       await supabase.auth.signOut();
       setUser(null);

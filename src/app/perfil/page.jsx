@@ -19,9 +19,10 @@ export default function PerfilPage() {
 
   // Fighter-specific
   const [martialArts, setMartialArts] = useState([]);
+  const [fightRecords, setFightRecords] = useState([]);
   const [showAddArt, setShowAddArt] = useState(false);
   const [artForm, setArtForm] = useState({
-    name: '',
+    art_name: '',
     level: '',
     started_at: '',
     description: '',
@@ -71,6 +72,12 @@ export default function PerfilPage() {
         .eq('fighter_id', currentUser.id)
         .order('created_at', { ascending: false });
       setMartialArts(arts || []);
+
+      const { data: records } = await supabase
+        .from('fight_records')
+        .select('*')
+        .eq('fighter_id', currentUser.id);
+      setFightRecords(records || []);
     }
 
     if (profileData?.role === 'coach') {
@@ -89,7 +96,7 @@ export default function PerfilPage() {
     e.preventDefault();
     const { error } = await supabase.from('fighter_martial_arts').insert({
       fighter_id: user.id,
-      name: artForm.name,
+      art_name: artForm.art_name,
       level: artForm.level,
       started_at: artForm.started_at,
       description: artForm.description,
@@ -97,7 +104,7 @@ export default function PerfilPage() {
 
     if (!error) {
       setShowAddArt(false);
-      setArtForm({ name: '', level: '', started_at: '', description: '' });
+      setArtForm({ art_name: '', level: '', started_at: '', description: '' });
       fetchUserAndProfile();
     }
   }
@@ -177,6 +184,9 @@ export default function PerfilPage() {
 
   const isFighter = profile?.role === 'fighter';
   const isCoach = profile?.role === 'coach';
+  const wins = fightRecords.reduce((sum, r) => sum + (r.wins || 0), 0);
+  const losses = fightRecords.reduce((sum, r) => sum + (r.losses || 0), 0);
+  const draws = fightRecords.reduce((sum, r) => sum + (r.draws || 0), 0);
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] px-4 py-10">
@@ -232,7 +242,7 @@ export default function PerfilPage() {
               <div className="flex gap-4">
                 <div className="flex-1 text-center p-3 rounded-lg bg-green-500/10 border border-green-500/20">
                   <p className="font-bebas text-2xl text-green-400">
-                    {profile?.wins || 0}
+                    {wins}
                   </p>
                   <p className="font-barlow-condensed text-xs uppercase tracking-wider text-green-400/60">
                     V
@@ -240,7 +250,7 @@ export default function PerfilPage() {
                 </div>
                 <div className="flex-1 text-center p-3 rounded-lg bg-red-500/10 border border-red-500/20">
                   <p className="font-bebas text-2xl text-red-400">
-                    {profile?.losses || 0}
+                    {losses}
                   </p>
                   <p className="font-barlow-condensed text-xs uppercase tracking-wider text-red-400/60">
                     D
@@ -248,7 +258,7 @@ export default function PerfilPage() {
                 </div>
                 <div className="flex-1 text-center p-3 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/20">
                   <p className="font-bebas text-2xl text-[#D4AF37]">
-                    {profile?.draws || 0}
+                    {draws}
                   </p>
                   <p className="font-barlow-condensed text-xs uppercase tracking-wider text-[#D4AF37]/60">
                     E
@@ -274,7 +284,7 @@ export default function PerfilPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-barlow-condensed text-white font-semibold">
-                        {art.name}
+                        {art.art_name}
                       </p>
                       <p className="font-barlow text-white/40 text-sm">
                         {art.level}
@@ -413,8 +423,8 @@ export default function PerfilPage() {
             <InputField
               label="Nome da Arte Marcial"
               type="text"
-              value={artForm.name}
-              onChange={(e) => setArtForm({ ...artForm, name: e.target.value })}
+              value={artForm.art_name}
+              onChange={(e) => setArtForm({ ...artForm, art_name: e.target.value })}
               placeholder="Ex: Muay Thai, Jiu-Jitsu, Boxe"
               required
             />

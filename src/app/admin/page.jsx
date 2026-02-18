@@ -194,7 +194,7 @@ export default function AdminPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           {statCards.map((stat) => (
             <div
               key={stat.label}
@@ -252,7 +252,7 @@ export default function AdminPage() {
                         {user.full_name}
                       </p>
                       <p className="font-barlow text-white/40 text-sm truncate">
-                        {user.email}
+                        {user.role === 'fighter' ? 'Lutador' : 'Treinador'} · {formatDate(user.created_at)}
                       </p>
                     </div>
                     <div className="flex items-center gap-4">

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Avatar from './Avatar';
 
 export default function FighterCard({ fighter }) {
-  const { id, full_name, avatar_url, status } = fighter;
+  const { id, full_name, status } = fighter;
   const martial_arts = fighter.fighter_martial_arts || [];
   const fight_records = fighter.fight_records || [];
 

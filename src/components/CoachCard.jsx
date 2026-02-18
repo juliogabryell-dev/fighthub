@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Avatar from './Avatar';
 
 export default function CoachCard({ coach }) {
-  const { id, full_name, avatar_url, status } = coach;
+  const { id, full_name, status } = coach;
   const experiences = coach.coach_experiences || [];
   const displayExperiences = experiences.slice(0, 2);
 

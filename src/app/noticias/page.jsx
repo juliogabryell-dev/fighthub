@@ -3,6 +3,8 @@ import { SAMPLE_NEWS } from '@/lib/constants';
 import { scrapeNews } from '@/lib/scrapeNews';
 import { createPublicClient } from '@/lib/supabase/public';
 
+export const revalidate = 3600;
+
 export const metadata = {
   title: 'Notícias | FightHub',
 };

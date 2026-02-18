@@ -38,7 +38,7 @@ export default function RootLayout({ children }) {
     >
       <body className="bg-dark-bg min-h-screen text-white">
         <Navbar />
-        <main className="pt-20">{children}</main>
+        <div className="pt-20">{children}</div>
         <Footer />
       </body>
     </html>

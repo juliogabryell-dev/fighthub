@@ -3,6 +3,8 @@ import NewsCard from '@/components/NewsCard';
 import Icon from '@/components/Icon';
 import { scrapeNews } from '@/lib/scrapeNews';
 
+export const revalidate = 3600;
+
 const stats = [
   { icon: 'globe', value: '20+', label: 'Artes Marciais' },
   { icon: 'swords', value: '500+', label: 'Lutadores Ativos' },

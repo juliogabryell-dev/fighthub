@@ -2,8 +2,7 @@
 
 import Icon from './Icon';
 
-export default function Modal({ isOpen, onClose, children, title, maxWidth = 'max-w-lg' }) {
-  if (!isOpen) return null;
+export default function Modal({ onClose, children, title, maxWidth = 'max-w-lg' }) {
 
   return (
     <div

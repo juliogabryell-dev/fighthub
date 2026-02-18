@@ -13,6 +13,7 @@ import { createClient as createServerSupabaseClient } from '@/lib/supabase/serve
  */
 export async function getUser() {
   const supabase = await createServerSupabaseClient();
+  if (!supabase) return { user: null, profile: null };
 
   const {
     data: { user },

@@ -11,7 +11,7 @@ async function getFighter(id) {
     if (!supabase) return null;
     const { data: fighter, error } = await supabase
       .from('profiles')
-      .select('*, fighter_martial_arts(*), fight_records!fight_records_fighter_id_fkey(*), fighter_coaches!fighter_coaches_fighter_id_fkey(*), fighter_videos(*)')
+      .select('*, fighter_martial_arts(*), fight_records!fight_records_fighter_id_fkey(*), fighter_coaches!fighter_coaches_fighter_id_fkey(*, coach:coach_id(id, full_name, avatar_url)), fighter_videos(*)')
       .eq('id', id)
       .single();
 
@@ -166,11 +166,18 @@ export default async function FighterProfile({ params }) {
                             Nível: <span className="text-brand-gold">{fma.level}</span>
                           </span>
                         )}
-                        {fma.years_practicing && (
-                          <span className="font-barlow text-sm text-white/50">
-                            {fma.years_practicing} {fma.years_practicing === 1 ? 'ano' : 'anos'} praticando
-                          </span>
-                        )}
+                        {fma.started_at && (() => {
+                          const years = Math.floor((Date.now() - new Date(fma.started_at).getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+                          return years > 0 ? (
+                            <span className="font-barlow text-sm text-white/50">
+                              {years} {years === 1 ? 'ano' : 'anos'} praticando
+                            </span>
+                          ) : (
+                            <span className="font-barlow text-sm text-white/50">
+                              Menos de 1 ano praticando
+                            </span>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -186,23 +193,19 @@ export default async function FighterProfile({ params }) {
                 TREINADORES
               </h2>
               <div className="space-y-3">
-                {fighter.fighter_coaches.map((coach, index) => (
-                  <div
+                {fighter.fighter_coaches.map((fc, index) => (
+                  <Link
                     key={index}
-                    className="flex items-center gap-4 p-4 bg-white/[0.02] rounded-lg border border-white/[0.06]"
+                    href={`/treinadores/${fc.coach?.id || fc.coach_id}`}
+                    className="flex items-center gap-4 p-4 bg-white/[0.02] rounded-lg border border-white/[0.06] hover:bg-white/[0.04] transition-colors"
                   >
                     <div className="w-10 h-10 rounded-full bg-brand-gold/15 flex items-center justify-center flex-shrink-0">
                       <Icon name="award" size={18} className="text-brand-gold" />
                     </div>
-                    <div>
-                      <p className="font-barlow-condensed text-white">
-                        {coach.coach_name || 'Treinador'}
-                      </p>
-                      {coach.specialty && (
-                        <p className="font-barlow text-sm text-white/40">{coach.specialty}</p>
-                      )}
-                    </div>
-                  </div>
+                    <p className="font-barlow-condensed text-white">
+                      {fc.coach?.full_name || 'Treinador'}
+                    </p>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -218,7 +221,7 @@ export default async function FighterProfile({ params }) {
                 {fighter.fighter_videos.map((video, index) => (
                   <a
                     key={index}
-                    href={video.url}
+                    href={video.youtube_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-4 p-4 bg-white/[0.02] rounded-lg border border-white/[0.06] hover:bg-white/[0.04] transition-colors group"
@@ -230,9 +233,11 @@ export default async function FighterProfile({ params }) {
                       <p className="font-barlow-condensed text-white truncate">
                         {video.title || 'Vídeo'}
                       </p>
-                      <p className="font-barlow text-sm text-white/30 truncate">
-                        {video.url}
-                      </p>
+                      {video.modality && (
+                        <p className="font-barlow text-sm text-white/30 truncate">
+                          {video.modality}
+                        </p>
+                      )}
                     </div>
                   </a>
                 ))}
