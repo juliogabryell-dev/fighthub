@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import InputField from '@/components/InputField';
@@ -8,11 +8,54 @@ import Link from 'next/link';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const supabase = createClient();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [initializing, setInitializing] = useState(true);
+
+  useEffect(() => {
+    // Handle the auth code from URL (PKCE flow)
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+
+    async function handleCode() {
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (!error) {
+          setReady(true);
+        } else {
+          setError('Link de recuperacao invalido ou expirado. Solicite um novo.');
+        }
+        setInitializing(false);
+        return;
+      }
+
+      // Handle hash fragment (implicit flow) or existing session
+      // Supabase client auto-detects tokens in URL hash
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setReady(true);
+      }
+      setInitializing(false);
+    }
+
+    // Listen for PASSWORD_RECOVERY event
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setReady(true);
+        setInitializing(false);
+      }
+    });
+
+    handleCode();
+
+    return () => subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -31,7 +74,6 @@ export default function ResetPasswordPage() {
     setLoading(true);
 
     try {
-      const supabase = createClient();
       const { error: updateError } = await supabase.auth.updateUser({
         password,
       });
@@ -50,6 +92,22 @@ export default function ResetPasswordPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (initializing) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <svg
+          className="animate-spin h-10 w-10 text-[#C41E3A]"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+      </div>
+    );
   }
 
   return (
@@ -88,6 +146,20 @@ export default function ResetPasswordPage() {
                 className="block w-full py-3 rounded-lg bg-white/5 border border-white/10 text-white/60 font-barlow-condensed uppercase tracking-widest text-sm font-semibold text-center hover:bg-white/10 transition-all"
               >
                 IR PARA O LOGIN
+              </Link>
+            </div>
+          ) : !ready ? (
+            <div className="space-y-6">
+              <div className="p-4 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30">
+                <p className="font-barlow text-[#D4AF37] text-sm text-center">
+                  Link invalido ou expirado. Solicite um novo link de recuperacao.
+                </p>
+              </div>
+              <Link
+                href="/auth/forgot-password"
+                className="block w-full py-3 rounded-lg bg-gradient-to-r from-[#C41E3A] to-[#a01830] text-white font-barlow-condensed uppercase tracking-widest text-sm font-semibold text-center hover:from-[#d42a46] hover:to-[#b82040] transition-all"
+              >
+                SOLICITAR NOVO LINK
               </Link>
             </div>
           ) : (
