@@ -14,6 +14,7 @@ export default function RegisterPage() {
   const [birthDate, setBirthDate] = useState('');
   const [cpf, setCpf] = useState('');
   const [rg, setRg] = useState('');
+  const [cpfCnpj, setCpfCnpj] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -53,15 +54,23 @@ export default function RegisterPage() {
 
       const user = data?.user;
       if (user) {
-        const { error: profileError } = await supabase.from('profiles').insert({
+        const profileData = {
           id: user.id,
           full_name: fullName,
-          birth_date: birthDate,
-          cpf,
-          rg,
           role,
           status: 'pending',
-        });
+        };
+
+        if (role === 'academy') {
+          profileData.birth_date = null;
+          profileData.cpf_cnpj = cpfCnpj || null;
+        } else {
+          profileData.birth_date = birthDate;
+          profileData.cpf = cpf;
+          profileData.rg = rg;
+        }
+
+        const { error: profileError } = await supabase.from('profiles').insert(profileData);
 
         if (profileError) {
           setError(profileError.message);
@@ -93,7 +102,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Role Selection */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="grid grid-cols-3 gap-3 mb-6">
             <button
               type="button"
               onClick={() => setRole('fighter')}
@@ -118,6 +127,18 @@ export default function RegisterPage() {
               <Icon name="award" size={18} />
               Treinador
             </button>
+            <button
+              type="button"
+              onClick={() => setRole('academy')}
+              className={`flex items-center justify-center gap-2 py-3 rounded-lg border-2 font-barlow-condensed uppercase tracking-wide text-sm font-semibold transition-all duration-300 ${
+                role === 'academy'
+                  ? 'bg-[#C41E3A]/20 border-[#C41E3A] text-[#C41E3A]'
+                  : 'bg-white/5 border-white/10 text-white/50 hover:border-white/20'
+              }`}
+            >
+              <Icon name="building" size={18} />
+              Academia
+            </button>
           </div>
 
           {/* Error Display */}
@@ -140,40 +161,62 @@ export default function RegisterPage() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="grid grid-cols-2 gap-4">
-              <InputField
-                label="Nome Completo"
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Seu nome completo"
-                required
-              />
-              <InputField
-                label="Data de Nascimento"
-                type="date"
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-                required
-              />
-            </div>
+            {role === 'academy' ? (
+              <>
+                <InputField
+                  label="Nome da Academia"
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Nome da sua academia"
+                  required
+                />
+                <InputField
+                  label="CPF/CNPJ"
+                  type="text"
+                  value={cpfCnpj}
+                  onChange={(e) => setCpfCnpj(e.target.value)}
+                  placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                />
+              </>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <InputField
+                    label="Nome Completo"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Seu nome completo"
+                    required
+                  />
+                  <InputField
+                    label="Data de Nascimento"
+                    type="date"
+                    value={birthDate}
+                    onChange={(e) => setBirthDate(e.target.value)}
+                    required
+                  />
+                </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <InputField
-                label="CPF (opcional)"
-                type="text"
-                value={cpf}
-                onChange={(e) => setCpf(e.target.value)}
-                placeholder="000.000.000-00"
-              />
-              <InputField
-                label="RG (opcional)"
-                type="text"
-                value={rg}
-                onChange={(e) => setRg(e.target.value)}
-                placeholder="00.000.000-0"
-              />
-            </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <InputField
+                    label="CPF (opcional)"
+                    type="text"
+                    value={cpf}
+                    onChange={(e) => setCpf(e.target.value)}
+                    placeholder="000.000.000-00"
+                  />
+                  <InputField
+                    label="RG (opcional)"
+                    type="text"
+                    value={rg}
+                    onChange={(e) => setRg(e.target.value)}
+                    placeholder="00.000.000-0"
+                  />
+                </div>
+              </>
+            )}
 
             <InputField
               label="Email"

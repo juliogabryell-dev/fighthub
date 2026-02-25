@@ -64,7 +64,7 @@ export default function Navbar() {
 
   function getRoleLink(role) {
     if (role === 'admin') return '/admin';
-    if (role === 'fighter' || role === 'coach') return '/perfil';
+    if (role === 'fighter' || role === 'coach' || role === 'academy') return '/perfil';
     return null;
   }
 
@@ -124,7 +124,7 @@ export default function Navbar() {
                       {user.full_name}
                     </span>
                     <span className="text-[10px] text-white/30 font-barlow-condensed uppercase tracking-wider">
-                      {user.role}
+                      {{ fighter: 'Lutador', coach: 'Treinador', admin: 'Admin', academy: 'Academia' }[user.role] || user.role}
                     </span>
                   </div>
                 </div>
@@ -197,7 +197,7 @@ export default function Navbar() {
                         {user.full_name}
                       </span>
                       <span className="text-[10px] text-white/30 font-barlow-condensed uppercase tracking-wider">
-                        {user.role}
+                        {{ fighter: 'Lutador', coach: 'Treinador', admin: 'Admin', academy: 'Academia' }[user.role] || user.role}
                       </span>
                     </div>
                   </div>

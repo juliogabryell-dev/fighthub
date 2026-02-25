@@ -22,6 +22,7 @@ export default function PerfilPage() {
   const [editForm, setEditForm] = useState({
     full_name: '',
     birth_date: '',
+    cpf_cnpj: '',
     phone: '',
     city: '',
     state: '',
@@ -356,6 +357,7 @@ export default function PerfilPage() {
     setEditForm({
       full_name: profile?.full_name || '',
       birth_date: profile?.birth_date || '',
+      cpf_cnpj: profile?.cpf_cnpj || '',
       phone: profile?.phone || '',
       city: profile?.city || '',
       state: profile?.state || '',
@@ -405,21 +407,28 @@ export default function PerfilPage() {
         avatar_url = urlData.publicUrl;
       }
 
+      const updateData = {
+        full_name: editForm.full_name,
+        avatar_url,
+        phone: editForm.phone || null,
+        city: editForm.city || null,
+        state: editForm.state || null,
+        bio: editForm.bio || null,
+        instagram: editForm.instagram || null,
+        facebook: editForm.facebook || null,
+        youtube: editForm.youtube || null,
+        tiktok: editForm.tiktok || null,
+      };
+
+      if (profile?.role === 'academy') {
+        updateData.cpf_cnpj = editForm.cpf_cnpj || null;
+      } else {
+        updateData.birth_date = editForm.birth_date || null;
+      }
+
       const { error } = await supabase
         .from('profiles')
-        .update({
-          full_name: editForm.full_name,
-          birth_date: editForm.birth_date || null,
-          avatar_url,
-          phone: editForm.phone || null,
-          city: editForm.city || null,
-          state: editForm.state || null,
-          bio: editForm.bio || null,
-          instagram: editForm.instagram || null,
-          facebook: editForm.facebook || null,
-          youtube: editForm.youtube || null,
-          tiktok: editForm.tiktok || null,
-        })
+        .update(updateData)
         .eq('id', user.id);
 
       if (error) {
@@ -693,6 +702,7 @@ export default function PerfilPage() {
 
   const isFighter = profile?.role === 'fighter';
   const isCoach = profile?.role === 'coach';
+  const isAcademy = profile?.role === 'academy';
   const wins = fightRecords.reduce((sum, r) => sum + (r.wins || 0), 0);
   const losses = fightRecords.reduce((sum, r) => sum + (r.losses || 0), 0);
   const draws = fightRecords.reduce((sum, r) => sum + (r.draws || 0), 0);
@@ -707,7 +717,7 @@ export default function PerfilPage() {
         <div className="flex items-center justify-between mb-8">
           <h1 className="font-bebas text-4xl tracking-wider text-white">
             MEU{' '}
-            <span className={isFighter ? 'text-[#C41E3A]' : 'text-[#D4AF37]'}>
+            <span className={isFighter ? 'text-[#C41E3A]' : isAcademy ? 'text-blue-400' : 'text-[#D4AF37]'}>
               PERFIL
             </span>
           </h1>
@@ -727,6 +737,8 @@ export default function PerfilPage() {
             className={`relative p-6 ${
               isCoach
                 ? 'bg-gradient-to-r from-[#D4AF37]/20 to-[#D4AF37]/5'
+                : isAcademy
+                ? 'bg-gradient-to-r from-blue-500/20 to-blue-500/5'
                 : 'bg-gradient-to-r from-[#C41E3A]/20 to-[#C41E3A]/5'
             }`}
           >
@@ -748,7 +760,7 @@ export default function PerfilPage() {
                   </p>
                 )}
                 <p className="font-barlow-condensed text-sm uppercase tracking-wider text-white/60 mt-1">
-                  {isFighter ? 'Lutador' : 'Treinador'}
+                  {isFighter ? 'Lutador' : isCoach ? 'Treinador' : 'Academia'}
                 </p>
                 <div className="mt-2">{getStatusBadge(profile?.status)}</div>
               </div>
@@ -756,7 +768,7 @@ export default function PerfilPage() {
           </div>
 
           {/* Social Info */}
-          {(profile?.bio || profile?.phone || profile?.instagram || profile?.facebook || profile?.youtube || profile?.tiktok) && (
+          {(profile?.bio || profile?.phone || profile?.cpf_cnpj || profile?.instagram || profile?.facebook || profile?.youtube || profile?.tiktok) && (
             <div className="px-6 py-4 border-t border-white/5">
               {profile.bio && (
                 <p className="font-barlow text-sm text-white/50 mb-3 leading-relaxed">
@@ -768,6 +780,12 @@ export default function PerfilPage() {
                   <span className="flex items-center gap-1.5 text-xs text-white/40 font-barlow">
                     <Icon name="phone" size={13} />
                     {profile.phone}
+                  </span>
+                )}
+                {profile.cpf_cnpj && (
+                  <span className="flex items-center gap-1.5 text-xs text-white/40 font-barlow">
+                    <Icon name="shield" size={13} />
+                    {profile.cpf_cnpj}
                   </span>
                 )}
                 {profile.instagram && (
@@ -1631,28 +1649,40 @@ export default function PerfilPage() {
             </div>
 
             <InputField
-              label="Nome Completo"
+              label={isAcademy ? 'Nome da Academia' : 'Nome Completo'}
               type="text"
               value={editForm.full_name}
               onChange={(e) =>
                 setEditForm({ ...editForm, full_name: e.target.value })
               }
-              placeholder="Seu nome completo"
+              placeholder={isAcademy ? 'Nome da sua academia' : 'Seu nome completo'}
               required
             />
-            <InputField
-              label="Data de Nascimento"
-              type="date"
-              value={editForm.birth_date}
-              onChange={(e) =>
-                setEditForm({ ...editForm, birth_date: e.target.value })
-              }
-            />
+            {isAcademy ? (
+              <InputField
+                label="CPF/CNPJ"
+                type="text"
+                value={editForm.cpf_cnpj}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, cpf_cnpj: e.target.value })
+                }
+                placeholder="000.000.000-00 ou 00.000.000/0000-00"
+              />
+            ) : (
+              <InputField
+                label="Data de Nascimento"
+                type="date"
+                value={editForm.birth_date}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, birth_date: e.target.value })
+                }
+              />
+            )}
 
             {/* Bio */}
             <div>
               <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-white/50 mb-1.5 font-semibold">
-                Bio
+                {isAcademy ? 'Descricao da Academia' : 'Bio'}
               </label>
               <textarea
                 value={editForm.bio}

@@ -17,5 +17,23 @@ export async function GET(request) {
     }
   }
 
+  // Handle token_hash for recovery flow (email link format)
+  const tokenHash = searchParams.get('token_hash');
+  const type = searchParams.get('type');
+
+  if (tokenHash && type === 'recovery') {
+    const supabase = await createClient();
+    if (!supabase) {
+      return NextResponse.redirect(`${origin}/auth/login?error=config`);
+    }
+    const { error } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: 'recovery',
+    });
+    if (!error) {
+      return NextResponse.redirect(`${origin}/auth/reset-password`);
+    }
+  }
+
   return NextResponse.redirect(`${origin}/auth/login?error=auth`);
 }

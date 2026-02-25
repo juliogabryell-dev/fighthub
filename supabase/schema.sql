@@ -22,10 +22,11 @@ $$ LANGUAGE plpgsql;
 CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name TEXT NOT NULL,
-  birth_date DATE NOT NULL,
+  birth_date DATE,
   cpf TEXT,
   rg TEXT,
-  role TEXT NOT NULL CHECK (role IN ('fighter', 'coach', 'admin')),
+  cpf_cnpj TEXT,
+  role TEXT NOT NULL CHECK (role IN ('fighter', 'coach', 'admin', 'academy')),
   avatar_url TEXT,
   phone TEXT,
   city TEXT,
