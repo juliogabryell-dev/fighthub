@@ -80,7 +80,7 @@ export default function Navbar() {
             <div className="flex flex-col leading-none">
               <span className="font-bebas text-xl tracking-wider">
                 <span className="text-white">FIGHT</span>
-                <span className="text-brand-red">HUB</span>
+                <span className="text-brand-red">LOG</span>
               </span>
               <span className="text-[9px] text-brand-gold font-barlow-condensed uppercase tracking-[0.2em] -mt-0.5">
                 Portal de Artes Marciais

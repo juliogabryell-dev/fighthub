@@ -16,7 +16,7 @@ export default function Footer() {
           <div className="flex flex-col items-center md:items-start gap-1">
             <span className="font-bebas text-lg tracking-wider">
               <span className="text-white">FIGHT</span>
-              <span className="text-brand-red">HUB</span>
+              <span className="text-brand-red">LOG</span>
             </span>
             <p className="text-xs text-white/50 font-barlow">
               Portal de Artes Marciais &copy; 2026
