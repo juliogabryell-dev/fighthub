@@ -1,7 +1,7 @@
 import Icon from '@/components/Icon';
 
 export const metadata = {
-  title: 'Sobre | FightHub',
+  title: 'Sobre | FightLog',
 };
 
 const values = [
@@ -37,7 +37,7 @@ export default function SobrePage() {
       {/* Header */}
       <div className="text-center mb-16">
         <h1 className="font-bebas text-5xl text-white tracking-wider">
-          SOBRE O <span className="text-brand-red">FIGHTHUB</span>
+          SOBRE O <span className="text-brand-red">FIGHTLOG</span>
         </h1>
         <p className="font-barlow text-white/50 mt-3 text-lg max-w-2xl mx-auto">
           A plataforma que conecta o mundo das artes marciais
@@ -51,7 +51,7 @@ export default function SobrePage() {
         </h2>
         <div className="space-y-4 font-barlow text-white/60 leading-relaxed">
           <p>
-            O FightHub nasceu em 2026 com uma missao clara: ser o portal definitivo para
+            O FightLog nasceu em 2026 com uma missao clara: ser o portal definitivo para
             praticantes de artes marciais no Brasil. Fundado por entusiastas e praticantes,
             a plataforma surgiu da necessidade de um espaco centralizado onde lutadores e
             treinadores pudessem se conectar, compartilhar suas conquistas e encontrar novos
@@ -61,7 +61,7 @@ export default function SobrePage() {
             Percebemos que o cenario das artes marciais no Brasil, apesar de ser um dos mais
             ricos do mundo, carecia de uma ferramenta digital que unisse toda a comunidade.
             Academias espalhadas por todo o pais, lutadores talentosos sem visibilidade e
-            treinadores experientes sem alcance — o FightHub veio para mudar isso.
+            treinadores experientes sem alcance — o FightLog veio para mudar isso.
           </p>
           <p>
             Hoje, a plataforma reune mais de 20 modalidades de artes marciais, desde o
@@ -103,7 +103,7 @@ export default function SobrePage() {
           EQUIPE
         </h2>
         <p className="font-barlow text-white/60 leading-relaxed">
-          O FightHub e desenvolvido por uma equipe apaixonada por tecnologia e artes marciais,
+          O FightLog e desenvolvido por uma equipe apaixonada por tecnologia e artes marciais,
           sediada no Brasil. Trabalhamos constantemente para melhorar a plataforma e trazer
           novos recursos para a comunidade. Se voce tem sugestoes ou quer colaborar, entre em
           contato conosco!

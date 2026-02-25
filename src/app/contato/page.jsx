@@ -6,7 +6,7 @@ const contacts = [
   {
     icon: 'mail',
     label: 'Email',
-    value: 'contato@fighthub.com.br',
+    value: 'contato@fightlog.com.br',
     description: 'Responderemos em ate 48 horas uteis',
   },
   {

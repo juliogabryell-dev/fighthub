@@ -1,5 +1,5 @@
 // =============================================================================
-// FightHub - Constantes e Dados Estáticos
+// FightLog - Constantes e Dados Estáticos
 // Plataforma de Artes Marciais
 // =============================================================================
 

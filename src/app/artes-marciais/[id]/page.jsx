@@ -12,8 +12,8 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }) {
   const { id } = await params;
   const art = MARTIAL_ARTS_DATA.find((a) => a.id === parseInt(id));
-  if (!art) return { title: 'Não encontrado | FightHub' };
-  return { title: `${art.name} | FightHub` };
+  if (!art) return { title: 'Não encontrado | FightLog' };
+  return { title: `${art.name} | FightLog` };
 }
 
 export default async function MartialArtDetail({ params }) {

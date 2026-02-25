@@ -6,7 +6,7 @@ import { scrapeNews } from '@/lib/scrapeNews';
 export const revalidate = 3600;
 
 export const metadata = {
-  title: 'Notícias | FightHub',
+  title: 'Notícias | FightLog',
 };
 
 async function getNews() {

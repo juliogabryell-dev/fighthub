@@ -88,7 +88,7 @@ export default function RegisterPage() {
               CADASTRAR
             </h1>
             <p className="font-barlow text-white/50 text-sm mt-1">
-              Crie sua conta no FightHub
+              Crie sua conta no FightLog
             </p>
           </div>
 

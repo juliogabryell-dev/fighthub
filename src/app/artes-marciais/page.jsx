@@ -2,7 +2,7 @@ import MartialArtCard from '@/components/MartialArtCard';
 import { MARTIAL_ARTS_DATA } from '@/lib/constants';
 
 export const metadata = {
-  title: 'Artes Marciais | FightHub',
+  title: 'Artes Marciais | FightLog',
 };
 
 export default function ArtesMarciais() {

@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Privacidade | FightHub',
+  title: 'Privacidade | FightLog',
 };
 
 const sections = [
@@ -36,7 +36,7 @@ const sections = [
   {
     title: '7. Menores de Idade',
     content:
-      'O FightHub nao e destinado a menores de 16 anos sem o consentimento de um responsavel legal. Se tomarmos conhecimento de que coletamos dados de um menor sem o devido consentimento, tomaremos medidas para remover essas informacoes.',
+      'O FightLog nao e destinado a menores de 16 anos sem o consentimento de um responsavel legal. Se tomarmos conhecimento de que coletamos dados de um menor sem o devido consentimento, tomaremos medidas para remover essas informacoes.',
   },
   {
     title: '8. Alteracoes nesta Politica',
@@ -46,7 +46,7 @@ const sections = [
   {
     title: '9. Contato do Encarregado de Dados',
     content:
-      'Para questoes relacionadas a privacidade e protecao de dados, entre em contato com nosso encarregado de dados (DPO) atraves do email privacidade@fighthub.com.br ou pela pagina de Contato da plataforma.',
+      'Para questoes relacionadas a privacidade e protecao de dados, entre em contato com nosso encarregado de dados (DPO) atraves do email privacidade@fightlog.com.br ou pela pagina de Contato da plataforma.',
   },
 ];
 

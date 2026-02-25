@@ -53,7 +53,7 @@ export default async function HomePage() {
 
           {/* Description */}
           <p className="font-barlow text-lg text-white/50 max-w-xl mx-auto mb-10">
-            O FightHub conecta lutadores, treinadores e entusiastas de artes marciais em uma
+            O FightLog conecta lutadores, treinadores e entusiastas de artes marciais em uma
             plataforma completa. Gerencie seu cartel, encontre oponentes e acompanhe sua evolução.
           </p>
 
