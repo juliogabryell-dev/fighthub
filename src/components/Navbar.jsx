@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { href: '/artes-marciais', label: 'Modalidades', icon: 'swords' },
   { href: '/lutadores', label: 'Lutadores', icon: 'users' },
   { href: '/treinadores', label: 'Treinadores', icon: 'shield' },
+  { href: '/academias', label: 'Academias', icon: 'building' },
   { href: '/noticias', label: 'Notícias', icon: 'newspaper' },
 ];
 
