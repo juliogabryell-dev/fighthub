@@ -1,10 +1,10 @@
 // =============================================================================
 // FightLog - Constantes e Dados Estáticos
-// Plataforma de Artes Marciais
+// Plataforma de Modalidades
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-// MARTIAL_ARTS_DATA - 20 Artes Marciais com dados completos
+// MARTIAL_ARTS_DATA - 20 Modalidades com dados completos
 // -----------------------------------------------------------------------------
 export const MARTIAL_ARTS_DATA = [
   {
@@ -14,7 +14,7 @@ export const MARTIAL_ARTS_DATA = [
     icon: "\u{1F94B}",
     ranking: "Faixas: Branca \u2192 Azul \u2192 Roxa \u2192 Marrom \u2192 Preta \u2192 Coral \u2192 Vermelha",
     history:
-      "Desenvolvido pela fam\u00edlia Gracie no in\u00edcio do s\u00e9culo XX, o Jiu-Jitsu Brasileiro revolucionou as artes marciais ao provar a efic\u00e1cia do combate no solo. Ganhou fama mundial quando Royce Gracie venceu os primeiros eventos do UFC, derrotando oponentes muito maiores. Hoje \u00e9 considerado uma das bases fundamentais do MMA moderno e \u00e9 praticado em todos os continentes.",
+      "Desenvolvido pela fam\u00edlia Gracie no in\u00edcio do s\u00e9culo XX, o Jiu-Jitsu Brasileiro revolucionou as modalidades ao provar a efic\u00e1cia do combate no solo. Ganhou fama mundial quando Royce Gracie venceu os primeiros eventos do UFC, derrotando oponentes muito maiores. Hoje \u00e9 considerado uma das bases fundamentais do MMA moderno e \u00e9 praticado em todos os continentes.",
     popularRegion: "Brasil, Estados Unidos, Austr\u00e1lia",
   },
   {
@@ -54,7 +54,7 @@ export const MARTIAL_ARTS_DATA = [
     icon: "\u{1F94B}",
     ranking: "Faixas: Branca \u2192 Amarela \u2192 Laranja \u2192 Verde \u2192 Azul \u2192 Marrom \u2192 Preta (1\u00ba a 10\u00ba Dan)",
     history:
-      "Originado na ilha de Okinawa, o Karat\u00ea se desenvolveu a partir da fus\u00e3o de t\u00e9cnicas locais com artes marciais chinesas, quando armas foram proibidas na regi\u00e3o. Possui diversos estilos tradicionais como Shotokan, Goju-Ryu, Shito-Ryu e Wado-Ryu, cada um com caracter\u00edsticas pr\u00f3prias. Estreou nos Jogos Ol\u00edmpicos de T\u00f3quio 2020, consolidando-se como um dos esportes de combate mais praticados do planeta.",
+      "Originado na ilha de Okinawa, o Karat\u00ea se desenvolveu a partir da fus\u00e3o de t\u00e9cnicas locais com modalidades chinesas, quando armas foram proibidas na regi\u00e3o. Possui diversos estilos tradicionais como Shotokan, Goju-Ryu, Shito-Ryu e Wado-Ryu, cada um com caracter\u00edsticas pr\u00f3prias. Estreou nos Jogos Ol\u00edmpicos de T\u00f3quio 2020, consolidando-se como um dos esportes de combate mais praticados do planeta.",
     popularRegion: "Jap\u00e3o, Fran\u00e7a, Espanha, Egito",
   },
   {
@@ -84,7 +84,7 @@ export const MARTIAL_ARTS_DATA = [
     icon: "\u{1F409}",
     ranking: "Estudante \u2192 Disc\u00edpulo \u2192 Instrutor \u2192 Mestre \u2192 Gr\u00e3o-Mestre",
     history:
-      "O Kung Fu engloba centenas de estilos de artes marciais chinesas desenvolvidos ao longo de mil\u00eanios, desde os monges do Templo Shaolin at\u00e9 as escolas de Wudang. Cada estilo possui filosofia e t\u00e9cnicas \u00fanicas, inspirados frequentemente em movimentos de animais como o tigre, a gara, a serpente e o louva-a-deus. O Wushu moderno \u00e9 a vers\u00e3o esportiva padronizada, buscando reconhecimento ol\u00edmpico.",
+      "O Kung Fu engloba centenas de estilos de modalidades chinesas desenvolvidos ao longo de mil\u00eanios, desde os monges do Templo Shaolin at\u00e9 as escolas de Wudang. Cada estilo possui filosofia e t\u00e9cnicas \u00fanicas, inspirados frequentemente em movimentos de animais como o tigre, a gara, a serpente e o louva-a-deus. O Wushu moderno \u00e9 a vers\u00e3o esportiva padronizada, buscando reconhecimento ol\u00edmpico.",
     popularRegion: "China, Vietn\u00e3, Mal\u00e1sia, Brasil",
   },
   {
@@ -119,7 +119,7 @@ export const MARTIAL_ARTS_DATA = [
   },
   {
     id: 12,
-    name: "MMA (Artes Marciais Mistas)",
+    name: "MMA (Modalidades Mistas)",
     origin: "Global",
     icon: "\u{1F3DF}\uFE0F",
     ranking: "Rankings por organiza\u00e7\u00f5es (UFC, Bellator, ONE Championship)",
@@ -134,7 +134,7 @@ export const MARTIAL_ARTS_DATA = [
     icon: "\u{1F1F7}\u{1F1FA}",
     ranking: "3\u00aa Classe \u2192 2\u00aa Classe \u2192 1\u00aa Classe \u2192 Candidato a Mestre \u2192 Mestre do Esporte \u2192 Mestre Internacional",
     history:
-      "Criado na d\u00e9cada de 1920 para o ex\u00e9rcito sovi\u00e9tico, o Sambo (SAMozashchita Bez Oruzhiya - Autodefesa Sem Armas) combina t\u00e9cnicas do Jud\u00f4, Wrestling e artes marciais regionais da Uni\u00e3o Sovi\u00e9tica. Possui duas vertentes principais: o Sambo Esportivo (similar ao Jud\u00f4) e o Combat Sambo (que inclui golpes). \u00c9 a base de lutadores lend\u00e1rios do MMA como Khabib Nurmagomedov e Fedor Emelianenko.",
+      "Criado na d\u00e9cada de 1920 para o ex\u00e9rcito sovi\u00e9tico, o Sambo (SAMozashchita Bez Oruzhiya - Autodefesa Sem Armas) combina t\u00e9cnicas do Jud\u00f4, Wrestling e modalidades regionais da Uni\u00e3o Sovi\u00e9tica. Possui duas vertentes principais: o Sambo Esportivo (similar ao Jud\u00f4) e o Combat Sambo (que inclui golpes). \u00c9 a base de lutadores lend\u00e1rios do MMA como Khabib Nurmagomedov e Fedor Emelianenko.",
     popularRegion: "R\u00fassia, Ge\u00f3rgia, Uzbequist\u00e3o, Mong\u00f3lia",
   },
   {
@@ -144,7 +144,7 @@ export const MARTIAL_ARTS_DATA = [
     icon: "\u262F\uFE0F",
     ranking: "Faixas: Branca (6\u00ba a 1\u00ba Kyu) \u2192 Preta (1\u00ba a 10\u00ba Dan)",
     history:
-      "Fundado por Morihei Ueshiba na d\u00e9cada de 1920, o Aikido \u00e9 uma arte marcial japonesa baseada na filosofia da harmonia e n\u00e3o-resist\u00eancia, redirecionando a for\u00e7a do oponente contra ele mesmo. Diferente de outras artes marciais, n\u00e3o possui competi\u00e7\u00f5es formais, priorizando o desenvolvimento espiritual e a resolu\u00e7\u00e3o pac\u00edfica de conflitos. Suas t\u00e9cnicas elegantes de proje\u00e7\u00f5es e imobiliza\u00e7\u00f5es articulares influenciaram diversas outras artes marciais.",
+      "Fundado por Morihei Ueshiba na d\u00e9cada de 1920, o Aikido \u00e9 uma arte marcial japonesa baseada na filosofia da harmonia e n\u00e3o-resist\u00eancia, redirecionando a for\u00e7a do oponente contra ele mesmo. Diferente de outras modalidades, n\u00e3o possui competi\u00e7\u00f5es formais, priorizando o desenvolvimento espiritual e a resolu\u00e7\u00e3o pac\u00edfica de conflitos. Suas t\u00e9cnicas elegantes de proje\u00e7\u00f5es e imobiliza\u00e7\u00f5es articulares influenciaram diversas outras modalidades.",
     popularRegion: "Jap\u00e3o, Fran\u00e7a, Estados Unidos, R\u00fassia",
   },
   {
@@ -204,13 +204,13 @@ export const MARTIAL_ARTS_DATA = [
     icon: "\u{1F1F2}\u{1F1F2}",
     ranking: "Rankings baseados em vit\u00f3rias e desempenho em competi\u00e7\u00f5es",
     history:
-      "O Lethwei, conhecido como \"Boxe Birman\u00eas\", \u00e9 uma das artes marciais mais brutais do mundo, sendo a \u00fanica que permite cabe\u00e7adas como t\u00e9cnica legal de ataque. Tradicionalmente lutado sem luvas, apenas com bandagens nas m\u00e3os, e a \u00fanica forma de vit\u00f3ria \u00e9 por nocaute. Com ra\u00edzes milenares em Myanmar, o Lethwei vem ganhando aten\u00e7\u00e3o internacional por sua intensidade e o crescente interesse global em artes marciais tradicionais.",
+      "O Lethwei, conhecido como \"Boxe Birman\u00eas\", \u00e9 uma das modalidades mais brutais do mundo, sendo a \u00fanica que permite cabe\u00e7adas como t\u00e9cnica legal de ataque. Tradicionalmente lutado sem luvas, apenas com bandagens nas m\u00e3os, e a \u00fanica forma de vit\u00f3ria \u00e9 por nocaute. Com ra\u00edzes milenares em Myanmar, o Lethwei vem ganhando aten\u00e7\u00e3o internacional por sua intensidade e o crescente interesse global em modalidades tradicionais.",
     popularRegion: "Myanmar, Tail\u00e2ndia, Jap\u00e3o",
   },
 ];
 
 // -----------------------------------------------------------------------------
-// SAMPLE_NEWS - Not\u00edcias de exemplo sobre artes marciais
+// SAMPLE_NEWS - Not\u00edcias de exemplo sobre modalidades
 // -----------------------------------------------------------------------------
 export const SAMPLE_NEWS = [
   {
@@ -235,7 +235,7 @@ export const SAMPLE_NEWS = [
     id: 3,
     title: "ONE Championship expande opera\u00e7\u00f5es para a Am\u00e9rica do Sul",
     summary:
-      "A organiza\u00e7\u00e3o asi\u00e1tica ONE Championship anunciou planos de realizar eventos no Brasil e na Argentina a partir do segundo semestre de 2026. A expans\u00e3o inclui card de Muay Thai, Kickboxing e MMA, aproveitando a enorme base de f\u00e3s de artes marciais na regi\u00e3o.",
+      "A organiza\u00e7\u00e3o asi\u00e1tica ONE Championship anunciou planos de realizar eventos no Brasil e na Argentina a partir do segundo semestre de 2026. A expans\u00e3o inclui card de Muay Thai, Kickboxing e MMA, aproveitando a enorme base de f\u00e3s de modalidades na regi\u00e3o.",
     date: "2026-02-10",
     category: "Eventos",
     image: "\u{1F30F}",
@@ -251,9 +251,9 @@ export const SAMPLE_NEWS = [
   },
   {
     id: 5,
-    title: "Estudo cient\u00edfico comprova benef\u00edcios das artes marciais para sa\u00fade mental",
+    title: "Estudo cient\u00edfico comprova benef\u00edcios das modalidades para sa\u00fade mental",
     summary:
-      "Pesquisa publicada por universidades brasileiras e americanas demonstrou que a pr\u00e1tica regular de artes marciais reduz significativamente n\u00edveis de ansiedade e depress\u00e3o. O estudo acompanhou 2.000 praticantes por dois anos e revelou melhorias expressivas em autoconfian\u00e7a, disciplina e bem-estar geral.",
+      "Pesquisa publicada por universidades brasileiras e americanas demonstrou que a pr\u00e1tica regular de modalidades reduz significativamente n\u00edveis de ansiedade e depress\u00e3o. O estudo acompanhou 2.000 praticantes por dois anos e revelou melhorias expressivas em autoconfian\u00e7a, disciplina e bem-estar geral.",
     date: "2026-02-05",
     category: "Sa\u00fade",
     image: "\u{1F9E0}",
@@ -281,7 +281,7 @@ export const NAV_LINKS = [
   },
   {
     key: "martial-arts",
-    label: "Artes Marciais",
+    label: "Modalidades",
     href: "/artes-marciais",
     icon: "\u{1F94B}",
   },

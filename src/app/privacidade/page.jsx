@@ -6,7 +6,7 @@ const sections = [
   {
     title: '1. Informacoes que Coletamos',
     content:
-      'Coletamos informacoes que voce fornece diretamente ao se cadastrar na plataforma, incluindo: nome completo, data de nascimento, email, CPF e RG (opcionais), tipo de perfil (lutador ou treinador), e informacoes sobre sua pratica em artes marciais. Tambem coletamos automaticamente dados de uso, como paginas acessadas e horarios de acesso.',
+      'Coletamos informacoes que voce fornece diretamente ao se cadastrar na plataforma, incluindo: nome completo, data de nascimento, email, CPF e RG (opcionais), tipo de perfil (lutador ou treinador), e informacoes sobre sua pratica em modalidades. Tambem coletamos automaticamente dados de uso, como paginas acessadas e horarios de acesso.',
   },
   {
     title: '2. Como Utilizamos suas Informacoes',

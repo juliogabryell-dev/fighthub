@@ -9,7 +9,7 @@ import Avatar from './Avatar';
 
 const NAV_LINKS = [
   { href: '/', label: 'Home', icon: 'home' },
-  { href: '/artes-marciais', label: 'Artes Marciais', icon: 'swords' },
+  { href: '/artes-marciais', label: 'Modalidades', icon: 'swords' },
   { href: '/lutadores', label: 'Lutadores', icon: 'users' },
   { href: '/treinadores', label: 'Treinadores', icon: 'shield' },
   { href: '/noticias', label: 'Notícias', icon: 'newspaper' },
@@ -83,7 +83,7 @@ export default function Navbar() {
                 <span className="text-brand-red">LOG</span>
               </span>
               <span className="text-[9px] text-brand-gold font-barlow-condensed uppercase tracking-[0.2em] -mt-0.5">
-                Portal de Artes Marciais
+                Portal de Modalidades
               </span>
             </div>
           </Link>

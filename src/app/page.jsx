@@ -6,7 +6,7 @@ import { scrapeNews } from '@/lib/scrapeNews';
 export const revalidate = 3600;
 
 const stats = [
-  { icon: 'globe', value: '20+', label: 'Artes Marciais' },
+  { icon: 'globe', value: '20+', label: 'Modalidades' },
   { icon: 'swords', value: '500+', label: 'Lutadores Ativos' },
   { icon: 'award', value: '100+', label: 'Treinadores' },
   { icon: 'star', value: '1K+', label: 'Lutas Registradas' },
@@ -36,7 +36,7 @@ export default async function HomePage() {
         <div className="relative z-10 text-center px-6">
           {/* Subtitle */}
           <p className="font-barlow-condensed text-sm text-brand-gold tracking-[6px] uppercase font-semibold mb-6">
-            O Portal Definitivo de Artes Marciais
+            O Portal Definitivo de Modalidades
           </p>
 
           {/* Main Title */}
@@ -53,7 +53,7 @@ export default async function HomePage() {
 
           {/* Description */}
           <p className="font-barlow text-lg text-white/50 max-w-xl mx-auto mb-10">
-            O FightLog conecta lutadores, treinadores e entusiastas de artes marciais em uma
+            O FightLog conecta lutadores, treinadores e entusiastas de modalidades em uma
             plataforma completa. Gerencie seu cartel, encontre oponentes e acompanhe sua evolução.
           </p>
 
@@ -69,7 +69,7 @@ export default async function HomePage() {
               href="/artes-marciais"
               className="font-barlow-condensed uppercase tracking-wider text-sm font-semibold px-8 py-3.5 rounded-lg bg-transparent border border-brand-gold/40 text-brand-gold hover:bg-brand-gold/10 transition-all duration-300"
             >
-              Explorar Artes Marciais
+              Explorar Modalidades
             </Link>
           </div>
         </div>

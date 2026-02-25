@@ -249,7 +249,7 @@ export default async function FighterProfile({ params }) {
           {fighter.fighter_martial_arts && fighter.fighter_martial_arts.length > 0 && (
             <div className="mb-10">
               <h2 className="font-barlow-condensed text-brand-gold uppercase tracking-widest text-sm font-semibold mb-4">
-                ARTES MARCIAIS & EXPERIÊNCIA
+                MODALIDADES & EXPERIÊNCIA
               </h2>
               <div className="space-y-3">
                 {fighter.fighter_martial_arts.map((fma, index) => (

@@ -11,7 +11,7 @@ const sections = [
   {
     title: '2. Descricao do Servico',
     content:
-      'O FightLog e uma plataforma online que conecta praticantes de artes marciais, incluindo lutadores e treinadores. Nossos servicos incluem: cadastro de perfis, registro de carteis de luta, publicacao de noticias sobre artes marciais, e ferramentas de conexao entre membros da comunidade.',
+      'O FightLog e uma plataforma online que conecta praticantes de modalidades, incluindo lutadores e treinadores. Nossos servicos incluem: cadastro de perfis, registro de carteis de luta, publicacao de noticias sobre modalidades, e ferramentas de conexao entre membros da comunidade.',
   },
   {
     title: '3. Cadastro e Conta',
@@ -36,7 +36,7 @@ const sections = [
   {
     title: '7. Limitacao de Responsabilidade',
     content:
-      'O FightLog e fornecido "como esta". Nao nos responsabilizamos por danos diretos ou indiretos resultantes do uso da plataforma. Nao garantimos disponibilidade ininterrupta do servico. As informacoes sobre artes marciais sao de carater informativo e nao substituem orientacao profissional.',
+      'O FightLog e fornecido "como esta". Nao nos responsabilizamos por danos diretos ou indiretos resultantes do uso da plataforma. Nao garantimos disponibilidade ininterrupta do servico. As informacoes sobre modalidades sao de carater informativo e nao substituem orientacao profissional.',
   },
   {
     title: '8. Modificacoes',

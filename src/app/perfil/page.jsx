@@ -858,7 +858,7 @@ export default function PerfilPage() {
         {isFighter && martialArts.length > 0 && (
           <div className="mb-8">
             <h3 className="font-bebas text-xl tracking-wider text-white/80 mb-4">
-              ARTES MARCIAIS
+              MODALIDADES
             </h3>
             <div className="space-y-3">
               {martialArts.map((art) => (

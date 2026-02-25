@@ -46,7 +46,7 @@ CREATE TRIGGER set_profiles_updated_at
   EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================================
--- 2. Artes marciais do lutador
+-- 2. Modalidades do lutador
 -- ============================================================
 CREATE TABLE fighter_martial_arts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -227,23 +227,23 @@ CREATE POLICY "Admin pode deletar perfis"
 -- ============================================================
 
 -- Leitura pública
-CREATE POLICY "Artes marciais são visíveis publicamente"
+CREATE POLICY "Modalidades são visíveis publicamente"
   ON fighter_martial_arts FOR SELECT
   USING (true);
 
 -- Dono pode inserir
-CREATE POLICY "Lutador pode adicionar suas artes marciais"
+CREATE POLICY "Lutador pode adicionar suas modalidades"
   ON fighter_martial_arts FOR INSERT
   WITH CHECK (auth.uid() = fighter_id);
 
 -- Dono pode atualizar
-CREATE POLICY "Lutador pode atualizar suas artes marciais"
+CREATE POLICY "Lutador pode atualizar suas modalidades"
   ON fighter_martial_arts FOR UPDATE
   USING (auth.uid() = fighter_id)
   WITH CHECK (auth.uid() = fighter_id);
 
 -- Dono pode deletar
-CREATE POLICY "Lutador pode deletar suas artes marciais"
+CREATE POLICY "Lutador pode deletar suas modalidades"
   ON fighter_martial_arts FOR DELETE
   USING (auth.uid() = fighter_id);
 

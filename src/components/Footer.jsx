@@ -19,7 +19,7 @@ export default function Footer() {
               <span className="text-brand-red">LOG</span>
             </span>
             <p className="text-xs text-white/50 font-barlow">
-              Portal de Artes Marciais &copy; 2026
+              Portal de Modalidades &copy; 2026
             </p>
           </div>
 

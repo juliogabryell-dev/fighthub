@@ -9,7 +9,7 @@ const values = [
     icon: 'swords',
     title: 'Paixão pelas Lutas',
     description:
-      'Nascemos do amor pelas artes marciais e da vontade de criar um espaço dedicado a todos que compartilham essa paixão.',
+      'Nascemos do amor pelas modalidades e da vontade de criar um espaço dedicado a todos que compartilham essa paixão.',
   },
   {
     icon: 'users',
@@ -40,7 +40,7 @@ export default function SobrePage() {
           SOBRE O <span className="text-brand-red">FIGHTLOG</span>
         </h1>
         <p className="font-barlow text-white/50 mt-3 text-lg max-w-2xl mx-auto">
-          A plataforma que conecta o mundo das artes marciais
+          A plataforma que conecta o mundo das modalidades
         </p>
       </div>
 
@@ -52,19 +52,19 @@ export default function SobrePage() {
         <div className="space-y-4 font-barlow text-white/60 leading-relaxed">
           <p>
             O FightLog nasceu em 2026 com uma missao clara: ser o portal definitivo para
-            praticantes de artes marciais no Brasil. Fundado por entusiastas e praticantes,
+            praticantes de modalidades no Brasil. Fundado por entusiastas e praticantes,
             a plataforma surgiu da necessidade de um espaco centralizado onde lutadores e
             treinadores pudessem se conectar, compartilhar suas conquistas e encontrar novos
             desafios.
           </p>
           <p>
-            Percebemos que o cenario das artes marciais no Brasil, apesar de ser um dos mais
+            Percebemos que o cenario das modalidades no Brasil, apesar de ser um dos mais
             ricos do mundo, carecia de uma ferramenta digital que unisse toda a comunidade.
             Academias espalhadas por todo o pais, lutadores talentosos sem visibilidade e
             treinadores experientes sem alcance — o FightLog veio para mudar isso.
           </p>
           <p>
-            Hoje, a plataforma reune mais de 20 modalidades de artes marciais, desde o
+            Hoje, a plataforma reune mais de 20 modalidades, desde o
             Jiu-Jitsu Brasileiro e Muay Thai ate modalidades menos conhecidas como Lethwei e
             Sambo. Nosso objetivo e continuar crescendo e democratizando o acesso a informacao
             no mundo das lutas.
@@ -103,7 +103,7 @@ export default function SobrePage() {
           EQUIPE
         </h2>
         <p className="font-barlow text-white/60 leading-relaxed">
-          O FightLog e desenvolvido por uma equipe apaixonada por tecnologia e artes marciais,
+          O FightLog e desenvolvido por uma equipe apaixonada por tecnologia e modalidades,
           sediada no Brasil. Trabalhamos constantemente para melhorar a plataforma e trazer
           novos recursos para a comunidade. Se voce tem sugestoes ou quer colaborar, entre em
           contato conosco!

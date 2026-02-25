@@ -2,7 +2,7 @@ import MartialArtCard from '@/components/MartialArtCard';
 import { MARTIAL_ARTS_DATA } from '@/lib/constants';
 
 export const metadata = {
-  title: 'Artes Marciais | FightLog',
+  title: 'Modalidades | FightLog',
 };
 
 export default function ArtesMarciais() {
@@ -11,11 +11,10 @@ export default function ArtesMarciais() {
       {/* Page Header */}
       <div className="text-center mb-12">
         <h1 className="font-bebas text-5xl text-white tracking-wider">
-          ARTES{' '}
-          <span className="text-brand-red">MARCIAIS</span>
+          MODALIDADES
         </h1>
         <p className="font-barlow text-white/50 mt-3 text-lg">
-          As 20 artes marciais mais praticadas no mundo
+          As 20 modalidades mais praticadas no mundo
         </p>
       </div>
 
