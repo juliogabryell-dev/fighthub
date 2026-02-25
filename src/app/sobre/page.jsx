@@ -44,30 +44,27 @@ export default function SobrePage() {
         </p>
       </div>
 
-      {/* Story */}
+      {/* What is FightLog */}
       <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 p-8 mb-12">
         <h2 className="font-bebas text-2xl text-brand-gold tracking-wider mb-4">
-          NOSSA HISTORIA
+          O QUE É O FIGHT LOG?
         </h2>
         <div className="space-y-4 font-barlow text-white/60 leading-relaxed">
           <p>
-            O FightLog nasceu em 2026 com uma missao clara: ser o portal definitivo para
-            praticantes de modalidades no Brasil. Fundado por entusiastas e praticantes,
-            a plataforma surgiu da necessidade de um espaco centralizado onde lutadores e
-            treinadores pudessem se conectar, compartilhar suas conquistas e encontrar novos
-            desafios.
+            O Fight Log é uma plataforma criada para registrar lutas reais de forma pública,
+            permanente e verificável.
           </p>
           <p>
-            Percebemos que o cenario das modalidades no Brasil, apesar de ser um dos mais
-            ricos do mundo, carecia de uma ferramenta digital que unisse toda a comunidade.
-            Academias espalhadas por todo o pais, lutadores talentosos sem visibilidade e
-            treinadores experientes sem alcance — o FightLog veio para mudar isso.
+            Nos esportes de combate, o cartel é a moeda mais importante de um atleta. Ainda assim,
+            por anos, registros foram fragmentados, esquecidos ou manipulados. Lutas desaparecem.
+            Derrotas somem. Cartéis crescem sem confirmação.
+          </p>
+          <p className="font-bebas text-xl text-brand-red tracking-wider">
+            O Fight Log existe para resolver isso.
           </p>
           <p>
-            Hoje, a plataforma reune mais de 20 modalidades, desde o
-            Jiu-Jitsu Brasileiro e Muay Thai ate modalidades menos conhecidas como Lethwei e
-            Sambo. Nosso objetivo e continuar crescendo e democratizando o acesso a informacao
-            no mundo das lutas.
+            Aqui, cada luta registrada fica visível. Cada resultado pode ser confirmado ou
+            contestado. E, uma vez validado, o histórico não pode ser alterado.
           </p>
         </div>
       </div>

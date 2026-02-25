@@ -1,16 +1,8 @@
 import Link from 'next/link';
 import NewsCard from '@/components/NewsCard';
-import Icon from '@/components/Icon';
 import { scrapeNews } from '@/lib/scrapeNews';
 
 export const revalidate = 3600;
-
-const stats = [
-  { icon: 'globe', value: '20+', label: 'Modalidades' },
-  { icon: 'swords', value: '500+', label: 'Lutadores Ativos' },
-  { icon: 'award', value: '100+', label: 'Treinadores' },
-  { icon: 'star', value: '1K+', label: 'Lutas Registradas' },
-];
 
 export default async function HomePage() {
   const allNews = await scrapeNews();
@@ -52,9 +44,14 @@ export default async function HomePage() {
           </h1>
 
           {/* Description */}
-          <p className="font-barlow text-lg text-white/50 max-w-xl mx-auto mb-10">
+          <p className="font-barlow text-lg text-white/50 max-w-xl mx-auto mb-4">
             O FightLog conecta lutadores, treinadores e entusiastas de modalidades em uma
             plataforma completa. Gerencie seu cartel, encontre oponentes e acompanhe sua evolução.
+          </p>
+
+          {/* Tagline */}
+          <p className="font-bebas text-2xl text-brand-gold tracking-wider mb-10">
+            Se não está no Fight Log, não aconteceu!
           </p>
 
           {/* Buttons */}
@@ -72,26 +69,6 @@ export default async function HomePage() {
               Explorar Modalidades
             </Link>
           </div>
-        </div>
-      </section>
-
-      {/* ====== STATS SECTION ====== */}
-      <section className="max-w-7xl mx-auto py-16 px-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="text-center p-8 bg-white/[0.02] rounded-xl border border-white/[0.06]"
-            >
-              <div className="flex justify-center mb-4">
-                <Icon name={stat.icon} size={28} className="text-brand-red" />
-              </div>
-              <p className="font-bebas text-4xl text-brand-gold">{stat.value}</p>
-              <p className="font-barlow-condensed text-sm text-white/40 uppercase tracking-widest mt-1">
-                {stat.label}
-              </p>
-            </div>
-          ))}
         </div>
       </section>
 
