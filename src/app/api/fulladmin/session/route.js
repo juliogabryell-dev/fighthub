@@ -70,26 +70,25 @@ export async function POST(request) {
 
     const token = await hmacSign(payload);
 
-    const cookieStore = await cookies();
-    cookieStore.set(COOKIE_NAME, token, {
+    const response = NextResponse.json({ ok: true });
+    response.cookies.set(COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 8, // 8 hours
+      maxAge: 60 * 60 * 8,
     });
 
-    return NextResponse.json({ ok: true });
+    return response;
   } catch {
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
   }
 }
 
 // GET: Verify admin session
-export async function GET() {
+export async function GET(request) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get(COOKIE_NAME)?.value;
+    const token = request.cookies.get(COOKIE_NAME)?.value;
 
     const admin = await hmacVerify(token);
     if (!admin) {
@@ -108,8 +107,8 @@ export async function GET() {
 // DELETE: Logout (clear cookie)
 export async function DELETE() {
   try {
-    const cookieStore = await cookies();
-    cookieStore.set(COOKIE_NAME, '', {
+    const response = NextResponse.json({ ok: true });
+    response.cookies.set(COOKIE_NAME, '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -117,7 +116,7 @@ export async function DELETE() {
       maxAge: 0,
     });
 
-    return NextResponse.json({ ok: true });
+    return response;
   } catch {
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
   }
