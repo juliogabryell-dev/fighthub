@@ -172,6 +172,17 @@ CREATE TABLE news (
 );
 
 -- ============================================================
+-- 9. Administradores (sistema independente de auth)
+-- ============================================================
+CREATE TABLE admin_users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  name TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================
 -- ROW LEVEL SECURITY (RLS)
 -- ============================================================
 
@@ -185,6 +196,7 @@ ALTER TABLE fighter_videos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE fight_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE challenges ENABLE ROW LEVEL SECURITY;
 ALTER TABLE news ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
 
 -- ============================================================
 -- POLÍTICAS: profiles

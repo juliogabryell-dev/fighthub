@@ -1,7 +1,6 @@
 import { Bebas_Neue, Barlow, Barlow_Condensed } from 'next/font/google';
 import './globals.css';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import LayoutShell from '@/components/LayoutShell';
 
 const bebasNeue = Bebas_Neue({
   weight: '400',
@@ -37,9 +36,7 @@ export default function RootLayout({ children }) {
       className={`${bebasNeue.variable} ${barlow.variable} ${barlowCondensed.variable}`}
     >
       <body className="bg-dark-bg min-h-screen text-white">
-        <Navbar />
-        <div className="pt-20">{children}</div>
-        <Footer />
+        <LayoutShell>{children}</LayoutShell>
       </body>
     </html>
   );

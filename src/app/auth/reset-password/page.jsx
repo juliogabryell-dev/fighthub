@@ -34,8 +34,25 @@ export default function ResetPasswordPage() {
         }
       });
 
-      // 2. Check for ?code= in URL (direct PKCE — fallback if someone lands here with a code)
       const params = new URLSearchParams(window.location.search);
+
+      // 2. Handle token_hash + type directly in URL (Supabase email template format)
+      const tokenHash = params.get('token_hash');
+      const type = params.get('type');
+      if (tokenHash && type === 'recovery') {
+        const { error: otpError } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: 'recovery',
+        });
+        if (!otpError) {
+          setReady(true);
+          setInitializing(false);
+          subscription.unsubscribe();
+          return;
+        }
+      }
+
+      // 3. Check for ?code= in URL (direct PKCE — fallback if someone lands here with a code)
       const code = params.get('code');
       if (code) {
         const { error: codeError } = await supabase.auth.exchangeCodeForSession(code);
@@ -47,7 +64,7 @@ export default function ResetPasswordPage() {
         }
       }
 
-      // 3. Check existing session (set by /auth/callback server route)
+      // 4. Check existing session (set by /auth/callback server route)
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         setReady(true);

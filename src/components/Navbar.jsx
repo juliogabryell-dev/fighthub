@@ -66,7 +66,6 @@ export default function Navbar() {
   }
 
   function getRoleLink(role) {
-    if (role === 'admin') return '/admin';
     if (role === 'fighter' || role === 'coach' || role === 'academy') return '/perfil';
     return null;
   }
