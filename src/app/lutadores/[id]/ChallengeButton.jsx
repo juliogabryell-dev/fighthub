@@ -28,11 +28,11 @@ export default function ChallengeButton({ fighterId }) {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('is_fighter')
       .eq('id', user.id)
       .single();
 
-    if (profile?.role === 'fighter') {
+    if (profile?.is_fighter) {
       setCurrentUserId(user.id);
       setCanChallenge(true);
     }

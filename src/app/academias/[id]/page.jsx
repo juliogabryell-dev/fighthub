@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Icon from '@/components/Icon';
 import { createClient } from '@supabase/supabase-js';
+import RequestAcademyBindingButton from './RequestAcademyBindingButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -222,6 +223,11 @@ export default async function AcademyProfile({ params }) {
             </div>
           </div>
         )}
+
+        {/* Binding Button */}
+        <div className="px-10 pb-10 pt-4 border-t border-white/[0.06] flex justify-center">
+          <RequestAcademyBindingButton academyId={id} />
+        </div>
       </div>
     </main>
   );

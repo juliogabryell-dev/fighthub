@@ -66,13 +66,13 @@ export default function AdminPage() {
     const { count: fighterCount } = await supabase
       .from('profiles')
       .select('*', { count: 'exact', head: true })
-      .eq('role', 'fighter')
+      .eq('is_fighter', true)
       .eq('status', 'active');
 
     const { count: coachCount } = await supabase
       .from('profiles')
       .select('*', { count: 'exact', head: true })
-      .eq('role', 'coach')
+      .eq('is_coach', true)
       .eq('status', 'active');
 
     const { count: totalCount } = await supabase
@@ -298,19 +298,31 @@ export default function AdminPage() {
                         {user.full_name}
                       </p>
                       <p className="font-barlow text-white/40 text-sm truncate">
-                        {user.role === 'fighter' ? 'Lutador' : 'Treinador'} · {formatDate(user.created_at)}
+                        {user.is_fighter && user.is_coach ? 'Lutador & Treinador' : user.role === 'fighter' ? 'Lutador' : user.role === 'coach' ? 'Treinador' : user.role === 'academy' ? 'Academia' : user.role} · {formatDate(user.created_at)}
                       </p>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-barlow-condensed uppercase tracking-wider border ${
-                          user.role === 'fighter'
-                            ? 'bg-[#C41E3A]/20 text-[#C41E3A] border-[#C41E3A]/30'
-                            : 'bg-[#D4AF37]/20 text-[#D4AF37] border-[#D4AF37]/30'
-                        }`}
-                      >
-                        {user.role === 'fighter' ? 'Lutador' : 'Treinador'}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {user.is_fighter && (
+                          <span className="px-3 py-1 rounded-full text-xs font-barlow-condensed uppercase tracking-wider border bg-[#C41E3A]/20 text-[#C41E3A] border-[#C41E3A]/30">
+                            Lutador
+                          </span>
+                        )}
+                        {user.is_coach && (
+                          <span className="px-3 py-1 rounded-full text-xs font-barlow-condensed uppercase tracking-wider border bg-[#D4AF37]/20 text-[#D4AF37] border-[#D4AF37]/30">
+                            Treinador
+                          </span>
+                        )}
+                        {!user.is_fighter && !user.is_coach && (
+                          <span className={`px-3 py-1 rounded-full text-xs font-barlow-condensed uppercase tracking-wider border ${
+                            user.role === 'academy'
+                              ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                              : 'bg-[#D4AF37]/20 text-[#D4AF37] border-[#D4AF37]/30'
+                          }`}>
+                            {user.role === 'academy' ? 'Academia' : user.role}
+                          </span>
+                        )}
+                      </div>
                       <span className="font-barlow text-white/30 text-xs">
                         {formatDate(user.created_at)}
                       </span>
@@ -455,15 +467,27 @@ export default function AdminPage() {
                   <h3 className="font-bebas text-xl tracking-wider text-white">
                     {selectedUser.full_name}
                   </h3>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border ${
-                      selectedUser.role === 'fighter'
-                        ? 'bg-[#C41E3A]/20 text-[#C41E3A] border-[#C41E3A]/30'
-                        : 'bg-[#D4AF37]/20 text-[#D4AF37] border-[#D4AF37]/30'
-                    }`}
-                  >
-                    {selectedUser.role === 'fighter' ? 'Lutador' : 'Treinador'}
-                  </span>
+                  <div className="flex items-center gap-1">
+                    {selectedUser.is_fighter && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border bg-[#C41E3A]/20 text-[#C41E3A] border-[#C41E3A]/30">
+                        Lutador
+                      </span>
+                    )}
+                    {selectedUser.is_coach && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border bg-[#D4AF37]/20 text-[#D4AF37] border-[#D4AF37]/30">
+                        Treinador
+                      </span>
+                    )}
+                    {!selectedUser.is_fighter && !selectedUser.is_coach && (
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border ${
+                        selectedUser.role === 'academy'
+                          ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                          : 'bg-[#D4AF37]/20 text-[#D4AF37] border-[#D4AF37]/30'
+                      }`}>
+                        {selectedUser.role === 'academy' ? 'Academia' : selectedUser.role}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
               <button
@@ -490,7 +514,7 @@ export default function AdminPage() {
               </div>
               <div className="flex justify-between items-center py-2 border-b border-white/5">
                 <span className="font-barlow text-white/40 text-sm">Tipo</span>
-                <span className="font-barlow text-white text-sm capitalize">{selectedUser.role === 'fighter' ? 'Lutador' : 'Treinador'}</span>
+                <span className="font-barlow text-white text-sm capitalize">{selectedUser.is_fighter && selectedUser.is_coach ? 'Lutador & Treinador' : selectedUser.role === 'fighter' ? 'Lutador' : selectedUser.role === 'coach' ? 'Treinador' : selectedUser.role === 'academy' ? 'Academia' : selectedUser.role}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-white/5">
                 <span className="font-barlow text-white/40 text-sm">Status</span>

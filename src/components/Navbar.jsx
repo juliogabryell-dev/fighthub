@@ -29,7 +29,7 @@ export default function Navbar() {
         if (session?.user) {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('full_name, role, status, avatar_url')
+            .select('full_name, role, status, avatar_url, is_fighter, is_coach')
             .eq('id', session.user.id)
             .single();
           setUser({
@@ -37,6 +37,8 @@ export default function Navbar() {
             email: session.user.email,
             full_name: profile?.full_name || session.user.email,
             role: profile?.role || 'user',
+            is_fighter: profile?.is_fighter || false,
+            is_coach: profile?.is_coach || false,
             avatar_url: profile?.avatar_url || null,
           });
         }
@@ -125,7 +127,7 @@ export default function Navbar() {
                       {user.full_name}
                     </span>
                     <span className="text-[10px] text-white/30 font-barlow-condensed uppercase tracking-wider">
-                      {{ fighter: 'Lutador', coach: 'Treinador', admin: 'Admin', academy: 'Academia' }[user.role] || user.role}
+                      {user.is_fighter && user.is_coach ? 'Lutador & Treinador' : { fighter: 'Lutador', coach: 'Treinador', admin: 'Admin', academy: 'Academia' }[user.role] || user.role}
                     </span>
                   </div>
                 </div>
@@ -198,7 +200,7 @@ export default function Navbar() {
                         {user.full_name}
                       </span>
                       <span className="text-[10px] text-white/30 font-barlow-condensed uppercase tracking-wider">
-                        {{ fighter: 'Lutador', coach: 'Treinador', admin: 'Admin', academy: 'Academia' }[user.role] || user.role}
+                        {user.is_fighter && user.is_coach ? 'Lutador & Treinador' : { fighter: 'Lutador', coach: 'Treinador', admin: 'Admin', academy: 'Academia' }[user.role] || user.role}
                       </span>
                     </div>
                   </div>

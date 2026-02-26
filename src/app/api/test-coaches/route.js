@@ -15,7 +15,7 @@ export async function GET() {
     const { data, error } = await supabase
       .from('profiles')
       .select('id, full_name, role, status, coach_experiences!coach_experiences_coach_id_fkey(*)')
-      .eq('role', 'coach')
+      .eq('is_coach', true)
       .eq('status', 'active');
 
     return Response.json({ data, error, count: data?.length || 0 });

@@ -81,15 +81,23 @@ export default function PerfilPage() {
   const [resultChallenge, setResultChallenge] = useState(null);
   const [resultSaving, setResultSaving] = useState(false);
 
-  // Coach management (Fighter)
-  const [showCoachModal, setShowCoachModal] = useState(false);
-  const [availableCoaches, setAvailableCoaches] = useState([]);
+  // Coach/Academy per modality (Fighter)
   const [myCoaches, setMyCoaches] = useState([]);
+  const [myAcademies, setMyAcademies] = useState([]);
+  const [showCoachModalForArt, setShowCoachModalForArt] = useState(null);
+  const [showAcademyModalForArt, setShowAcademyModalForArt] = useState(null);
+  const [availableCoaches, setAvailableCoaches] = useState([]);
+  const [availableAcademiesForBinding, setAvailableAcademiesForBinding] = useState([]);
   const [loadingCoaches, setLoadingCoaches] = useState(false);
+  const [loadingAcademiesForBinding, setLoadingAcademiesForBinding] = useState(false);
 
   // Binding requests (Coach)
   const [bindingRequests, setBindingRequests] = useState([]);
   const [activeBindings, setActiveBindings] = useState([]);
+
+  // Binding requests (Academy)
+  const [academyBindingRequests, setAcademyBindingRequests] = useState([]);
+  const [academyActiveBindings, setAcademyActiveBindings] = useState([]);
 
   useEffect(() => {
     fetchUserAndProfile();
@@ -117,7 +125,7 @@ export default function PerfilPage() {
 
     setProfile(profileData);
 
-    if (profileData?.role === 'fighter') {
+    if (profileData?.is_fighter) {
       const { data: arts } = await supabase
         .from('fighter_martial_arts')
         .select('*')
@@ -146,15 +154,22 @@ export default function PerfilPage() {
         .order('created_at', { ascending: false });
       setChallenges(challengeData || []);
 
-      // Fetch my coaches (fighter_coaches)
+      // Fetch my coaches (fighter_coaches) with martial_art_id
       const { data: coachLinks } = await supabase
         .from('fighter_coaches')
-        .select('*, coach:coach_id(id, full_name, avatar_url)')
+        .select('*, coach:coach_id(id, full_name, avatar_url), martial_art:martial_art_id(id, art_name)')
         .eq('fighter_id', currentUser.id);
       setMyCoaches(coachLinks || []);
+
+      // Fetch my academies (fighter_academies)
+      const { data: academyLinks } = await supabase
+        .from('fighter_academies')
+        .select('*, academy:academy_id(id, full_name, avatar_url), martial_art:martial_art_id(id, art_name)')
+        .eq('fighter_id', currentUser.id);
+      setMyAcademies(academyLinks || []);
     }
 
-    if (profileData?.role === 'coach') {
+    if (profileData?.is_coach) {
       const { data: exps } = await supabase
         .from('coach_experiences')
         .select('*')
@@ -165,7 +180,7 @@ export default function PerfilPage() {
       // Fetch binding requests (pending)
       const { data: pendingReqs } = await supabase
         .from('fighter_coaches')
-        .select('*, fighter:fighter_id(id, full_name, avatar_url)')
+        .select('*, fighter:fighter_id(id, full_name, avatar_url), martial_art:martial_art_id(id, art_name)')
         .eq('coach_id', currentUser.id)
         .eq('status', 'pending');
       setBindingRequests(pendingReqs || []);
@@ -173,10 +188,27 @@ export default function PerfilPage() {
       // Fetch active bindings
       const { data: activeReqs } = await supabase
         .from('fighter_coaches')
-        .select('*, fighter:fighter_id(id, full_name, avatar_url)')
+        .select('*, fighter:fighter_id(id, full_name, avatar_url), martial_art:martial_art_id(id, art_name)')
         .eq('coach_id', currentUser.id)
         .eq('status', 'active');
       setActiveBindings(activeReqs || []);
+    }
+
+    // Academy owner: fetch binding requests
+    if (profileData?.role === 'academy') {
+      const { data: acPendingReqs } = await supabase
+        .from('fighter_academies')
+        .select('*, fighter:fighter_id(id, full_name, avatar_url), martial_art:martial_art_id(id, art_name)')
+        .eq('academy_id', currentUser.id)
+        .eq('status', 'pending');
+      setAcademyBindingRequests(acPendingReqs || []);
+
+      const { data: acActiveReqs } = await supabase
+        .from('fighter_academies')
+        .select('*, fighter:fighter_id(id, full_name, avatar_url), martial_art:martial_art_id(id, art_name)')
+        .eq('academy_id', currentUser.id)
+        .eq('status', 'active');
+      setAcademyActiveBindings(acActiveReqs || []);
     }
 
     setLoading(false);
@@ -563,31 +595,31 @@ export default function PerfilPage() {
     return `${challenge.challenged?.full_name || 'Desafiado'} venceu`;
   }
 
-  // ===== Coach Management (Fighter) =====
-  async function openCoachModal() {
-    setShowCoachModal(true);
+  // ===== Coach Management per Modality (Fighter) =====
+  async function openCoachModalForArt(artId) {
+    setShowCoachModalForArt(artId);
     setLoadingCoaches(true);
     const { data: coaches } = await supabase
       .from('profiles')
       .select('id, full_name, avatar_url')
-      .eq('role', 'coach')
+      .eq('is_coach', true)
       .eq('status', 'active');
     setAvailableCoaches(coaches || []);
     setLoadingCoaches(false);
   }
 
-  async function handleRequestCoach(coachId) {
+  async function handleRequestCoachForArt(coachId, artId) {
     const { error } = await supabase
       .from('fighter_coaches')
-      .insert({ fighter_id: user.id, coach_id: coachId, status: 'pending' });
+      .insert({ fighter_id: user.id, coach_id: coachId, martial_art_id: artId, status: 'pending' });
     if (error) {
       if (error.code === '23505') {
-        alert('Você já possui um vínculo com este treinador.');
+        alert('Você já possui um vínculo com este treinador nesta modalidade.');
       } else {
         alert('Erro ao solicitar vínculo: ' + error.message);
       }
     } else {
-      setShowCoachModal(false);
+      setShowCoachModalForArt(null);
       fetchUserAndProfile();
     }
   }
@@ -601,10 +633,57 @@ export default function PerfilPage() {
     if (!error) fetchUserAndProfile();
   }
 
+  // ===== Academy Management per Modality (Fighter) =====
+  async function openAcademyModalForArt(artId) {
+    setShowAcademyModalForArt(artId);
+    setLoadingAcademiesForBinding(true);
+    const { data: academies } = await supabase
+      .from('profiles')
+      .select('id, full_name, avatar_url')
+      .eq('role', 'academy')
+      .eq('status', 'active');
+    setAvailableAcademiesForBinding(academies || []);
+    setLoadingAcademiesForBinding(false);
+  }
+
+  async function handleRequestAcademyForArt(academyId, artId) {
+    const { error } = await supabase
+      .from('fighter_academies')
+      .insert({ fighter_id: user.id, academy_id: academyId, martial_art_id: artId, status: 'pending' });
+    if (error) {
+      if (error.code === '23505') {
+        alert('Você já possui um vínculo com esta academia nesta modalidade.');
+      } else {
+        alert('Erro ao solicitar vínculo: ' + error.message);
+      }
+    } else {
+      setShowAcademyModalForArt(null);
+      fetchUserAndProfile();
+    }
+  }
+
+  async function handleRemoveAcademy(linkId) {
+    if (!confirm('Tem certeza que deseja remover este vínculo?')) return;
+    const { error } = await supabase
+      .from('fighter_academies')
+      .delete()
+      .eq('id', linkId);
+    if (!error) fetchUserAndProfile();
+  }
+
   // ===== Binding Requests (Coach) =====
   async function handleRespondBinding(linkId, newStatus) {
     const { error } = await supabase
       .from('fighter_coaches')
+      .update({ status: newStatus })
+      .eq('id', linkId);
+    if (!error) fetchUserAndProfile();
+  }
+
+  // ===== Binding Requests (Academy owner) =====
+  async function handleRespondAcademyBinding(linkId, newStatus) {
+    const { error } = await supabase
+      .from('fighter_academies')
       .update({ status: newStatus })
       .eq('id', linkId);
     if (!error) fetchUserAndProfile();
@@ -700,8 +779,9 @@ export default function PerfilPage() {
     );
   }
 
-  const isFighter = profile?.role === 'fighter';
-  const isCoach = profile?.role === 'coach';
+  const isFighter = profile?.is_fighter;
+  const isCoach = profile?.is_coach;
+  const isDualRole = isFighter && isCoach;
   const isAcademy = profile?.role === 'academy';
   const wins = fightRecords.reduce((sum, r) => sum + (r.wins || 0), 0);
   const losses = fightRecords.reduce((sum, r) => sum + (r.losses || 0), 0);
@@ -717,7 +797,7 @@ export default function PerfilPage() {
         <div className="flex items-center justify-between mb-8">
           <h1 className="font-bebas text-4xl tracking-wider text-white">
             MEU{' '}
-            <span className={isFighter ? 'text-[#C41E3A]' : isAcademy ? 'text-blue-400' : 'text-[#D4AF37]'}>
+            <span className={isDualRole ? 'text-[#C41E3A]' : isFighter ? 'text-[#C41E3A]' : isAcademy ? 'text-blue-400' : 'text-[#D4AF37]'}>
               PERFIL
             </span>
           </h1>
@@ -735,7 +815,9 @@ export default function PerfilPage() {
           {/* Card Header with gradient */}
           <div
             className={`relative p-6 ${
-              isCoach
+              isDualRole
+                ? 'bg-gradient-to-r from-[#C41E3A]/20 via-[#D4AF37]/10 to-[#D4AF37]/5'
+                : isCoach
                 ? 'bg-gradient-to-r from-[#D4AF37]/20 to-[#D4AF37]/5'
                 : isAcademy
                 ? 'bg-gradient-to-r from-blue-500/20 to-blue-500/5'
@@ -760,7 +842,7 @@ export default function PerfilPage() {
                   </p>
                 )}
                 <p className="font-barlow-condensed text-sm uppercase tracking-wider text-white/60 mt-1">
-                  {isFighter ? 'Lutador' : isCoach ? 'Treinador' : 'Academia'}
+                  {isDualRole ? 'Lutador & Treinador' : isFighter ? 'Lutador' : isCoach ? 'Treinador' : 'Academia'}
                 </p>
                 <div className="mt-2">{getStatusBadge(profile?.status)}</div>
               </div>
@@ -872,52 +954,199 @@ export default function PerfilPage() {
           )}
         </div>
 
-        {/* Fighter: Martial Arts List */}
+        {/* Activate Second Role Button */}
+        {isFighter && !isCoach && (
+          <div className="mb-8">
+            <button
+              onClick={async () => {
+                const { error } = await supabase
+                  .from('profiles')
+                  .update({ is_coach: true })
+                  .eq('id', user.id);
+                if (!error) fetchUserAndProfile();
+                else alert('Erro ao ativar papel: ' + error.message);
+              }}
+              className="w-full group bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-5 border border-[#D4AF37]/20 hover:border-[#D4AF37]/40 transition-all text-left flex items-center gap-4"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#D4AF37]/20 flex items-center justify-center group-hover:bg-[#D4AF37]/30 transition-colors">
+                <Icon name="award" size={18} className="text-[#D4AF37]" />
+              </div>
+              <div>
+                <p className="font-barlow-condensed text-white font-semibold text-sm uppercase tracking-wider">
+                  Tambem sou Treinador
+                </p>
+                <p className="font-barlow text-white/40 text-xs mt-0.5">
+                  Ative seu perfil de treinador para gerenciar alunos e experiencias
+                </p>
+              </div>
+            </button>
+          </div>
+        )}
+
+        {isCoach && !isFighter && (
+          <div className="mb-8">
+            <button
+              onClick={async () => {
+                const { error } = await supabase
+                  .from('profiles')
+                  .update({ is_fighter: true })
+                  .eq('id', user.id);
+                if (!error) fetchUserAndProfile();
+                else alert('Erro ao ativar papel: ' + error.message);
+              }}
+              className="w-full group bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-5 border border-[#C41E3A]/20 hover:border-[#C41E3A]/40 transition-all text-left flex items-center gap-4"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#C41E3A]/20 flex items-center justify-center group-hover:bg-[#C41E3A]/30 transition-colors">
+                <Icon name="swords" size={18} className="text-[#C41E3A]" />
+              </div>
+              <div>
+                <p className="font-barlow-condensed text-white font-semibold text-sm uppercase tracking-wider">
+                  Tambem sou Lutador
+                </p>
+                <p className="font-barlow text-white/40 text-xs mt-0.5">
+                  Ative seu perfil de lutador para registrar modalidades, cartel e desafios
+                </p>
+              </div>
+            </button>
+          </div>
+        )}
+
+        {/* Fighter: Martial Arts List with Coaches/Academies per modality */}
         {isFighter && martialArts.length > 0 && (
           <div className="mb-8">
             <h3 className="font-bebas text-xl tracking-wider text-white/80 mb-4">
               MODALIDADES
             </h3>
-            <div className="space-y-3">
-              {martialArts.map((art) => (
-                <div
-                  key={art.id}
-                  className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-4 border border-white/10"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-barlow-condensed text-white font-semibold">
-                        {art.art_name}
-                      </p>
-                      <p className="font-barlow text-white/40 text-sm">
-                        {art.level}
-                        {art.started_at && ` · Desde ${art.started_at}`}
-                      </p>
+            <div className="space-y-4">
+              {martialArts.map((art) => {
+                const artCoaches = myCoaches.filter(mc => mc.martial_art_id === art.id);
+                const artAcademies = myAcademies.filter(ma => ma.martial_art_id === art.id);
+                return (
+                  <div
+                    key={art.id}
+                    className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-4 border border-white/10"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-barlow-condensed text-white font-semibold">
+                          {art.art_name}
+                        </p>
+                        <p className="font-barlow text-white/40 text-sm">
+                          {art.level}
+                          {art.started_at && ` · Desde ${art.started_at}`}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          onClick={() => openEditArt(art)}
+                          className="p-1.5 rounded-lg text-white/30 hover:text-[#C41E3A] hover:bg-[#C41E3A]/10 transition-all"
+                          title="Editar"
+                        >
+                          <Icon name="settings" size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteMartialArt(art.id)}
+                          className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                          title="Excluir"
+                        >
+                          <Icon name="x" size={14} />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        onClick={() => openEditArt(art)}
-                        className="p-1.5 rounded-lg text-white/30 hover:text-[#C41E3A] hover:bg-[#C41E3A]/10 transition-all"
-                        title="Editar"
-                      >
-                        <Icon name="settings" size={14} />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteMartialArt(art.id)}
-                        className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                        title="Excluir"
-                      >
-                        <Icon name="x" size={14} />
-                      </button>
+                    {art.description && (
+                      <p className="font-barlow text-white/30 text-sm mt-2">
+                        {art.description}
+                      </p>
+                    )}
+
+                    {/* Coaches for this modality */}
+                    <div className="mt-3 pt-3 border-t border-white/5">
+                      <p className="font-barlow-condensed text-xs uppercase tracking-widest text-[#D4AF37]/60 mb-2">
+                        Treinadores
+                      </p>
+                      {artCoaches.length > 0 ? (
+                        <div className="space-y-2">
+                          {artCoaches.map((link) => (
+                            <div key={link.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-white/[0.03]">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <Avatar name={link.coach?.full_name} url={link.coach?.avatar_url} size={28} />
+                                <Link
+                                  href={`/treinadores/${link.coach?.id}`}
+                                  className="font-barlow-condensed text-white text-sm hover:text-[#D4AF37] transition-colors truncate"
+                                >
+                                  {link.coach?.full_name || 'Treinador'}
+                                </Link>
+                                {getStatusBadge(link.status)}
+                              </div>
+                              <button
+                                onClick={() => handleRemoveCoach(link.id)}
+                                className="p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all shrink-0"
+                                title="Remover"
+                              >
+                                <Icon name="x" size={12} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="font-barlow text-white/20 text-xs">Nenhum treinador vinculado</p>
+                      )}
+                      {artCoaches.length < 3 && (
+                        <button
+                          onClick={() => openCoachModalForArt(art.id)}
+                          className="mt-2 flex items-center gap-1.5 text-xs font-barlow-condensed uppercase tracking-wider text-[#D4AF37]/70 hover:text-[#D4AF37] transition-colors"
+                        >
+                          <Icon name="plus" size={12} />
+                          Adicionar Treinador
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Academies for this modality */}
+                    <div className="mt-3 pt-3 border-t border-white/5">
+                      <p className="font-barlow-condensed text-xs uppercase tracking-widest text-blue-400/60 mb-2">
+                        Academias
+                      </p>
+                      {artAcademies.length > 0 ? (
+                        <div className="space-y-2">
+                          {artAcademies.map((link) => (
+                            <div key={link.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-white/[0.03]">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <Avatar name={link.academy?.full_name} url={link.academy?.avatar_url} size={28} />
+                                <Link
+                                  href={`/academias/${link.academy?.id}`}
+                                  className="font-barlow-condensed text-white text-sm hover:text-blue-400 transition-colors truncate"
+                                >
+                                  {link.academy?.full_name || 'Academia'}
+                                </Link>
+                                {getStatusBadge(link.status)}
+                              </div>
+                              <button
+                                onClick={() => handleRemoveAcademy(link.id)}
+                                className="p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all shrink-0"
+                                title="Remover"
+                              >
+                                <Icon name="x" size={12} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="font-barlow text-white/20 text-xs">Nenhuma academia vinculada</p>
+                      )}
+                      {artAcademies.length < 2 && (
+                        <button
+                          onClick={() => openAcademyModalForArt(art.id)}
+                          className="mt-2 flex items-center gap-1.5 text-xs font-barlow-condensed uppercase tracking-wider text-blue-400/70 hover:text-blue-400 transition-colors"
+                        >
+                          <Icon name="plus" size={12} />
+                          Adicionar Academia
+                        </button>
+                      )}
                     </div>
                   </div>
-                  {art.description && (
-                    <p className="font-barlow text-white/30 text-sm mt-2">
-                      {art.description}
-                    </p>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -1003,48 +1232,9 @@ export default function PerfilPage() {
           </div>
         )}
 
-        {/* Fighter: My Coaches */}
-        {isFighter && myCoaches.length > 0 && (
-          <div className="mb-8">
-            <h3 className="font-bebas text-xl tracking-wider text-white/80 mb-4">
-              MEUS TREINADORES
-            </h3>
-            <div className="space-y-3">
-              {myCoaches.map((link) => (
-                <div
-                  key={link.id}
-                  className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-4 border border-white/10 flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar name={link.coach?.full_name} url={link.coach?.avatar_url} size={40} />
-                    <div>
-                      <Link
-                        href={`/treinadores/${link.coach?.id}`}
-                        className="font-barlow-condensed text-white font-semibold hover:text-[#D4AF37] transition-colors"
-                      >
-                        {link.coach?.full_name || 'Treinador'}
-                      </Link>
-                      <div className="mt-0.5">
-                        {getChallengeStatusBadge(link.status === 'active' ? 'accepted' : link.status)}
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleRemoveCoach(link.id)}
-                    className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                    title="Remover"
-                  >
-                    <Icon name="x" size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Fighter: Action Cards */}
         {isFighter && (
-          <div className="grid grid-cols-2 gap-4 mb-8">
+          <div className="grid grid-cols-3 gap-4 mb-8">
             <button
               onClick={openAddArt}
               className="group bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-5 border border-white/10 hover:border-[#C41E3A]/30 transition-all text-left"
@@ -1098,21 +1288,6 @@ export default function PerfilPage() {
                   </span>
                 ) : null;
               })()}
-            </button>
-
-            <button
-              onClick={openCoachModal}
-              className="group bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-5 border border-white/10 hover:border-[#C41E3A]/30 transition-all text-left"
-            >
-              <div className="w-10 h-10 rounded-full bg-[#C41E3A]/20 flex items-center justify-center mb-3 group-hover:bg-[#C41E3A]/30 transition-colors">
-                <Icon name="users" size={18} className="text-[#C41E3A]" />
-              </div>
-              <p className="font-barlow-condensed text-white font-semibold text-sm uppercase tracking-wider">
-                Gerenciar Treinadores
-              </p>
-              <p className="font-barlow text-white/40 text-xs mt-1">
-                Vincule-se a treinadores
-              </p>
             </button>
           </div>
         )}
@@ -1365,7 +1540,7 @@ export default function PerfilPage() {
                           {req.fighter?.full_name || 'Lutador'}
                         </Link>
                         <p className="font-barlow text-white/40 text-xs">
-                          Solicitou vinculo
+                          Solicitou vinculo · {req.martial_art?.art_name || 'Modalidade'}
                         </p>
                       </div>
                     </div>
@@ -1403,12 +1578,17 @@ export default function PerfilPage() {
                   className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-4 border border-white/10 flex items-center gap-3"
                 >
                   <Avatar name={bind.fighter?.full_name} url={bind.fighter?.avatar_url} size={40} />
-                  <Link
-                    href={`/lutadores/${bind.fighter?.id}`}
-                    className="font-barlow-condensed text-white font-semibold hover:text-[#D4AF37] transition-colors"
-                  >
-                    {bind.fighter?.full_name || 'Lutador'}
-                  </Link>
+                  <div className="min-w-0">
+                    <Link
+                      href={`/lutadores/${bind.fighter?.id}`}
+                      className="font-barlow-condensed text-white font-semibold hover:text-[#D4AF37] transition-colors"
+                    >
+                      {bind.fighter?.full_name || 'Lutador'}
+                    </Link>
+                    <p className="font-barlow text-white/40 text-xs">
+                      {bind.martial_art?.art_name || 'Modalidade'}
+                    </p>
+                  </div>
                   <span className="ml-auto">
                     {getStatusBadge('active')}
                   </span>
@@ -1488,6 +1668,87 @@ export default function PerfilPage() {
                 </p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Academy: Binding Requests */}
+        {isAcademy && academyBindingRequests.length > 0 && (
+          <div className="mb-8">
+            <h3 className="font-bebas text-xl tracking-wider text-white/80 mb-4">
+              PEDIDOS DE VINCULO
+            </h3>
+            <div className="space-y-3">
+              {academyBindingRequests.map((req) => (
+                <div
+                  key={req.id}
+                  className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-4 border border-blue-400/20"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar name={req.fighter?.full_name} url={req.fighter?.avatar_url} size={40} />
+                      <div>
+                        <Link
+                          href={`/lutadores/${req.fighter?.id}`}
+                          className="font-barlow-condensed text-white font-semibold hover:text-blue-400 transition-colors"
+                        >
+                          {req.fighter?.full_name || 'Lutador'}
+                        </Link>
+                        <p className="font-barlow text-white/40 text-xs">
+                          Solicitou vinculo · {req.martial_art?.art_name || 'Modalidade'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => handleRespondAcademyBinding(req.id, 'active')}
+                        className="px-3 py-1.5 rounded-lg bg-green-500/20 border border-green-500/30 text-green-400 text-xs font-barlow-condensed uppercase tracking-wider hover:bg-green-500/30 transition-all"
+                      >
+                        Aceitar
+                      </button>
+                      <button
+                        onClick={() => handleRespondAcademyBinding(req.id, 'rejected')}
+                        className="px-3 py-1.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-barlow-condensed uppercase tracking-wider hover:bg-red-500/30 transition-all"
+                      >
+                        Rejeitar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Academy: Active Bindings */}
+        {isAcademy && academyActiveBindings.length > 0 && (
+          <div className="mb-8">
+            <h3 className="font-bebas text-xl tracking-wider text-white/80 mb-4">
+              LUTADORES VINCULADOS
+            </h3>
+            <div className="space-y-3">
+              {academyActiveBindings.map((bind) => (
+                <div
+                  key={bind.id}
+                  className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-4 border border-white/10 flex items-center gap-3"
+                >
+                  <Avatar name={bind.fighter?.full_name} url={bind.fighter?.avatar_url} size={40} />
+                  <div className="min-w-0">
+                    <Link
+                      href={`/lutadores/${bind.fighter?.id}`}
+                      className="font-barlow-condensed text-white font-semibold hover:text-blue-400 transition-colors"
+                    >
+                      {bind.fighter?.full_name || 'Lutador'}
+                    </Link>
+                    <p className="font-barlow text-white/40 text-xs">
+                      {bind.martial_art?.art_name || 'Modalidade'}
+                    </p>
+                  </div>
+                  <span className="ml-auto">
+                    {getStatusBadge('active')}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -1855,17 +2116,12 @@ export default function PerfilPage() {
         </Modal>
       )}
 
-      {/* Coach Management Modal (Fighter) */}
-      {showCoachModal && (
-        <Modal onClose={() => setShowCoachModal(false)} title="Selecionar Treinador">
+      {/* Coach per Modality Modal (Fighter) */}
+      {showCoachModalForArt && (
+        <Modal onClose={() => setShowCoachModalForArt(null)} title={`Adicionar Treinador — ${martialArts.find(a => a.id === showCoachModalForArt)?.art_name || 'Modalidade'}`}>
           {loadingCoaches ? (
             <div className="flex justify-center py-8">
-              <svg
-                className="animate-spin h-8 w-8 text-[#C41E3A]"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
+              <svg className="animate-spin h-8 w-8 text-[#D4AF37]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
@@ -1873,17 +2129,12 @@ export default function PerfilPage() {
           ) : availableCoaches.length > 0 ? (
             <div className="space-y-3 max-h-[60vh] overflow-y-auto">
               {availableCoaches.map((coach) => {
-                const existing = myCoaches.find(mc => mc.coach_id === coach.id);
+                const existing = myCoaches.find(mc => mc.coach_id === coach.id && mc.martial_art_id === showCoachModalForArt);
                 return (
-                  <div
-                    key={coach.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10"
-                  >
+                  <div key={coach.id} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
                     <div className="flex items-center gap-3">
                       <Avatar name={coach.full_name} url={coach.avatar_url} size={36} />
-                      <p className="font-barlow-condensed text-white font-semibold text-sm">
-                        {coach.full_name}
-                      </p>
+                      <p className="font-barlow-condensed text-white font-semibold text-sm">{coach.full_name}</p>
                     </div>
                     {existing ? (
                       <span className="text-xs font-barlow-condensed text-white/40 uppercase tracking-wider">
@@ -1891,7 +2142,7 @@ export default function PerfilPage() {
                       </span>
                     ) : (
                       <button
-                        onClick={() => handleRequestCoach(coach.id)}
+                        onClick={() => handleRequestCoachForArt(coach.id, showCoachModalForArt)}
                         className="px-3 py-1.5 rounded-lg bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-barlow-condensed uppercase tracking-wider hover:bg-[#D4AF37]/30 transition-all"
                       >
                         Solicitar
@@ -1903,9 +2154,51 @@ export default function PerfilPage() {
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="font-barlow text-white/30">
-                Nenhum treinador disponivel na plataforma.
-              </p>
+              <p className="font-barlow text-white/30">Nenhum treinador disponivel na plataforma.</p>
+            </div>
+          )}
+        </Modal>
+      )}
+
+      {/* Academy per Modality Modal (Fighter) */}
+      {showAcademyModalForArt && (
+        <Modal onClose={() => setShowAcademyModalForArt(null)} title={`Adicionar Academia — ${martialArts.find(a => a.id === showAcademyModalForArt)?.art_name || 'Modalidade'}`}>
+          {loadingAcademiesForBinding ? (
+            <div className="flex justify-center py-8">
+              <svg className="animate-spin h-8 w-8 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            </div>
+          ) : availableAcademiesForBinding.length > 0 ? (
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+              {availableAcademiesForBinding.map((academy) => {
+                const existing = myAcademies.find(ma => ma.academy_id === academy.id && ma.martial_art_id === showAcademyModalForArt);
+                return (
+                  <div key={academy.id} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-3">
+                      <Avatar name={academy.full_name} url={academy.avatar_url} size={36} />
+                      <p className="font-barlow-condensed text-white font-semibold text-sm">{academy.full_name}</p>
+                    </div>
+                    {existing ? (
+                      <span className="text-xs font-barlow-condensed text-white/40 uppercase tracking-wider">
+                        {existing.status === 'active' ? 'Vinculada' : existing.status === 'pending' ? 'Pendente' : 'Rejeitado'}
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => handleRequestAcademyForArt(academy.id, showAcademyModalForArt)}
+                        className="px-3 py-1.5 rounded-lg bg-blue-500/20 border border-blue-500/30 text-blue-400 text-xs font-barlow-condensed uppercase tracking-wider hover:bg-blue-500/30 transition-all"
+                      >
+                        Solicitar
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="font-barlow text-white/30">Nenhuma academia disponivel na plataforma.</p>
             </div>
           )}
         </Modal>

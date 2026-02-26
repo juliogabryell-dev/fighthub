@@ -14,7 +14,7 @@ async function getFighter(id) {
     const supabase = createClient(url, key);
     const { data: fighter, error } = await supabase
       .from('profiles')
-      .select('*, fighter_martial_arts(*), fight_records!fight_records_fighter_id_fkey(*), fighter_coaches!fighter_coaches_fighter_id_fkey(*, coach:coach_id(id, full_name, avatar_url)), fighter_videos(*)')
+      .select('*, fighter_martial_arts(*), fight_records!fight_records_fighter_id_fkey(*), fighter_coaches!fighter_coaches_fighter_id_fkey(*, coach:coach_id(id, full_name, avatar_url), martial_art:martial_art_id(id, art_name)), fighter_academies!fighter_academies_fighter_id_fkey(*, academy:academy_id(id, full_name, avatar_url), martial_art:martial_art_id(id, art_name)), fighter_videos(*)')
       .eq('id', id)
       .single();
 
@@ -245,69 +245,98 @@ export default async function FighterProfile({ params }) {
             </div>
           </div>
 
-          {/* Martial Arts Section */}
+          {/* Martial Arts Section with Coaches/Academies per modality */}
           {fighter.fighter_martial_arts && fighter.fighter_martial_arts.length > 0 && (
             <div className="mb-10">
               <h2 className="font-barlow-condensed text-brand-gold uppercase tracking-widest text-sm font-semibold mb-4">
                 MODALIDADES & EXPERIÊNCIA
               </h2>
-              <div className="space-y-3">
-                {fighter.fighter_martial_arts.map((fma, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-4 p-4 bg-white/[0.02] rounded-lg border-l-2 border-brand-red"
-                  >
-                    <div>
-                      <p className="font-barlow-condensed text-lg text-white">
-                        {fma.art_name || `Arte Marcial #${fma.martial_art_id}`}
-                      </p>
-                      <div className="flex gap-3 mt-1">
-                        {fma.level && (
-                          <span className="font-barlow text-sm text-white/50">
-                            Nível: <span className="text-brand-gold">{fma.level}</span>
-                          </span>
-                        )}
-                        {fma.started_at && (() => {
-                          const years = Math.floor((Date.now() - new Date(fma.started_at).getTime()) / (365.25 * 24 * 60 * 60 * 1000));
-                          return years > 0 ? (
+              <div className="space-y-4">
+                {fighter.fighter_martial_arts.map((fma, index) => {
+                  const activeCoaches = (fighter.fighter_coaches || []).filter(fc => fc.martial_art_id === fma.id && fc.status === 'active');
+                  const activeAcademies = (fighter.fighter_academies || []).filter(fa => fa.martial_art_id === fma.id && fa.status === 'active');
+                  return (
+                    <div
+                      key={index}
+                      className="p-4 bg-white/[0.02] rounded-lg border-l-2 border-brand-red"
+                    >
+                      <div>
+                        <p className="font-barlow-condensed text-lg text-white">
+                          {fma.art_name || `Arte Marcial #${fma.martial_art_id}`}
+                        </p>
+                        <div className="flex gap-3 mt-1">
+                          {fma.level && (
                             <span className="font-barlow text-sm text-white/50">
-                              {years} {years === 1 ? 'ano' : 'anos'} praticando
+                              Nível: <span className="text-brand-gold">{fma.level}</span>
                             </span>
-                          ) : (
-                            <span className="font-barlow text-sm text-white/50">
-                              Menos de 1 ano praticando
-                            </span>
-                          );
-                        })()}
+                          )}
+                          {fma.started_at && (() => {
+                            const years = Math.floor((Date.now() - new Date(fma.started_at).getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+                            return years > 0 ? (
+                              <span className="font-barlow text-sm text-white/50">
+                                {years} {years === 1 ? 'ano' : 'anos'} praticando
+                              </span>
+                            ) : (
+                              <span className="font-barlow text-sm text-white/50">
+                                Menos de 1 ano praticando
+                              </span>
+                            );
+                          })()}
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
-          {/* Coaches Section */}
-          {fighter.fighter_coaches && fighter.fighter_coaches.length > 0 && (
-            <div className="mb-10">
-              <h2 className="font-barlow-condensed text-brand-gold uppercase tracking-widest text-sm font-semibold mb-4">
-                TREINADORES
-              </h2>
-              <div className="space-y-3">
-                {fighter.fighter_coaches.map((fc, index) => (
-                  <Link
-                    key={index}
-                    href={`/treinadores/${fc.coach?.id || fc.coach_id}`}
-                    className="flex items-center gap-4 p-4 bg-white/[0.02] rounded-lg border border-white/[0.06] hover:bg-white/[0.04] transition-colors"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-brand-gold/15 flex items-center justify-center flex-shrink-0">
-                      <Icon name="award" size={18} className="text-brand-gold" />
+                      {/* Coaches for this modality */}
+                      {activeCoaches.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-white/[0.06]">
+                          <p className="font-barlow-condensed text-xs uppercase tracking-widest text-brand-gold/60 mb-2">
+                            Treinadores
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {activeCoaches.map((fc, i) => (
+                              <Link
+                                key={i}
+                                href={`/treinadores/${fc.coach?.id || fc.coach_id}`}
+                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] transition-colors"
+                              >
+                                <div className="w-6 h-6 rounded-full bg-brand-gold/15 flex items-center justify-center flex-shrink-0">
+                                  <Icon name="award" size={12} className="text-brand-gold" />
+                                </div>
+                                <span className="font-barlow-condensed text-sm text-white">
+                                  {fc.coach?.full_name || 'Treinador'}
+                                </span>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Academies for this modality */}
+                      {activeAcademies.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-white/[0.06]">
+                          <p className="font-barlow-condensed text-xs uppercase tracking-widest text-blue-400/60 mb-2">
+                            Academias
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {activeAcademies.map((fa, i) => (
+                              <Link
+                                key={i}
+                                href={`/academias/${fa.academy?.id || fa.academy_id}`}
+                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] transition-colors"
+                              >
+                                <div className="w-6 h-6 rounded-full bg-blue-500/15 flex items-center justify-center flex-shrink-0">
+                                  <Icon name="home" size={12} className="text-blue-400" />
+                                </div>
+                                <span className="font-barlow-condensed text-sm text-white">
+                                  {fa.academy?.full_name || 'Academia'}
+                                </span>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <p className="font-barlow-condensed text-white">
-                      {fc.coach?.full_name || 'Treinador'}
-                    </p>
-                  </Link>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

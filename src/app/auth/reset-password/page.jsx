@@ -18,42 +18,47 @@ export default function ResetPasswordPage() {
   const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
-    // Handle the auth code from URL (PKCE flow)
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get('code');
+    async function init() {
+      // The user arrives here after /auth/callback has already exchanged the
+      // code/token and set the session cookies. We just need to confirm
+      // there is an active session.
 
-    async function handleCode() {
-      if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (!error) {
+      // Also handle the legacy case where Supabase appends tokens as a hash
+      // fragment (#access_token=...) — the client SDK picks those up automatically.
+
+      // 1. Listen for PASSWORD_RECOVERY event (hash fragment flow)
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+        if (event === 'PASSWORD_RECOVERY') {
           setReady(true);
-        } else {
-          setError('Link de recuperacao invalido ou expirado. Solicite um novo.');
+          setInitializing(false);
         }
-        setInitializing(false);
-        return;
+      });
+
+      // 2. Check for ?code= in URL (direct PKCE — fallback if someone lands here with a code)
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      if (code) {
+        const { error: codeError } = await supabase.auth.exchangeCodeForSession(code);
+        if (!codeError) {
+          setReady(true);
+          setInitializing(false);
+          subscription.unsubscribe();
+          return;
+        }
       }
 
-      // Handle hash fragment (implicit flow) or existing session
-      // Supabase client auto-detects tokens in URL hash
+      // 3. Check existing session (set by /auth/callback server route)
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         setReady(true);
       }
+
       setInitializing(false);
+
+      return () => subscription.unsubscribe();
     }
 
-    // Listen for PASSWORD_RECOVERY event
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setReady(true);
-        setInitializing(false);
-      }
-    });
-
-    handleCode();
-
-    return () => subscription.unsubscribe();
+    init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

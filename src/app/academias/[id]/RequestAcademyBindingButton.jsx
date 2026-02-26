@@ -4,17 +4,17 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Icon from '@/components/Icon';
 
-export default function RequestBindingButton({ coachId }) {
+export default function RequestAcademyBindingButton({ academyId }) {
   const [state, setState] = useState('loading'); // 'loading', 'hidden', 'show'
   const [martialArts, setMartialArts] = useState([]);
   const [bindings, setBindings] = useState([]);
-  const [coachCounts, setCoachCounts] = useState({});
+  const [academyCounts, setAcademyCounts] = useState({});
   const [submitting, setSubmitting] = useState(null);
   const [feedback, setFeedback] = useState('');
 
   useEffect(() => {
     checkBindingStatus();
-  }, [coachId]);
+  }, [academyId]);
 
   async function checkBindingStatus() {
     try {
@@ -32,7 +32,7 @@ export default function RequestBindingButton({ coachId }) {
         .eq('id', user.id)
         .single();
 
-      if (!profile || !profile.is_fighter || user.id === coachId) {
+      if (!profile || !profile.is_fighter || user.id === academyId) {
         setState('hidden');
         return;
       }
@@ -49,26 +49,26 @@ export default function RequestBindingButton({ coachId }) {
         return;
       }
 
-      // Fetch existing bindings with this coach
+      // Fetch existing bindings with this academy
       const { data: existingBindings } = await supabase
-        .from('fighter_coaches')
+        .from('fighter_academies')
         .select('id, martial_art_id, status')
         .eq('fighter_id', user.id)
-        .eq('coach_id', coachId);
+        .eq('academy_id', academyId);
       setBindings(existingBindings || []);
 
-      // Fetch all coach bindings per modality to check limits
-      const { data: allCoachBindings } = await supabase
-        .from('fighter_coaches')
+      // Fetch all academy bindings per modality to check limits
+      const { data: allAcademyBindings } = await supabase
+        .from('fighter_academies')
         .select('martial_art_id')
         .eq('fighter_id', user.id)
         .in('status', ['pending', 'active']);
 
       const counts = {};
-      (allCoachBindings || []).forEach(b => {
+      (allAcademyBindings || []).forEach(b => {
         counts[b.martial_art_id] = (counts[b.martial_art_id] || 0) + 1;
       });
-      setCoachCounts(counts);
+      setAcademyCounts(counts);
 
       setState('show');
     } catch {
@@ -91,10 +91,10 @@ export default function RequestBindingButton({ coachId }) {
       }
 
       const { error } = await supabase
-        .from('fighter_coaches')
+        .from('fighter_academies')
         .insert({
           fighter_id: user.id,
-          coach_id: coachId,
+          academy_id: academyId,
           martial_art_id: artId,
           status: 'pending',
         });
@@ -110,7 +110,6 @@ export default function RequestBindingButton({ coachId }) {
       }
 
       setFeedback('Solicitação enviada com sucesso!');
-      // Refresh state
       await checkBindingStatus();
     } catch {
       setFeedback('Erro inesperado. Tente novamente.');
@@ -133,7 +132,7 @@ export default function RequestBindingButton({ coachId }) {
 
   const statusStyles = {
     active: 'bg-green-500/10 border-green-500/30 text-green-400',
-    pending: 'bg-brand-gold/10 border-brand-gold/30 text-brand-gold',
+    pending: 'bg-blue-500/10 border-blue-500/30 text-blue-400',
     rejected: 'bg-red-500/10 border-red-500/30 text-red-400',
   };
   const statusLabels = {
@@ -150,8 +149,8 @@ export default function RequestBindingButton({ coachId }) {
       <div className="space-y-2">
         {martialArts.map((art) => {
           const binding = bindings.find(b => b.martial_art_id === art.id);
-          const count = coachCounts[art.id] || 0;
-          const limitReached = count >= 3 && !binding;
+          const count = academyCounts[art.id] || 0;
+          const limitReached = count >= 2 && !binding;
 
           return (
             <div
@@ -176,10 +175,10 @@ export default function RequestBindingButton({ coachId }) {
                 <button
                   onClick={() => handleRequest(art.id)}
                   disabled={submitting === art.id}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-brand-gold to-yellow-600 text-black font-barlow-condensed uppercase tracking-widest text-xs font-semibold hover:shadow-lg hover:shadow-brand-gold/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-barlow-condensed uppercase tracking-widest text-xs font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting === art.id ? (
-                    <div className="w-3 h-3 border-2 border-black/30 border-t-black/70 rounded-full animate-spin" />
+                    <div className="w-3 h-3 border-2 border-white/30 border-t-white/70 rounded-full animate-spin" />
                   ) : (
                     <Icon name="send" size={12} />
                   )}

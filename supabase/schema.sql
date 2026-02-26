@@ -27,6 +27,8 @@ CREATE TABLE profiles (
   rg TEXT,
   cpf_cnpj TEXT,
   role TEXT NOT NULL CHECK (role IN ('fighter', 'coach', 'admin', 'academy')),
+  is_fighter BOOLEAN NOT NULL DEFAULT FALSE,
+  is_coach BOOLEAN NOT NULL DEFAULT FALSE,
   avatar_url TEXT,
   phone TEXT,
   city TEXT,
@@ -80,9 +82,23 @@ CREATE TABLE fighter_coaches (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   fighter_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   coach_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  martial_art_id UUID NOT NULL REFERENCES fighter_martial_arts(id) ON DELETE CASCADE,
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'rejected')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(fighter_id, coach_id)
+  UNIQUE(fighter_id, coach_id, martial_art_id)
+);
+
+-- ============================================================
+-- 4b. Relacionamento lutador-academia
+-- ============================================================
+CREATE TABLE fighter_academies (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  fighter_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  academy_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  martial_art_id UUID NOT NULL REFERENCES fighter_martial_arts(id) ON DELETE CASCADE,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'rejected')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(fighter_id, academy_id, martial_art_id)
 );
 
 -- ============================================================
@@ -163,6 +179,7 @@ ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE fighter_martial_arts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE coach_experiences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE fighter_coaches ENABLE ROW LEVEL SECURITY;
+ALTER TABLE fighter_academies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE fighter_videos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE fight_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE challenges ENABLE ROW LEVEL SECURITY;
@@ -297,6 +314,31 @@ CREATE POLICY "Treinador pode atualizar vinculo"
   ON fighter_coaches FOR UPDATE
   USING (auth.uid() = coach_id)
   WITH CHECK (auth.uid() = coach_id);
+
+-- ============================================================
+-- POLÍTICAS: fighter_academies
+-- ============================================================
+
+-- Leitura pública
+CREATE POLICY "Vinculos academias visiveis publicamente"
+  ON fighter_academies FOR SELECT
+  USING (true);
+
+-- Lutador ou academia pode inserir
+CREATE POLICY "Lutador ou academia pode criar vinculo"
+  ON fighter_academies FOR INSERT
+  WITH CHECK (auth.uid() = fighter_id OR auth.uid() = academy_id);
+
+-- Lutador ou academia pode deletar
+CREATE POLICY "Lutador ou academia pode remover vinculo"
+  ON fighter_academies FOR DELETE
+  USING (auth.uid() = fighter_id OR auth.uid() = academy_id);
+
+-- Academia pode atualizar vinculo (aprovar/rejeitar)
+CREATE POLICY "Academia pode atualizar vinculo"
+  ON fighter_academies FOR UPDATE
+  USING (auth.uid() = academy_id)
+  WITH CHECK (auth.uid() = academy_id);
 
 -- ============================================================
 -- POLÍTICAS: challenges

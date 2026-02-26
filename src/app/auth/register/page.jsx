@@ -59,6 +59,8 @@ export default function RegisterPage() {
           full_name: fullName,
           role,
           status: 'pending',
+          is_fighter: role === 'fighter',
+          is_coach: role === 'coach',
         };
 
         if (role === 'academy') {
