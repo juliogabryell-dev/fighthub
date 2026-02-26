@@ -30,7 +30,7 @@ CREATE OR REPLACE FUNCTION verify_admin_login(p_email TEXT, p_password TEXT)
 RETURNS JSON
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
 DECLARE
   v_admin admin_users%ROWTYPE;
@@ -63,7 +63,7 @@ CREATE OR REPLACE FUNCTION create_admin_user(p_email TEXT, p_password TEXT, p_na
 RETURNS JSON
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions
 AS $$
 DECLARE
   v_admin admin_users%ROWTYPE;
