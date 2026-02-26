@@ -142,6 +142,11 @@ export default async function AcademyProfile({ params }) {
               <h1 className="font-bebas text-4xl text-white tracking-wider">
                 {academy.full_name}
               </h1>
+              {academy.handle && (
+                <p className="font-barlow text-sm text-white/50 mt-0.5">
+                  @{academy.handle}
+                </p>
+              )}
               <p className="font-barlow-condensed text-sm text-blue-400 uppercase tracking-wider mt-1">
                 Academia
               </p>

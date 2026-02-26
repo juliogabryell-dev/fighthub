@@ -105,6 +105,11 @@ export default async function FighterProfile({ params }) {
               <h1 className="font-bebas text-4xl text-white tracking-wider">
                 {fighter.full_name}
               </h1>
+              {fighter.handle && (
+                <p className="font-barlow text-sm text-white/50 mt-0.5">
+                  @{fighter.handle}
+                </p>
+              )}
               {fighter.birth_date && (
                 <p className="font-barlow text-sm text-white/40 mt-1">
                   Nascimento: {new Date(fighter.birth_date).toLocaleDateString('pt-BR')}

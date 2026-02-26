@@ -22,6 +22,7 @@ $$ LANGUAGE plpgsql;
 CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name TEXT NOT NULL,
+  handle TEXT CONSTRAINT profiles_handle_unique UNIQUE CONSTRAINT profiles_handle_format CHECK (handle ~ '^[a-z0-9_]{3,30}$'),
   birth_date DATE,
   cpf TEXT,
   rg TEXT,

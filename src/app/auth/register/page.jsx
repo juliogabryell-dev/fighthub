@@ -15,6 +15,7 @@ export default function RegisterPage() {
   const [cpf, setCpf] = useState('');
   const [rg, setRg] = useState('');
   const [cpfCnpj, setCpfCnpj] = useState('');
+  const [handle, setHandle] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -29,6 +30,12 @@ export default function RegisterPage() {
 
     if (password.length < 6) {
       setError('A senha deve ter no mínimo 6 caracteres.');
+      setLoading(false);
+      return;
+    }
+
+    if (handle && !/^[a-z0-9_]{3,30}$/.test(handle)) {
+      setError('O @ deve ter entre 3 e 30 caracteres (letras minúsculas, números e _ apenas).');
       setLoading(false);
       return;
     }
@@ -57,6 +64,7 @@ export default function RegisterPage() {
         const profileData = {
           id: user.id,
           full_name: fullName,
+          handle: handle || null,
           role,
           status: 'pending',
           is_fighter: role === 'fighter',
@@ -75,7 +83,11 @@ export default function RegisterPage() {
         const { error: profileError } = await supabase.from('profiles').insert(profileData);
 
         if (profileError) {
-          setError(profileError.message);
+          if (profileError.code === '23505' && profileError.message?.includes('handle')) {
+            setError('Este @ já está em uso. Escolha outro.');
+          } else {
+            setError(profileError.message);
+          }
           return;
         }
       }
@@ -219,6 +231,23 @@ export default function RegisterPage() {
                 </div>
               </>
             )}
+
+            <div>
+              <InputField
+                label="@ Identificador (opcional)"
+                type="text"
+                value={handle}
+                onChange={(e) => {
+                  const sanitized = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+                  setHandle(sanitized);
+                }}
+                placeholder="seu_identificador"
+                maxLength={30}
+              />
+              <p className="font-barlow text-white/30 text-xs mt-1">
+                Opcional. Letras minúsculas, números e _ (3 a 30 caracteres)
+              </p>
+            </div>
 
             <InputField
               label="Email"

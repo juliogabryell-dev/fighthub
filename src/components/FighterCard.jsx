@@ -23,6 +23,11 @@ export default function FighterCard({ fighter }) {
             <h3 className="font-bebas text-xl text-white tracking-wide truncate group-hover:text-brand-red transition-colors">
               {full_name}
             </h3>
+            {fighter.handle && (
+              <p className="text-xs text-white/40 font-barlow truncate -mt-0.5 mb-0.5">
+                @{fighter.handle}
+              </p>
+            )}
             {city && (
               <p className="text-xs text-white/35 font-barlow truncate -mt-0.5 mb-0.5">
                 {city}

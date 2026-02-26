@@ -16,6 +16,11 @@ export default function CoachCard({ coach }) {
             <h3 className="font-bebas text-xl text-white tracking-wide truncate group-hover:text-brand-red transition-colors">
               {full_name}
             </h3>
+            {coach.handle && (
+              <p className="text-xs text-white/40 font-barlow truncate -mt-0.5 mb-0.5">
+                @{coach.handle}
+              </p>
+            )}
             {city && (
               <p className="text-xs text-white/35 font-barlow truncate -mt-0.5 mb-0.5">
                 {city}

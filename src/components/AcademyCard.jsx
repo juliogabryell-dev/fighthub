@@ -16,6 +16,11 @@ export default function AcademyCard({ academy }) {
             <h3 className="font-bebas text-xl text-white tracking-wide truncate group-hover:text-blue-400 transition-colors">
               {full_name}
             </h3>
+            {academy.handle && (
+              <p className="text-xs text-white/40 font-barlow truncate -mt-0.5 mb-0.5">
+                @{academy.handle}
+              </p>
+            )}
             {city && (
               <p className="text-xs text-white/35 font-barlow truncate -mt-0.5 mb-0.5">
                 {city}

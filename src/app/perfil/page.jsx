@@ -21,6 +21,7 @@ export default function PerfilPage() {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editForm, setEditForm] = useState({
     full_name: '',
+    handle: '',
     birth_date: '',
     cpf_cnpj: '',
     phone: '',
@@ -32,6 +33,9 @@ export default function PerfilPage() {
     youtube: '',
     tiktok: '',
   });
+  const [handleAvailable, setHandleAvailable] = useState(null);
+  const [checkingHandle, setCheckingHandle] = useState(false);
+  const handleCheckTimeoutRef = useRef(null);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -384,10 +388,38 @@ export default function PerfilPage() {
     if (!error) fetchUserAndProfile();
   }
 
+  // ===== Handle availability check =====
+  function checkHandleAvailability(val) {
+    if (handleCheckTimeoutRef.current) clearTimeout(handleCheckTimeoutRef.current);
+    if (!val || val.length < 3 || !/^[a-z0-9_]{3,30}$/.test(val)) {
+      setHandleAvailable(null);
+      setCheckingHandle(false);
+      return;
+    }
+    if (val === profile?.handle) {
+      setHandleAvailable(true);
+      setCheckingHandle(false);
+      return;
+    }
+    setCheckingHandle(true);
+    setHandleAvailable(null);
+    handleCheckTimeoutRef.current = setTimeout(async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('handle', val)
+        .neq('id', user.id)
+        .maybeSingle();
+      setHandleAvailable(!data);
+      setCheckingHandle(false);
+    }, 500);
+  }
+
   // ===== Edit Profile =====
   function openEditProfile() {
     setEditForm({
       full_name: profile?.full_name || '',
+      handle: profile?.handle || '',
       birth_date: profile?.birth_date || '',
       cpf_cnpj: profile?.cpf_cnpj || '',
       phone: profile?.phone || '',
@@ -399,6 +431,8 @@ export default function PerfilPage() {
       youtube: profile?.youtube || '',
       tiktok: profile?.tiktok || '',
     });
+    setHandleAvailable(null);
+    setCheckingHandle(false);
     setAvatarFile(null);
     setAvatarPreview(profile?.avatar_url || null);
     setShowEditProfile(true);
@@ -441,6 +475,7 @@ export default function PerfilPage() {
 
       const updateData = {
         full_name: editForm.full_name,
+        handle: editForm.handle || null,
         avatar_url,
         phone: editForm.phone || null,
         city: editForm.city || null,
@@ -464,7 +499,11 @@ export default function PerfilPage() {
         .eq('id', user.id);
 
       if (error) {
-        alert('Erro ao salvar perfil: ' + error.message);
+        if (error.code === '23505' && error.message?.includes('handle')) {
+          alert('Este @ já está em uso. Escolha outro.');
+        } else {
+          alert('Erro ao salvar perfil: ' + error.message);
+        }
       } else {
         setShowEditProfile(false);
         fetchUserAndProfile();
@@ -810,6 +849,19 @@ export default function PerfilPage() {
           </button>
         </div>
 
+        {/* Handle Banner */}
+        {!profile?.handle && (
+          <div className="mb-4 p-3 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center gap-3">
+            <Icon name="at-sign" size={18} className="text-[#D4AF37] flex-shrink-0" />
+            <p className="font-barlow text-[#D4AF37] text-sm">
+              Cadastre seu <strong>@identificador</strong> para ser encontrado mais facilmente.{' '}
+              <button onClick={openEditProfile} className="underline hover:text-[#D4AF37]/80 transition-colors">
+                Configurar agora
+              </button>
+            </p>
+          </div>
+        )}
+
         {/* Profile Card */}
         <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl overflow-hidden mb-8">
           {/* Card Header with gradient */}
@@ -835,6 +887,11 @@ export default function PerfilPage() {
                 <h2 className="font-bebas text-3xl tracking-wide text-white">
                   {profile?.full_name}
                 </h2>
+                {profile?.handle && (
+                  <p className="font-barlow text-sm text-white/50 -mt-0.5">
+                    @{profile.handle}
+                  </p>
+                )}
                 {(profile?.city || profile?.state) && (
                   <p className="font-barlow text-sm text-white/40 flex items-center gap-1.5 mt-0.5">
                     <Icon name="map-pin" size={13} />
@@ -1919,6 +1976,55 @@ export default function PerfilPage() {
               placeholder={isAcademy ? 'Nome da sua academia' : 'Seu nome completo'}
               required
             />
+
+            {/* Handle (@identificador) */}
+            <div>
+              <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-white/50 mb-1.5 font-semibold">
+                @ Identificador
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 font-barlow text-sm pointer-events-none">@</span>
+                <input
+                  type="text"
+                  value={editForm.handle}
+                  onChange={(e) => {
+                    const sanitized = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+                    setEditForm({ ...editForm, handle: sanitized });
+                    checkHandleAvailability(sanitized);
+                  }}
+                  placeholder="seu_identificador"
+                  maxLength={30}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg pl-8 pr-10 py-3 text-white font-barlow text-sm placeholder:text-white/20 focus:outline-none focus:border-[#C41E3A]/50 transition-colors"
+                />
+                {editForm.handle && editForm.handle.length >= 3 && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                    {checkingHandle ? (
+                      <svg className="animate-spin h-4 w-4 text-white/40" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                    ) : handleAvailable === true ? (
+                      <Icon name="check" size={16} className="text-green-400" />
+                    ) : handleAvailable === false ? (
+                      <Icon name="x" size={16} className="text-red-400" />
+                    ) : null}
+                  </span>
+                )}
+              </div>
+              {editForm.handle && editForm.handle.length > 0 && editForm.handle.length < 3 && (
+                <p className="font-barlow text-xs text-white/30 mt-1">Mínimo de 3 caracteres</p>
+              )}
+              {handleAvailable === false && (
+                <p className="font-barlow text-xs text-red-400 mt-1">Este @ já está em uso</p>
+              )}
+              {handleAvailable === true && editForm.handle !== profile?.handle && (
+                <p className="font-barlow text-xs text-green-400 mt-1">Disponível!</p>
+              )}
+              <p className="font-barlow text-white/25 text-xs mt-1">
+                Letras minúsculas, números e _ (3 a 30 caracteres)
+              </p>
+            </div>
+
             {isAcademy ? (
               <InputField
                 label="CPF/CNPJ"

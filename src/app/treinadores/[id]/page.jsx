@@ -149,6 +149,11 @@ export default async function CoachProfile({ params }) {
               <h1 className="font-bebas text-4xl text-white tracking-wider">
                 {coach.full_name}
               </h1>
+              {coach.handle && (
+                <p className="font-barlow text-sm text-white/50 mt-0.5">
+                  @{coach.handle}
+                </p>
+              )}
               {coach.birth_date && (
                 <p className="font-barlow text-sm text-white/40 mt-1">
                   Nascimento: {new Date(coach.birth_date).toLocaleDateString('pt-BR')}
