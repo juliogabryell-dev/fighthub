@@ -20,7 +20,7 @@ export default function LoginPage() {
 
     try {
       const supabase = createClient();
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -28,6 +28,20 @@ export default function LoginPage() {
       if (signInError) {
         setError(signInError.message);
         return;
+      }
+
+      // Check if user needs to change password
+      if (signInData?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('force_password_change')
+          .eq('id', signInData.user.id)
+          .single();
+
+        if (profile?.force_password_change) {
+          router.push('/auth/change-password');
+          return;
+        }
       }
 
       router.push('/perfil');

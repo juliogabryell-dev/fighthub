@@ -34,6 +34,7 @@ export default function FullAdminDashboard() {
   const [actionLoading, setActionLoading] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [editModal, setEditModal] = useState(null);
+  const [tempPasswordModal, setTempPasswordModal] = useState(null);
 
   // Check admin session
   useEffect(() => {
@@ -141,6 +142,26 @@ export default function FullAdminDashboard() {
     setActionLoading(bindingId);
     await supabase.from(table).update({ status: newStatus }).eq('id', bindingId);
     await fetchData();
+    setActionLoading(null);
+  }
+
+  async function handleResetPassword(userId, userName) {
+    setActionLoading(userId);
+    try {
+      const res = await fetch('/api/fulladmin/reset-user-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId }),
+      });
+      const data = await res.json();
+      if (res.ok && data.temp_password) {
+        setTempPasswordModal({ name: userName, password: data.temp_password });
+      } else {
+        alert('Erro ao resetar senha: ' + (data.error || 'Erro desconhecido'));
+      }
+    } catch {
+      alert('Erro ao resetar senha.');
+    }
     setActionLoading(null);
   }
 
@@ -451,6 +472,9 @@ export default function FullAdminDashboard() {
                             <button onClick={() => setEditModal({ ...user })} className="px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 transition-all font-barlow-condensed text-[10px] uppercase tracking-wider">
                               Editar
                             </button>
+                            <button onClick={() => handleResetPassword(user.id, user.full_name)} disabled={actionLoading === user.id} className="px-2.5 py-1 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37]/20 transition-all font-barlow-condensed text-[10px] uppercase tracking-wider disabled:opacity-50">
+                              {actionLoading === user.id ? '...' : 'Reset Senha'}
+                            </button>
                             {user.status === 'pending' && (
                               <button onClick={() => handleApprove(user.id)} disabled={actionLoading === user.id} className="px-2.5 py-1 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 hover:bg-green-500/20 transition-all font-barlow-condensed text-[10px] uppercase tracking-wider disabled:opacity-50">
                                 {actionLoading === user.id ? '...' : 'Aprovar'}
@@ -637,6 +661,9 @@ export default function FullAdminDashboard() {
               <button onClick={() => { setEditModal({ ...selectedUser }); setSelectedUser(null); }} className="flex-1 py-2.5 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 transition-all font-barlow-condensed text-sm uppercase tracking-wider">
                 Editar
               </button>
+              <button onClick={() => { handleResetPassword(selectedUser.id, selectedUser.full_name); setSelectedUser(null); }} className="flex-1 py-2.5 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37]/20 transition-all font-barlow-condensed text-sm uppercase tracking-wider">
+                Reset Senha
+              </button>
               {selectedUser.status === 'pending' && (
                 <>
                   <button onClick={() => { handleApprove(selectedUser.id); setSelectedUser(null); }} className="flex-1 py-2.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 hover:bg-green-500/20 transition-all font-barlow-condensed text-sm uppercase tracking-wider">
@@ -648,6 +675,31 @@ export default function FullAdminDashboard() {
                 </>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Temp Password Modal */}
+      {tempPasswordModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4" onClick={() => setTempPasswordModal(null)}>
+          <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl w-full max-w-sm p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="text-center mb-6">
+              <span className="text-3xl mb-2 block">🔑</span>
+              <h3 className="font-bebas text-xl tracking-wider text-white">SENHA RESETADA</h3>
+              <p className="font-barlow text-white/50 text-sm mt-1">
+                Senha de <strong className="text-white">{tempPasswordModal.name}</strong> foi resetada
+              </p>
+            </div>
+            <div className="p-4 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30 mb-4">
+              <p className="font-barlow text-white/50 text-xs uppercase tracking-wider mb-1">Senha temporária:</p>
+              <p className="font-bebas text-2xl tracking-wider text-[#D4AF37] text-center select-all">{tempPasswordModal.password}</p>
+            </div>
+            <p className="font-barlow text-white/40 text-xs text-center mb-4">
+              Informe essa senha ao usuário. Ao fazer login, ele será obrigado a definir uma nova senha.
+            </p>
+            <button onClick={() => setTempPasswordModal(null)} className="w-full py-2.5 rounded-lg bg-gradient-to-r from-[#C41E3A] to-[#a01830] text-white font-barlow-condensed text-sm uppercase tracking-wider hover:from-[#d42a46] hover:to-[#b82040] transition-all">
+              ENTENDIDO
+            </button>
           </div>
         </div>
       )}
