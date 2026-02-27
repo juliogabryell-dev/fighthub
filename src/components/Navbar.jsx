@@ -118,30 +118,43 @@ export default function Navbar() {
                 Entrar
               </Link>
             ) : (
-              <div className="hidden md:flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <Avatar name={user.full_name} url={user.avatar_url} size={32} />
-                  <div className="flex flex-col leading-none">
-                    <span className="text-sm text-white font-barlow font-medium truncate max-w-[120px]">
-                      {user.full_name}
-                    </span>
-                    <span className="text-[10px] text-white/30 font-barlow-condensed uppercase tracking-wider">
-                      {user.is_fighter && user.is_coach ? 'Lutador & Treinador' : { fighter: 'Lutador', coach: 'Treinador', admin: 'Admin', academy: 'Academia' }[user.role] || user.role}
-                    </span>
-                  </div>
-                </div>
-                {getRoleLink(user.role) && (
+              <div className="hidden md:flex items-center gap-2">
+                {getRoleLink(user.role) ? (
                   <Link
                     href={getRoleLink(user.role)}
-                    className="text-white/40 hover:text-white transition-colors"
-                    title={user.role === 'admin' ? 'Painel Admin' : 'Meu Perfil'}
+                    className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg border border-transparent hover:bg-white/5 hover:border-white/10 transition-all group"
                   >
-                    <Icon name={user.role === 'admin' ? 'settings' : 'user'} size={18} />
+                    <div className="relative">
+                      <Avatar name={user.full_name} url={user.avatar_url} size={32} />
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#1a1a2e] flex items-center justify-center border border-white/10 group-hover:border-[#C41E3A]/40 transition-colors">
+                        <Icon name="user" size={8} className="text-white/50 group-hover:text-[#C41E3A] transition-colors" />
+                      </div>
+                    </div>
+                    <div className="flex flex-col leading-none">
+                      <span className="text-sm text-white font-barlow font-medium truncate max-w-[120px] group-hover:text-[#C41E3A] transition-colors">
+                        {user.full_name}
+                      </span>
+                      <span className="text-[10px] text-white/30 font-barlow-condensed uppercase tracking-wider group-hover:text-white/50 transition-colors">
+                        Meu Perfil
+                      </span>
+                    </div>
                   </Link>
+                ) : (
+                  <div className="flex items-center gap-2.5 px-3 py-1.5">
+                    <Avatar name={user.full_name} url={user.avatar_url} size={32} />
+                    <div className="flex flex-col leading-none">
+                      <span className="text-sm text-white font-barlow font-medium truncate max-w-[120px]">
+                        {user.full_name}
+                      </span>
+                      <span className="text-[10px] text-white/30 font-barlow-condensed uppercase tracking-wider">
+                        {user.is_fighter && user.is_coach ? 'Lutador & Treinador' : { fighter: 'Lutador', coach: 'Treinador', admin: 'Admin', academy: 'Academia' }[user.role] || user.role}
+                      </span>
+                    </div>
+                  </div>
                 )}
                 <button
                   onClick={handleLogout}
-                  className="text-white/40 hover:text-brand-red transition-colors"
+                  className="text-white/40 hover:text-brand-red transition-colors ml-1"
                   title="Sair"
                 >
                   <Icon name="logout" size={18} />
