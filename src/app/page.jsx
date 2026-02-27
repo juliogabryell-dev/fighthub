@@ -72,32 +72,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ====== LATEST NEWS SECTION ====== */}
-      <section className="px-6 pb-20 max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="font-bebas text-4xl text-white">
-            ÚLTIMAS{' '}
-            <span className="text-brand-red">NOTÍCIAS</span>
-          </h2>
-          <Link
-            href="/noticias"
-            className="font-barlow-condensed uppercase text-sm text-brand-gold tracking-wider hover:text-brand-gold/80 transition-colors"
-          >
-            Ver Todas
-          </Link>
-        </div>
-
-        {/* News Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {latestNews.map((news) => (
-            <NewsCard key={news.id} news={news} />
-          ))}
-        </div>
-      </section>
-
       {/* ====== PRICING SECTION ====== */}
-      <section className="px-6 pb-24 max-w-7xl mx-auto">
+      <section className="px-6 pb-20 max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
           <h2 className="font-bebas text-4xl sm:text-5xl text-white tracking-wider">
@@ -218,6 +194,30 @@ export default async function HomePage() {
               Transparência institucional fortalece o esporte.
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* ====== LATEST NEWS SECTION ====== */}
+      <section className="px-6 pb-24 max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="font-bebas text-4xl text-white">
+            ÚLTIMAS{' '}
+            <span className="text-brand-red">NOTÍCIAS</span>
+          </h2>
+          <Link
+            href="/noticias"
+            className="font-barlow-condensed uppercase text-sm text-brand-gold tracking-wider hover:text-brand-gold/80 transition-colors"
+          >
+            Ver Todas
+          </Link>
+        </div>
+
+        {/* News Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {latestNews.map((news) => (
+            <NewsCard key={news.id} news={news} />
+          ))}
         </div>
       </section>
     </main>
