@@ -33,6 +33,7 @@ export default function FullAdminDashboard() {
   // Admin users
   const [adminUsers, setAdminUsers] = useState([]);
   const [createAdminModal, setCreateAdminModal] = useState(null);
+  const [resetAdminPwModal, setResetAdminPwModal] = useState(null);
 
   // UI states
   const [actionLoading, setActionLoading] = useState(null);
@@ -293,6 +294,37 @@ export default function FullAdminDashboard() {
       }
     } catch {
       alert('Erro ao excluir admin.');
+    }
+    setActionLoading(null);
+  }
+
+  async function handleResetAdminPassword() {
+    if (!resetAdminPwModal) return;
+    const { id, new_password, confirm_password } = resetAdminPwModal;
+    if (!new_password || new_password.length < 6) {
+      alert('A senha deve ter pelo menos 6 caracteres.');
+      return;
+    }
+    if (new_password !== confirm_password) {
+      alert('As senhas não coincidem.');
+      return;
+    }
+    setActionLoading('reset-admin-pw');
+    try {
+      const res = await fetch('/api/fulladmin/reset-admin-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ admin_id: id, new_password }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setResetAdminPwModal(null);
+        alert('Senha redefinida com sucesso!');
+      } else {
+        alert('Erro: ' + (data.error || 'Erro desconhecido'));
+      }
+    } catch {
+      alert('Erro ao redefinir senha.');
     }
     setActionLoading(null);
   }
@@ -769,13 +801,20 @@ export default function FullAdminDashboard() {
                         <p className="font-barlow text-white/30 text-xs">{adm.email}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="font-barlow text-white/20 text-xs hidden sm:block">{formatDate(adm.created_at)}</span>
-                      {admin?.id === adm.id ? (
+                    <div className="flex items-center gap-2">
+                      <span className="font-barlow text-white/20 text-xs hidden sm:block mr-1">{formatDate(adm.created_at)}</span>
+                      {admin?.id === adm.id && (
                         <span className="px-2.5 py-1 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 font-barlow-condensed text-[10px] uppercase tracking-wider">
                           Você
                         </span>
-                      ) : (
+                      )}
+                      <button
+                        onClick={() => setResetAdminPwModal({ id: adm.id, name: adm.name, new_password: '', confirm_password: '' })}
+                        className="px-2.5 py-1 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37]/20 transition-all font-barlow-condensed text-[10px] uppercase tracking-wider"
+                      >
+                        Reset Senha
+                      </button>
+                      {admin?.id !== adm.id && (
                         <button
                           onClick={() => handleDeleteAdmin(adm.id, adm.name)}
                           disabled={actionLoading === adm.id}
@@ -849,6 +888,57 @@ export default function FullAdminDashboard() {
                 className="flex-1 py-2.5 rounded-lg bg-gradient-to-r from-[#C41E3A] to-[#a01830] text-white font-barlow-condensed text-sm uppercase tracking-wider hover:from-[#d42a46] hover:to-[#b82040] transition-all disabled:opacity-50"
               >
                 {actionLoading === 'create-admin' ? 'Criando...' : 'Criar Admin'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Admin Password Modal */}
+      {resetAdminPwModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4" onClick={() => setResetAdminPwModal(null)}>
+          <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl w-full max-w-sm p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-bebas text-xl tracking-wider text-white">REDEFINIR SENHA</h3>
+              <button onClick={() => setResetAdminPwModal(null)} className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 transition-all">
+                ✕
+              </button>
+            </div>
+            <p className="font-barlow text-white/50 text-sm mb-5">
+              Redefinir senha do admin <strong className="text-white">{resetAdminPwModal.name}</strong>
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="uppercase text-xs tracking-wider text-white/50 font-barlow-condensed font-semibold mb-1.5 block">Nova Senha</label>
+                <input
+                  type="password"
+                  value={resetAdminPwModal.new_password}
+                  onChange={(e) => setResetAdminPwModal({ ...resetAdminPwModal, new_password: e.target.value })}
+                  placeholder="Mínimo 6 caracteres"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-white/25"
+                />
+              </div>
+              <div>
+                <label className="uppercase text-xs tracking-wider text-white/50 font-barlow-condensed font-semibold mb-1.5 block">Confirmar Senha</label>
+                <input
+                  type="password"
+                  value={resetAdminPwModal.confirm_password}
+                  onChange={(e) => setResetAdminPwModal({ ...resetAdminPwModal, confirm_password: e.target.value })}
+                  placeholder="Repita a nova senha"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-white/25"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setResetAdminPwModal(null)} className="flex-1 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all font-barlow-condensed text-sm uppercase tracking-wider">
+                Cancelar
+              </button>
+              <button
+                onClick={handleResetAdminPassword}
+                disabled={actionLoading === 'reset-admin-pw'}
+                className="flex-1 py-2.5 rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#b8962e] text-black font-barlow-condensed text-sm uppercase tracking-wider hover:from-[#e0bd45] hover:to-[#c4a035] transition-all disabled:opacity-50"
+              >
+                {actionLoading === 'reset-admin-pw' ? 'Salvando...' : 'Redefinir'}
               </button>
             </div>
           </div>

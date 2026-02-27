@@ -95,6 +95,13 @@ export default function PerfilPage() {
   const [loadingCoaches, setLoadingCoaches] = useState(false);
   const [loadingAcademiesForBinding, setLoadingAcademiesForBinding] = useState(false);
 
+  // Change password
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [pwForm, setPwForm] = useState({ current: '', newPw: '', confirm: '' });
+  const [pwError, setPwError] = useState('');
+  const [pwSuccess, setPwSuccess] = useState(false);
+  const [pwSaving, setPwSaving] = useState(false);
+
   // Binding requests (Coach)
   const [bindingRequests, setBindingRequests] = useState([]);
   const [activeBindings, setActiveBindings] = useState([]);
@@ -416,6 +423,57 @@ export default function PerfilPage() {
   }
 
   // ===== Edit Profile =====
+  async function handleChangePassword(e) {
+    e.preventDefault();
+    setPwError('');
+    setPwSuccess(false);
+
+    if (!pwForm.current) {
+      setPwError('Informe a senha atual.');
+      return;
+    }
+    if (pwForm.newPw.length < 6) {
+      setPwError('A nova senha deve ter pelo menos 6 caracteres.');
+      return;
+    }
+    if (pwForm.newPw !== pwForm.confirm) {
+      setPwError('As senhas não coincidem.');
+      return;
+    }
+
+    setPwSaving(true);
+    try {
+      // Verify current password by trying to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: pwForm.current,
+      });
+
+      if (signInError) {
+        setPwError('Senha atual incorreta.');
+        setPwSaving(false);
+        return;
+      }
+
+      // Update password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: pwForm.newPw,
+      });
+
+      if (updateError) {
+        setPwError('Erro ao alterar senha: ' + updateError.message);
+        setPwSaving(false);
+        return;
+      }
+
+      setPwSuccess(true);
+      setPwForm({ current: '', newPw: '', confirm: '' });
+    } catch {
+      setPwError('Erro inesperado. Tente novamente.');
+    }
+    setPwSaving(false);
+  }
+
   function openEditProfile() {
     setEditForm({
       full_name: profile?.full_name || '',
@@ -840,13 +898,22 @@ export default function PerfilPage() {
               PERFIL
             </span>
           </h1>
-          <button
-            onClick={openEditProfile}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all font-barlow text-sm"
-          >
-            <Icon name="settings" size={16} />
-            Editar Perfil
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { setPwError(''); setPwSuccess(false); setPwForm({ current: '', newPw: '', confirm: '' }); setShowChangePassword(true); }}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all font-barlow text-sm"
+            >
+              <Icon name="lock" size={16} />
+              Alterar Senha
+            </button>
+            <button
+              onClick={openEditProfile}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all font-barlow text-sm"
+            >
+              <Icon name="settings" size={16} />
+              Editar Perfil
+            </button>
+          </div>
         </div>
 
         {/* Handle Banner */}
@@ -2308,6 +2375,85 @@ export default function PerfilPage() {
             </div>
           )}
         </Modal>
+      )}
+
+      {/* Change Password Modal */}
+      {showChangePassword && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4" onClick={() => setShowChangePassword(false)}>
+          <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl w-full max-w-sm p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-bebas text-xl tracking-wider text-white">ALTERAR SENHA</h3>
+              <button onClick={() => setShowChangePassword(false)} className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 transition-all">
+                ✕
+              </button>
+            </div>
+
+            {pwError && (
+              <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30">
+                <p className="font-barlow text-red-400 text-sm text-center">{pwError}</p>
+              </div>
+            )}
+
+            {pwSuccess ? (
+              <div className="space-y-4">
+                <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/30">
+                  <p className="font-barlow text-green-400 text-sm text-center">Senha alterada com sucesso!</p>
+                </div>
+                <button onClick={() => setShowChangePassword(false)} className="w-full py-2.5 rounded-lg bg-gradient-to-r from-[#C41E3A] to-[#a01830] text-white font-barlow-condensed text-sm uppercase tracking-wider hover:from-[#d42a46] hover:to-[#b82040] transition-all">
+                  FECHAR
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                <div>
+                  <label className="uppercase text-xs tracking-wider text-white/50 font-barlow-condensed font-semibold mb-1.5 block">Senha Atual</label>
+                  <input
+                    type="password"
+                    value={pwForm.current}
+                    onChange={(e) => setPwForm({ ...pwForm, current: e.target.value })}
+                    placeholder="Digite sua senha atual"
+                    required
+                    className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-white/25"
+                  />
+                </div>
+                <div>
+                  <label className="uppercase text-xs tracking-wider text-white/50 font-barlow-condensed font-semibold mb-1.5 block">Nova Senha</label>
+                  <input
+                    type="password"
+                    value={pwForm.newPw}
+                    onChange={(e) => setPwForm({ ...pwForm, newPw: e.target.value })}
+                    placeholder="Mínimo 6 caracteres"
+                    required
+                    className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-white/25"
+                  />
+                </div>
+                <div>
+                  <label className="uppercase text-xs tracking-wider text-white/50 font-barlow-condensed font-semibold mb-1.5 block">Confirmar Nova Senha</label>
+                  <input
+                    type="password"
+                    value={pwForm.confirm}
+                    onChange={(e) => setPwForm({ ...pwForm, confirm: e.target.value })}
+                    placeholder="Repita a nova senha"
+                    required
+                    className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-white/25"
+                  />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button type="button" onClick={() => setShowChangePassword(false)} className="flex-1 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all font-barlow-condensed text-sm uppercase tracking-wider">
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={pwSaving}
+                    className="flex-1 py-2.5 rounded-lg bg-gradient-to-r from-[#C41E3A] to-[#a01830] text-white font-barlow-condensed text-sm uppercase tracking-wider hover:from-[#d42a46] hover:to-[#b82040] transition-all disabled:opacity-50"
+                  >
+                    {pwSaving ? 'Salvando...' : 'Alterar Senha'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
