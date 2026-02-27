@@ -35,6 +35,8 @@ export default function FullAdminDashboard() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [editModal, setEditModal] = useState(null);
   const [tempPasswordModal, setTempPasswordModal] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState(null);
 
   // Check admin session
   useEffect(() => {
@@ -120,7 +122,16 @@ export default function FullAdminDashboard() {
   }, [supabase]);
 
   useEffect(() => {
-    if (admin) fetchData();
+    if (admin) fetchData().then(() => setLastRefresh(new Date()));
+  }, [admin, fetchData]);
+
+  // Auto-refresh every 30 minutes
+  useEffect(() => {
+    if (!admin) return;
+    const interval = setInterval(() => {
+      fetchData().then(() => setLastRefresh(new Date()));
+    }, 30 * 60 * 1000);
+    return () => clearInterval(interval);
   }, [admin, fetchData]);
 
   // Actions
@@ -143,6 +154,13 @@ export default function FullAdminDashboard() {
     await supabase.from(table).update({ status: newStatus }).eq('id', bindingId);
     await fetchData();
     setActionLoading(null);
+  }
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    await fetchData();
+    setLastRefresh(new Date());
+    setRefreshing(false);
   }
 
   async function handleDeleteUser(userId, userName) {
@@ -296,10 +314,26 @@ export default function FullAdminDashboard() {
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {lastRefresh && (
+              <span className="font-barlow text-white/20 text-[10px] hidden sm:block">
+                Atualizado {lastRefresh.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
             <span className="font-barlow text-white/50 text-sm hidden sm:block">
               {admin?.name}
             </span>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-[#22c55e] hover:border-[#22c55e]/30 transition-all font-barlow-condensed text-xs uppercase tracking-wider disabled:opacity-50"
+              title="Atualizar dados"
+            >
+              <svg className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              {refreshing ? '...' : 'Atualizar'}
+            </button>
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-[#C41E3A] hover:border-[#C41E3A]/30 transition-all font-barlow-condensed text-xs uppercase tracking-wider"
