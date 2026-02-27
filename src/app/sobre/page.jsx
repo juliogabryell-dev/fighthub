@@ -36,20 +36,20 @@ export default function SobrePage() {
     <main className="min-h-screen px-6 py-16 max-w-4xl mx-auto">
       {/* Header */}
       <div className="text-center mb-16">
-        <h1 className="font-bebas text-5xl text-white tracking-wider">
+        <h1 className="font-bebas text-5xl text-theme-text tracking-wider">
           SOBRE O <span className="text-brand-red">FIGHTLOG</span>
         </h1>
-        <p className="font-barlow text-white/50 mt-3 text-lg max-w-2xl mx-auto">
+        <p className="font-barlow text-theme-text/50 mt-3 text-lg max-w-2xl mx-auto">
           A plataforma que conecta o mundo das modalidades
         </p>
       </div>
 
       {/* What is FightLog */}
-      <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 p-8 mb-12">
+      <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-theme-border/10 p-8 mb-12">
         <h2 className="font-bebas text-2xl text-brand-gold tracking-wider mb-4">
           O QUE É O FIGHT LOG?
         </h2>
-        <div className="space-y-4 font-barlow text-white/60 leading-relaxed">
+        <div className="space-y-4 font-barlow text-theme-text/60 leading-relaxed">
           <p>
             O Fight Log é uma plataforma criada para registrar lutas reais de forma pública,
             permanente e verificável.
@@ -70,24 +70,24 @@ export default function SobrePage() {
       </div>
 
       {/* Values */}
-      <h2 className="font-bebas text-2xl text-white tracking-wider mb-6 text-center">
+      <h2 className="font-bebas text-2xl text-theme-text tracking-wider mb-6 text-center">
         NOSSOS <span className="text-brand-red">VALORES</span>
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
         {values.map((item) => (
           <div
             key={item.title}
-            className="bg-white/[0.02] rounded-xl border border-white/[0.06] p-6"
+            className="bg-theme-text/[0.02] rounded-xl border border-theme-border/[0.06] p-6"
           >
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-lg bg-brand-red/10 flex items-center justify-center">
                 <Icon name={item.icon} size={20} className="text-brand-red" />
               </div>
-              <h3 className="font-bebas text-lg text-white tracking-wider">
+              <h3 className="font-bebas text-lg text-theme-text tracking-wider">
                 {item.title}
               </h3>
             </div>
-            <p className="font-barlow text-sm text-white/40 leading-relaxed">
+            <p className="font-barlow text-sm text-theme-text/40 leading-relaxed">
               {item.description}
             </p>
           </div>
@@ -95,11 +95,11 @@ export default function SobrePage() {
       </div>
 
       {/* Team */}
-      <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 p-8">
+      <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-theme-border/10 p-8">
         <h2 className="font-bebas text-2xl text-brand-gold tracking-wider mb-4">
           EQUIPE
         </h2>
-        <p className="font-barlow text-white/60 leading-relaxed">
+        <p className="font-barlow text-theme-text/60 leading-relaxed">
           O FightLog e desenvolvido por uma equipe apaixonada por tecnologia e modalidades,
           sediada no Brasil. Trabalhamos constantemente para melhorar a plataforma e trazer
           novos recursos para a comunidade. Se voce tem sugestoes ou quer colaborar, entre em

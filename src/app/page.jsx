@@ -36,7 +36,7 @@ export default async function HomePage() {
             className="font-bebas leading-none tracking-wider mb-8"
             style={{ fontSize: 'clamp(48px, 10vw, 96px)' }}
           >
-            <span className="text-white">CONECTE-SE.</span>
+            <span className="text-theme-text">CONECTE-SE.</span>
             <br />
             <span className="text-brand-red">TREINE.</span>
             <br />
@@ -44,7 +44,7 @@ export default async function HomePage() {
           </h1>
 
           {/* Description */}
-          <p className="font-barlow text-lg text-white/50 max-w-xl mx-auto mb-4">
+          <p className="font-barlow text-lg text-theme-text/50 max-w-xl mx-auto mb-4">
             O FightLog conecta lutadores, treinadores e entusiastas de modalidades em uma
             plataforma completa. Gerencie seu cartel, encontre oponentes e acompanhe sua evolução.
           </p>
@@ -76,11 +76,11 @@ export default async function HomePage() {
       <section className="px-6 pb-20 max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h2 className="font-bebas text-4xl sm:text-5xl text-white tracking-wider">
+          <h2 className="font-bebas text-4xl sm:text-5xl text-theme-text tracking-wider">
             CONHEÇA NOSSOS{' '}
             <span className="text-brand-red">PLANOS</span>
           </h2>
-          <p className="font-barlow text-white/50 mt-3 text-lg max-w-2xl mx-auto">
+          <p className="font-barlow text-theme-text/50 mt-3 text-lg max-w-2xl mx-auto">
             Escolha o plano ideal para registrar sua história no esporte
           </p>
         </div>
@@ -88,21 +88,21 @@ export default async function HomePage() {
         {/* Plans Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Plano Lutador */}
-          <div className="relative bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 p-8 flex flex-col hover:border-[#C41E3A]/30 transition-all duration-300 group">
+          <div className="relative bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-theme-border/10 p-8 flex flex-col hover:border-[#C41E3A]/30 transition-all duration-300 group">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-xl bg-[#C41E3A]/15 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-brand-red/15 flex items-center justify-center">
                 <span className="text-2xl">🥊</span>
               </div>
               <div>
-                <h3 className="font-bebas text-2xl text-white tracking-wider">PLANO LUTADOR</h3>
-                <p className="font-barlow text-white/40 text-xs">Para atletas amadores e profissionais</p>
+                <h3 className="font-bebas text-2xl text-theme-text tracking-wider">PLANO LUTADOR</h3>
+                <p className="font-barlow text-theme-text/40 text-xs">Para atletas amadores e profissionais</p>
               </div>
             </div>
             <div className="mb-6">
               <span className="font-bebas text-4xl text-[#C41E3A]">R$ 79</span>
-              <span className="font-barlow text-white/40 text-sm"> / ano</span>
+              <span className="font-barlow text-theme-text/40 text-sm"> / ano</span>
             </div>
-            <p className="font-barlow-condensed text-xs uppercase tracking-widest text-white/30 mb-3">Inclui:</p>
+            <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/30 mb-3">Inclui:</p>
             <ul className="space-y-2.5 flex-1">
               {[
                 'Perfil público de lutador',
@@ -113,19 +113,19 @@ export default async function HomePage() {
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-[#C41E3A] mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  <span className="font-barlow text-sm text-white/60">{item}</span>
+                  <span className="font-barlow text-sm text-theme-text/60">{item}</span>
                 </li>
               ))}
             </ul>
-            <p className="font-barlow text-xs text-[#D4AF37]/60 italic mt-6 pt-4 border-t border-white/5">
+            <p className="font-barlow text-xs text-[#D4AF37]/60 italic mt-6 pt-4 border-t border-theme-border/5">
               Seu cartel não é marketing. É histórico.
             </p>
           </div>
 
           {/* Plano Academia / Clube */}
-          <div className="relative bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-[#D4AF37]/20 p-8 flex flex-col hover:border-[#D4AF37]/40 transition-all duration-300 group ring-1 ring-[#D4AF37]/10">
+          <div className="relative bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-[#D4AF37]/20 p-8 flex flex-col hover:border-[#D4AF37]/40 transition-all duration-300 group ring-1 ring-[#D4AF37]/10">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-              <span className="bg-gradient-to-r from-[#D4AF37] to-[#b8962e] text-[#0a0a0f] font-barlow-condensed text-[10px] uppercase tracking-widest font-bold px-4 py-1 rounded-full">
+              <span className="bg-gradient-to-r from-[#D4AF37] to-[#b8962e] text-dark-bg font-barlow-condensed text-[10px] uppercase tracking-widest font-bold px-4 py-1 rounded-full">
                 Popular
               </span>
             </div>
@@ -134,15 +134,15 @@ export default async function HomePage() {
                 <span className="text-2xl">🏆</span>
               </div>
               <div>
-                <h3 className="font-bebas text-2xl text-white tracking-wider">PLANO ACADEMIA / CLUBE</h3>
-                <p className="font-barlow text-white/40 text-xs">Para academias, clubes e equipes</p>
+                <h3 className="font-bebas text-2xl text-theme-text tracking-wider">PLANO ACADEMIA / CLUBE</h3>
+                <p className="font-barlow text-theme-text/40 text-xs">Para academias, clubes e equipes</p>
               </div>
             </div>
             <div className="mb-6">
               <span className="font-bebas text-4xl text-[#D4AF37]">R$ 399</span>
-              <span className="font-barlow text-white/40 text-sm"> / ano</span>
+              <span className="font-barlow text-theme-text/40 text-sm"> / ano</span>
             </div>
-            <p className="font-barlow-condensed text-xs uppercase tracking-widest text-white/30 mb-3">Inclui:</p>
+            <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/30 mb-3">Inclui:</p>
             <ul className="space-y-2.5 flex-1">
               {[
                 'Página pública da academia ou clube',
@@ -152,31 +152,31 @@ export default async function HomePage() {
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-[#D4AF37] mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  <span className="font-barlow text-sm text-white/60">{item}</span>
+                  <span className="font-barlow text-sm text-theme-text/60">{item}</span>
                 </li>
               ))}
             </ul>
-            <p className="font-barlow text-xs text-[#D4AF37]/60 italic mt-6 pt-4 border-t border-white/5">
+            <p className="font-barlow text-xs text-[#D4AF37]/60 italic mt-6 pt-4 border-t border-theme-border/5">
               Academias fortes constroem atletas com histórico real.
             </p>
           </div>
 
           {/* Plano Entidade Oficial */}
-          <div className="relative bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 p-8 flex flex-col hover:border-blue-500/30 transition-all duration-300 group">
+          <div className="relative bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-theme-border/10 p-8 flex flex-col hover:border-blue-500/30 transition-all duration-300 group">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-xl bg-blue-500/15 flex items-center justify-center">
                 <span className="text-2xl">🏛️</span>
               </div>
               <div>
-                <h3 className="font-bebas text-2xl text-white tracking-wider">PLANO ENTIDADE OFICIAL</h3>
-                <p className="font-barlow text-white/40 text-xs">Para confederações, federações, associações e ligas</p>
+                <h3 className="font-bebas text-2xl text-theme-text tracking-wider">PLANO ENTIDADE OFICIAL</h3>
+                <p className="font-barlow text-theme-text/40 text-xs">Para confederações, federações, associações e ligas</p>
               </div>
             </div>
             <div className="mb-6">
               <span className="font-bebas text-4xl text-blue-400">R$ 499</span>
-              <span className="font-barlow text-white/40 text-sm"> / ano</span>
+              <span className="font-barlow text-theme-text/40 text-sm"> / ano</span>
             </div>
-            <p className="font-barlow-condensed text-xs uppercase tracking-widest text-white/30 mb-3">Inclui:</p>
+            <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/30 mb-3">Inclui:</p>
             <ul className="space-y-2.5 flex-1">
               {[
                 'Página institucional verificada',
@@ -186,11 +186,11 @@ export default async function HomePage() {
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2.5">
                   <svg className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  <span className="font-barlow text-sm text-white/60">{item}</span>
+                  <span className="font-barlow text-sm text-theme-text/60">{item}</span>
                 </li>
               ))}
             </ul>
-            <p className="font-barlow text-xs text-blue-400/60 italic mt-6 pt-4 border-t border-white/5">
+            <p className="font-barlow text-xs text-blue-400/60 italic mt-6 pt-4 border-t border-theme-border/5">
               Transparência institucional fortalece o esporte.
             </p>
           </div>
@@ -201,7 +201,7 @@ export default async function HomePage() {
       <section className="px-6 pb-24 max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <h2 className="font-bebas text-4xl text-white">
+          <h2 className="font-bebas text-4xl text-theme-text">
             ÚLTIMAS{' '}
             <span className="text-brand-red">NOTÍCIAS</span>
           </h2>

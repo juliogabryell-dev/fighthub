@@ -24,7 +24,7 @@ export default function NewsCard({ news }) {
     CATEGORY_EMOJIS[category?.toLowerCase()] || CATEGORY_EMOJIS.default;
 
   const card = (
-    <div className="card-hover bg-gradient-to-b from-dark-card to-dark-card2 rounded-xl border border-white/5 overflow-hidden transition-all duration-300 hover:border-brand-red/30 group h-full">
+    <div className="card-hover bg-gradient-to-b from-dark-card to-dark-card2 rounded-xl border border-theme-border/5 overflow-hidden transition-all duration-300 hover:border-brand-red/30 group h-full">
       {/* Image Area */}
       <div className="relative h-44 overflow-hidden">
         {image_url ? (
@@ -50,19 +50,19 @@ export default function NewsCard({ news }) {
       <div className="p-4">
         {/* Date */}
         {published_at && (
-          <p className="text-[11px] text-white/30 font-barlow-condensed uppercase tracking-wider mb-1.5">
+          <p className="text-[11px] text-theme-text/30 font-barlow-condensed uppercase tracking-wider mb-1.5">
             {formatDate(published_at)}
           </p>
         )}
 
         {/* Title */}
-        <h3 className="font-bebas text-lg text-white tracking-wide leading-tight mb-2 group-hover:text-brand-red transition-colors line-clamp-2">
+        <h3 className="font-bebas text-lg text-theme-text tracking-wide leading-tight mb-2 group-hover:text-brand-red transition-colors line-clamp-2">
           {title}
         </h3>
 
         {/* Summary */}
         {summary && (
-          <p className="text-xs text-white/40 font-barlow leading-relaxed line-clamp-3">
+          <p className="text-xs text-theme-text/40 font-barlow leading-relaxed line-clamp-3">
             {summary}
           </p>
         )}

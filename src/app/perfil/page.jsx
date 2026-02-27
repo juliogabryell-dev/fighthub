@@ -813,7 +813,7 @@ export default function PerfilPage() {
       pending: 'bg-[#D4AF37]/20 text-[#D4AF37] border-[#D4AF37]/30',
       accepted: 'bg-green-500/20 text-green-400 border-green-500/30',
       declined: 'bg-red-500/20 text-red-400 border-red-500/30',
-      cancelled: 'bg-white/10 text-white/40 border-white/10',
+      cancelled: 'bg-theme-text/10 text-theme-text/40 border-theme-border/10',
       result_pending: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
       completed: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
     };
@@ -851,7 +851,7 @@ export default function PerfilPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+      <div className="min-h-screen bg-dark-bg flex items-center justify-center">
         <svg
           className="animate-spin h-10 w-10 text-[#C41E3A]"
           xmlns="http://www.w3.org/2000/svg"
@@ -888,11 +888,11 @@ export default function PerfilPage() {
   const sentChallenges = challenges.filter(c => c.challenger_id === user?.id);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] px-4 py-10">
+    <div className="min-h-screen bg-dark-bg px-4 py-10">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <h1 className="font-bebas text-4xl tracking-wider text-white">
+          <h1 className="font-bebas text-4xl tracking-wider text-theme-text">
             MEU{' '}
             <span className={isDualRole ? 'text-[#C41E3A]' : isFighter ? 'text-[#C41E3A]' : isAcademy ? 'text-blue-400' : 'text-[#D4AF37]'}>
               PERFIL
@@ -901,14 +901,14 @@ export default function PerfilPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => { setPwError(''); setPwSuccess(false); setPwForm({ current: '', newPw: '', confirm: '' }); setShowChangePassword(true); }}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all font-barlow text-sm"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-theme-text/5 border border-theme-border/10 text-theme-text/60 hover:text-theme-text hover:border-theme-border/20 transition-all font-barlow text-sm"
             >
               <Icon name="lock" size={16} />
               Alterar Senha
             </button>
             <button
               onClick={openEditProfile}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all font-barlow text-sm"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-theme-text/5 border border-theme-border/10 text-theme-text/60 hover:text-theme-text hover:border-theme-border/20 transition-all font-barlow text-sm"
             >
               <Icon name="settings" size={16} />
               Editar Perfil
@@ -930,7 +930,7 @@ export default function PerfilPage() {
         )}
 
         {/* Profile Card */}
-        <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl overflow-hidden mb-8">
+        <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-theme-border/10 shadow-2xl overflow-hidden mb-8">
           {/* Card Header with gradient */}
           <div
             className={`relative p-6 ${
@@ -948,24 +948,24 @@ export default function PerfilPage() {
                 name={profile?.full_name}
                 url={profile?.avatar_url}
                 size={80}
-                className="border-2 border-white/20"
+                className="border-2 border-theme-border/20"
               />
               <div>
-                <h2 className="font-bebas text-3xl tracking-wide text-white">
+                <h2 className="font-bebas text-3xl tracking-wide text-theme-text">
                   {profile?.full_name}
                 </h2>
                 {profile?.handle && (
-                  <p className="font-barlow text-sm text-white/50 -mt-0.5">
+                  <p className="font-barlow text-sm text-theme-text/50 -mt-0.5">
                     @{profile.handle}
                   </p>
                 )}
                 {(profile?.city || profile?.state) && (
-                  <p className="font-barlow text-sm text-white/40 flex items-center gap-1.5 mt-0.5">
+                  <p className="font-barlow text-sm text-theme-text/40 flex items-center gap-1.5 mt-0.5">
                     <Icon name="map-pin" size={13} />
                     {[profile.city, profile.state].filter(Boolean).join(', ')}
                   </p>
                 )}
-                <p className="font-barlow-condensed text-sm uppercase tracking-wider text-white/60 mt-1">
+                <p className="font-barlow-condensed text-sm uppercase tracking-wider text-theme-text/60 mt-1">
                   {isDualRole ? 'Lutador & Treinador' : isFighter ? 'Lutador' : isCoach ? 'Treinador' : 'Academia'}
                 </p>
                 <div className="mt-2">{getStatusBadge(profile?.status)}</div>
@@ -975,21 +975,21 @@ export default function PerfilPage() {
 
           {/* Social Info */}
           {(profile?.bio || profile?.phone || profile?.cpf_cnpj || profile?.instagram || profile?.facebook || profile?.youtube || profile?.tiktok) && (
-            <div className="px-6 py-4 border-t border-white/5">
+            <div className="px-6 py-4 border-t border-theme-border/5">
               {profile.bio && (
-                <p className="font-barlow text-sm text-white/50 mb-3 leading-relaxed">
+                <p className="font-barlow text-sm text-theme-text/50 mb-3 leading-relaxed">
                   {profile.bio}
                 </p>
               )}
               <div className="flex flex-wrap gap-3">
                 {profile.phone && (
-                  <span className="flex items-center gap-1.5 text-xs text-white/40 font-barlow">
+                  <span className="flex items-center gap-1.5 text-xs text-theme-text/40 font-barlow">
                     <Icon name="phone" size={13} />
                     {profile.phone}
                   </span>
                 )}
                 {profile.cpf_cnpj && (
-                  <span className="flex items-center gap-1.5 text-xs text-white/40 font-barlow">
+                  <span className="flex items-center gap-1.5 text-xs text-theme-text/40 font-barlow">
                     <Icon name="shield" size={13} />
                     {profile.cpf_cnpj}
                   </span>
@@ -999,7 +999,7 @@ export default function PerfilPage() {
                     href={formatSocialUrl('instagram', profile.instagram)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-xs text-white/40 hover:text-pink-400 transition-colors font-barlow"
+                    className="flex items-center gap-1.5 text-xs text-theme-text/40 hover:text-pink-400 transition-colors font-barlow"
                   >
                     <Icon name="instagram" size={13} />
                     {profile.instagram}
@@ -1010,7 +1010,7 @@ export default function PerfilPage() {
                     href={formatSocialUrl('facebook', profile.facebook)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-xs text-white/40 hover:text-blue-400 transition-colors font-barlow"
+                    className="flex items-center gap-1.5 text-xs text-theme-text/40 hover:text-blue-400 transition-colors font-barlow"
                   >
                     <Icon name="facebook" size={13} />
                     {profile.facebook}
@@ -1021,7 +1021,7 @@ export default function PerfilPage() {
                     href={formatSocialUrl('youtube', profile.youtube)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-xs text-white/40 hover:text-red-400 transition-colors font-barlow"
+                    className="flex items-center gap-1.5 text-xs text-theme-text/40 hover:text-red-400 transition-colors font-barlow"
                   >
                     <Icon name="youtube" size={13} />
                     {profile.youtube}
@@ -1032,7 +1032,7 @@ export default function PerfilPage() {
                     href={formatSocialUrl('tiktok', profile.tiktok)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white transition-colors font-barlow"
+                    className="flex items-center gap-1.5 text-xs text-theme-text/40 hover:text-theme-text transition-colors font-barlow"
                   >
                     <Icon name="tiktok" size={13} />
                     {profile.tiktok}
@@ -1044,8 +1044,8 @@ export default function PerfilPage() {
 
           {/* Fighter Record Summary */}
           {isFighter && (
-            <div className="p-6 border-t border-white/5">
-              <p className="font-barlow-condensed text-xs uppercase tracking-widest text-white/40 mb-3">
+            <div className="p-6 border-t border-theme-border/5">
+              <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/40 mb-3">
                 Cartel
               </p>
               <div className="flex gap-4">
@@ -1090,16 +1090,16 @@ export default function PerfilPage() {
                 if (!error) fetchUserAndProfile();
                 else alert('Erro ao ativar papel: ' + error.message);
               }}
-              className="w-full group bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-5 border border-[#D4AF37]/20 hover:border-[#D4AF37]/40 transition-all text-left flex items-center gap-4"
+              className="w-full group bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-5 border border-[#D4AF37]/20 hover:border-[#D4AF37]/40 transition-all text-left flex items-center gap-4"
             >
               <div className="w-10 h-10 rounded-full bg-[#D4AF37]/20 flex items-center justify-center group-hover:bg-[#D4AF37]/30 transition-colors">
                 <Icon name="award" size={18} className="text-[#D4AF37]" />
               </div>
               <div>
-                <p className="font-barlow-condensed text-white font-semibold text-sm uppercase tracking-wider">
+                <p className="font-barlow-condensed text-theme-text font-semibold text-sm uppercase tracking-wider">
                   Tambem sou Treinador
                 </p>
-                <p className="font-barlow text-white/40 text-xs mt-0.5">
+                <p className="font-barlow text-theme-text/40 text-xs mt-0.5">
                   Ative seu perfil de treinador para gerenciar alunos e experiencias
                 </p>
               </div>
@@ -1118,16 +1118,16 @@ export default function PerfilPage() {
                 if (!error) fetchUserAndProfile();
                 else alert('Erro ao ativar papel: ' + error.message);
               }}
-              className="w-full group bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-5 border border-[#C41E3A]/20 hover:border-[#C41E3A]/40 transition-all text-left flex items-center gap-4"
+              className="w-full group bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-5 border border-[#C41E3A]/20 hover:border-[#C41E3A]/40 transition-all text-left flex items-center gap-4"
             >
               <div className="w-10 h-10 rounded-full bg-[#C41E3A]/20 flex items-center justify-center group-hover:bg-[#C41E3A]/30 transition-colors">
                 <Icon name="swords" size={18} className="text-[#C41E3A]" />
               </div>
               <div>
-                <p className="font-barlow-condensed text-white font-semibold text-sm uppercase tracking-wider">
+                <p className="font-barlow-condensed text-theme-text font-semibold text-sm uppercase tracking-wider">
                   Tambem sou Lutador
                 </p>
-                <p className="font-barlow text-white/40 text-xs mt-0.5">
+                <p className="font-barlow text-theme-text/40 text-xs mt-0.5">
                   Ative seu perfil de lutador para registrar modalidades, cartel e desafios
                 </p>
               </div>
@@ -1138,7 +1138,7 @@ export default function PerfilPage() {
         {/* Fighter: Martial Arts List with Coaches/Academies per modality */}
         {isFighter && martialArts.length > 0 && (
           <div className="mb-8">
-            <h3 className="font-bebas text-xl tracking-wider text-white/80 mb-4">
+            <h3 className="font-bebas text-xl tracking-wider text-theme-text/80 mb-4">
               MODALIDADES
             </h3>
             <div className="space-y-4">
@@ -1148,14 +1148,14 @@ export default function PerfilPage() {
                 return (
                   <div
                     key={art.id}
-                    className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-4 border border-white/10"
+                    className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-4 border border-theme-border/10"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-barlow-condensed text-white font-semibold">
+                        <p className="font-barlow-condensed text-theme-text font-semibold">
                           {art.art_name}
                         </p>
-                        <p className="font-barlow text-white/40 text-sm">
+                        <p className="font-barlow text-theme-text/40 text-sm">
                           {art.level}
                           {art.started_at && ` · Desde ${art.started_at}`}
                         </p>
@@ -1163,14 +1163,14 @@ export default function PerfilPage() {
                       <div className="flex items-center gap-1 shrink-0">
                         <button
                           onClick={() => openEditArt(art)}
-                          className="p-1.5 rounded-lg text-white/30 hover:text-[#C41E3A] hover:bg-[#C41E3A]/10 transition-all"
+                          className="p-1.5 rounded-lg text-theme-text/30 hover:text-[#C41E3A] hover:bg-[#C41E3A]/10 transition-all"
                           title="Editar"
                         >
                           <Icon name="settings" size={14} />
                         </button>
                         <button
                           onClick={() => handleDeleteMartialArt(art.id)}
-                          className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                          className="p-1.5 rounded-lg text-theme-text/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
                           title="Excluir"
                         >
                           <Icon name="x" size={14} />
@@ -1178,25 +1178,25 @@ export default function PerfilPage() {
                       </div>
                     </div>
                     {art.description && (
-                      <p className="font-barlow text-white/30 text-sm mt-2">
+                      <p className="font-barlow text-theme-text/30 text-sm mt-2">
                         {art.description}
                       </p>
                     )}
 
                     {/* Coaches for this modality */}
-                    <div className="mt-3 pt-3 border-t border-white/5">
+                    <div className="mt-3 pt-3 border-t border-theme-border/5">
                       <p className="font-barlow-condensed text-xs uppercase tracking-widest text-[#D4AF37]/60 mb-2">
                         Treinadores
                       </p>
                       {artCoaches.length > 0 ? (
                         <div className="space-y-2">
                           {artCoaches.map((link) => (
-                            <div key={link.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-white/[0.03]">
+                            <div key={link.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-theme-text/[0.03]">
                               <div className="flex items-center gap-2 min-w-0">
                                 <Avatar name={link.coach?.full_name} url={link.coach?.avatar_url} size={28} />
                                 <Link
                                   href={`/treinadores/${link.coach?.id}`}
-                                  className="font-barlow-condensed text-white text-sm hover:text-[#D4AF37] transition-colors truncate"
+                                  className="font-barlow-condensed text-theme-text text-sm hover:text-[#D4AF37] transition-colors truncate"
                                 >
                                   {link.coach?.full_name || 'Treinador'}
                                 </Link>
@@ -1204,7 +1204,7 @@ export default function PerfilPage() {
                               </div>
                               <button
                                 onClick={() => handleRemoveCoach(link.id)}
-                                className="p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all shrink-0"
+                                className="p-1 rounded text-theme-text/20 hover:text-red-400 hover:bg-red-500/10 transition-all shrink-0"
                                 title="Remover"
                               >
                                 <Icon name="x" size={12} />
@@ -1213,7 +1213,7 @@ export default function PerfilPage() {
                           ))}
                         </div>
                       ) : (
-                        <p className="font-barlow text-white/20 text-xs">Nenhum treinador vinculado</p>
+                        <p className="font-barlow text-theme-text/20 text-xs">Nenhum treinador vinculado</p>
                       )}
                       {artCoaches.length < 3 && (
                         <button
@@ -1227,19 +1227,19 @@ export default function PerfilPage() {
                     </div>
 
                     {/* Academies for this modality */}
-                    <div className="mt-3 pt-3 border-t border-white/5">
+                    <div className="mt-3 pt-3 border-t border-theme-border/5">
                       <p className="font-barlow-condensed text-xs uppercase tracking-widest text-blue-400/60 mb-2">
                         Academias
                       </p>
                       {artAcademies.length > 0 ? (
                         <div className="space-y-2">
                           {artAcademies.map((link) => (
-                            <div key={link.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-white/[0.03]">
+                            <div key={link.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-theme-text/[0.03]">
                               <div className="flex items-center gap-2 min-w-0">
                                 <Avatar name={link.academy?.full_name} url={link.academy?.avatar_url} size={28} />
                                 <Link
                                   href={`/academias/${link.academy?.id}`}
-                                  className="font-barlow-condensed text-white text-sm hover:text-blue-400 transition-colors truncate"
+                                  className="font-barlow-condensed text-theme-text text-sm hover:text-blue-400 transition-colors truncate"
                                 >
                                   {link.academy?.full_name || 'Academia'}
                                 </Link>
@@ -1247,7 +1247,7 @@ export default function PerfilPage() {
                               </div>
                               <button
                                 onClick={() => handleRemoveAcademy(link.id)}
-                                className="p-1 rounded text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all shrink-0"
+                                className="p-1 rounded text-theme-text/20 hover:text-red-400 hover:bg-red-500/10 transition-all shrink-0"
                                 title="Remover"
                               >
                                 <Icon name="x" size={12} />
@@ -1256,7 +1256,7 @@ export default function PerfilPage() {
                           ))}
                         </div>
                       ) : (
-                        <p className="font-barlow text-white/20 text-xs">Nenhuma academia vinculada</p>
+                        <p className="font-barlow text-theme-text/20 text-xs">Nenhuma academia vinculada</p>
                       )}
                       {artAcademies.length < 2 && (
                         <button
@@ -1278,7 +1278,7 @@ export default function PerfilPage() {
         {/* Fighter: Videos List */}
         {isFighter && videos.length > 0 && (
           <div className="mb-8">
-            <h3 className="font-bebas text-xl tracking-wider text-white/80 mb-4">
+            <h3 className="font-bebas text-xl tracking-wider text-theme-text/80 mb-4">
               VIDEOS
             </h3>
             <div className="space-y-3">
@@ -1287,7 +1287,7 @@ export default function PerfilPage() {
                 return (
                   <div
                     key={video.id}
-                    className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl border border-white/10 overflow-hidden"
+                    className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl border border-theme-border/10 overflow-hidden"
                   >
                     {ytId && (
                       <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
@@ -1304,18 +1304,18 @@ export default function PerfilPage() {
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           {video.title && (
-                            <p className="font-barlow-condensed text-white font-semibold">
+                            <p className="font-barlow-condensed text-theme-text font-semibold">
                               {video.title}
                             </p>
                           )}
                           <div className="flex flex-wrap gap-2 mt-1">
                             {video.modality && (
-                              <span className="font-barlow text-white/40 text-xs">
+                              <span className="font-barlow text-theme-text/40 text-xs">
                                 {video.modality}
                               </span>
                             )}
                             {video.fight_date && (
-                              <span className="font-barlow text-white/40 text-xs">
+                              <span className="font-barlow text-theme-text/40 text-xs">
                                 {video.fight_date}
                               </span>
                             )}
@@ -1334,14 +1334,14 @@ export default function PerfilPage() {
                         <div className="flex items-center gap-1 shrink-0">
                           <button
                             onClick={() => openEditVideo(video)}
-                            className="p-1.5 rounded-lg text-white/30 hover:text-[#C41E3A] hover:bg-[#C41E3A]/10 transition-all"
+                            className="p-1.5 rounded-lg text-theme-text/30 hover:text-[#C41E3A] hover:bg-[#C41E3A]/10 transition-all"
                             title="Editar"
                           >
                             <Icon name="settings" size={14} />
                           </button>
                           <button
                             onClick={() => handleDeleteVideo(video.id)}
-                            className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                            className="p-1.5 rounded-lg text-theme-text/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
                             title="Excluir"
                           >
                             <Icon name="x" size={14} />
@@ -1361,45 +1361,45 @@ export default function PerfilPage() {
           <div className="grid grid-cols-3 gap-4 mb-8">
             <button
               onClick={openAddArt}
-              className="group bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-5 border border-white/10 hover:border-[#C41E3A]/30 transition-all text-left"
+              className="group bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-5 border border-theme-border/10 hover:border-[#C41E3A]/30 transition-all text-left"
             >
               <div className="w-10 h-10 rounded-full bg-[#C41E3A]/20 flex items-center justify-center mb-3 group-hover:bg-[#C41E3A]/30 transition-colors">
                 <Icon name="plus" size={18} className="text-[#C41E3A]" />
               </div>
-              <p className="font-barlow-condensed text-white font-semibold text-sm uppercase tracking-wider">
+              <p className="font-barlow-condensed text-theme-text font-semibold text-sm uppercase tracking-wider">
                 Adicionar Modalidade
               </p>
-              <p className="font-barlow text-white/40 text-xs mt-1">
+              <p className="font-barlow text-theme-text/40 text-xs mt-1">
                 Registre suas modalidades
               </p>
             </button>
 
             <button
               onClick={openAddVideo}
-              className="group bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-5 border border-white/10 hover:border-[#C41E3A]/30 transition-all text-left"
+              className="group bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-5 border border-theme-border/10 hover:border-[#C41E3A]/30 transition-all text-left"
             >
               <div className="w-10 h-10 rounded-full bg-[#C41E3A]/20 flex items-center justify-center mb-3 group-hover:bg-[#C41E3A]/30 transition-colors">
                 <Icon name="video" size={18} className="text-[#C41E3A]" />
               </div>
-              <p className="font-barlow-condensed text-white font-semibold text-sm uppercase tracking-wider">
+              <p className="font-barlow-condensed text-theme-text font-semibold text-sm uppercase tracking-wider">
                 Adicionar Video
               </p>
-              <p className="font-barlow text-white/40 text-xs mt-1">
+              <p className="font-barlow text-theme-text/40 text-xs mt-1">
                 {videos.length > 0 ? `${videos.length} video(s)` : 'Registre suas lutas'}
               </p>
             </button>
 
             <button
               onClick={() => setShowChallengesSection(!showChallengesSection)}
-              className="group bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-5 border border-white/10 hover:border-[#C41E3A]/30 transition-all text-left relative"
+              className="group bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-5 border border-theme-border/10 hover:border-[#C41E3A]/30 transition-all text-left relative"
             >
               <div className="w-10 h-10 rounded-full bg-[#C41E3A]/20 flex items-center justify-center mb-3 group-hover:bg-[#C41E3A]/30 transition-colors">
                 <Icon name="swords" size={18} className="text-[#C41E3A]" />
               </div>
-              <p className="font-barlow-condensed text-white font-semibold text-sm uppercase tracking-wider">
+              <p className="font-barlow-condensed text-theme-text font-semibold text-sm uppercase tracking-wider">
                 Meus Desafios
               </p>
-              <p className="font-barlow text-white/40 text-xs mt-1">
+              <p className="font-barlow text-theme-text/40 text-xs mt-1">
                 {challenges.length > 0 ? `${challenges.length} desafio(s)` : 'Nenhum desafio ainda'}
               </p>
               {(() => {
@@ -1419,31 +1419,31 @@ export default function PerfilPage() {
         {/* Fighter: Challenges Section */}
         {isFighter && showChallengesSection && (
           <div className="mb-8">
-            <h3 className="font-bebas text-xl tracking-wider text-white/80 mb-4">
+            <h3 className="font-bebas text-xl tracking-wider text-theme-text/80 mb-4">
               MEUS DESAFIOS
             </h3>
 
             {/* Received Challenges */}
             {receivedChallenges.length > 0 && (
               <div className="mb-6">
-                <p className="font-barlow-condensed text-xs uppercase tracking-widest text-white/40 mb-3">
+                <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/40 mb-3">
                   Desafios Recebidos
                 </p>
                 <div className="space-y-3">
                   {receivedChallenges.map((ch) => (
                     <div
                       key={ch.id}
-                      className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-4 border border-white/10"
+                      className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-4 border border-theme-border/10"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
                           <Avatar name={ch.challenger?.full_name} url={ch.challenger?.avatar_url} size={36} />
                           <div className="min-w-0">
-                            <p className="font-barlow-condensed text-white font-semibold text-sm truncate">
+                            <p className="font-barlow-condensed text-theme-text font-semibold text-sm truncate">
                               {ch.challenger?.full_name}
                             </p>
                             {ch.modality && (
-                              <p className="font-barlow text-white/40 text-xs">
+                              <p className="font-barlow text-theme-text/40 text-xs">
                                 {ch.modality}
                               </p>
                             )}
@@ -1475,10 +1475,10 @@ export default function PerfilPage() {
                           ch.result_reported_by === user?.id ? (
                             <div className="text-right shrink-0">
                               {getChallengeStatusBadge(ch.status)}
-                              <p className="font-barlow text-white/30 text-xs mt-1">
+                              <p className="font-barlow text-theme-text/30 text-xs mt-1">
                                 Aguardando confirmacao
                               </p>
-                              <p className="font-barlow text-white/50 text-xs">
+                              <p className="font-barlow text-theme-text/50 text-xs">
                                 {getResultLabel(ch)}
                               </p>
                             </div>
@@ -1519,7 +1519,7 @@ export default function PerfilPage() {
                         )}
                       </div>
                       {ch.message && (
-                        <p className="font-barlow text-white/30 text-sm mt-2 italic">
+                        <p className="font-barlow text-theme-text/30 text-sm mt-2 italic">
                           &ldquo;{ch.message}&rdquo;
                         </p>
                       )}
@@ -1532,24 +1532,24 @@ export default function PerfilPage() {
             {/* Sent Challenges */}
             {sentChallenges.length > 0 && (
               <div>
-                <p className="font-barlow-condensed text-xs uppercase tracking-widest text-white/40 mb-3">
+                <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/40 mb-3">
                   Desafios Enviados
                 </p>
                 <div className="space-y-3">
                   {sentChallenges.map((ch) => (
                     <div
                       key={ch.id}
-                      className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-4 border border-white/10"
+                      className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-4 border border-theme-border/10"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
                           <Avatar name={ch.challenged?.full_name} url={ch.challenged?.avatar_url} size={36} />
                           <div className="min-w-0">
-                            <p className="font-barlow-condensed text-white font-semibold text-sm truncate">
+                            <p className="font-barlow-condensed text-theme-text font-semibold text-sm truncate">
                               {ch.challenged?.full_name}
                             </p>
                             {ch.modality && (
-                              <p className="font-barlow text-white/40 text-xs">
+                              <p className="font-barlow text-theme-text/40 text-xs">
                                 {ch.modality}
                               </p>
                             )}
@@ -1566,10 +1566,10 @@ export default function PerfilPage() {
                           ch.result_reported_by === user?.id ? (
                             <div className="text-right shrink-0">
                               {getChallengeStatusBadge(ch.status)}
-                              <p className="font-barlow text-white/30 text-xs mt-1">
+                              <p className="font-barlow text-theme-text/30 text-xs mt-1">
                                 Aguardando confirmacao
                               </p>
-                              <p className="font-barlow text-white/50 text-xs">
+                              <p className="font-barlow text-theme-text/50 text-xs">
                                 {getResultLabel(ch)}
                               </p>
                             </div>
@@ -1611,7 +1611,7 @@ export default function PerfilPage() {
                             {ch.status === 'pending' && (
                               <button
                                 onClick={() => handleRespondChallenge(ch.id, 'cancelled')}
-                                className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                                className="p-1.5 rounded-lg text-theme-text/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
                                 title="Cancelar"
                               >
                                 <Icon name="x" size={14} />
@@ -1621,7 +1621,7 @@ export default function PerfilPage() {
                         )}
                       </div>
                       {ch.message && (
-                        <p className="font-barlow text-white/30 text-sm mt-2 italic">
+                        <p className="font-barlow text-theme-text/30 text-sm mt-2 italic">
                           &ldquo;{ch.message}&rdquo;
                         </p>
                       )}
@@ -1632,8 +1632,8 @@ export default function PerfilPage() {
             )}
 
             {challenges.length === 0 && (
-              <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-8 border border-white/10 text-center">
-                <p className="font-barlow text-white/30">
+              <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-8 border border-theme-border/10 text-center">
+                <p className="font-barlow text-theme-text/30">
                   Nenhum desafio ainda. Visite o perfil de um lutador para desafia-lo!
                 </p>
               </div>
@@ -1644,14 +1644,14 @@ export default function PerfilPage() {
         {/* Coach: Binding Requests */}
         {isCoach && bindingRequests.length > 0 && (
           <div className="mb-8">
-            <h3 className="font-bebas text-xl tracking-wider text-white/80 mb-4">
+            <h3 className="font-bebas text-xl tracking-wider text-theme-text/80 mb-4">
               PEDIDOS DE VINCULO
             </h3>
             <div className="space-y-3">
               {bindingRequests.map((req) => (
                 <div
                   key={req.id}
-                  className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-4 border border-[#D4AF37]/20"
+                  className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-4 border border-[#D4AF37]/20"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
@@ -1659,11 +1659,11 @@ export default function PerfilPage() {
                       <div>
                         <Link
                           href={`/lutadores/${req.fighter?.id}`}
-                          className="font-barlow-condensed text-white font-semibold hover:text-[#D4AF37] transition-colors"
+                          className="font-barlow-condensed text-theme-text font-semibold hover:text-[#D4AF37] transition-colors"
                         >
                           {req.fighter?.full_name || 'Lutador'}
                         </Link>
-                        <p className="font-barlow text-white/40 text-xs">
+                        <p className="font-barlow text-theme-text/40 text-xs">
                           Solicitou vinculo · {req.martial_art?.art_name || 'Modalidade'}
                         </p>
                       </div>
@@ -1692,24 +1692,24 @@ export default function PerfilPage() {
         {/* Coach: Active Bindings */}
         {isCoach && activeBindings.length > 0 && (
           <div className="mb-8">
-            <h3 className="font-bebas text-xl tracking-wider text-white/80 mb-4">
+            <h3 className="font-bebas text-xl tracking-wider text-theme-text/80 mb-4">
               LUTADORES VINCULADOS
             </h3>
             <div className="space-y-3">
               {activeBindings.map((bind) => (
                 <div
                   key={bind.id}
-                  className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-4 border border-white/10 flex items-center gap-3"
+                  className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-4 border border-theme-border/10 flex items-center gap-3"
                 >
                   <Avatar name={bind.fighter?.full_name} url={bind.fighter?.avatar_url} size={40} />
                   <div className="min-w-0">
                     <Link
                       href={`/lutadores/${bind.fighter?.id}`}
-                      className="font-barlow-condensed text-white font-semibold hover:text-[#D4AF37] transition-colors"
+                      className="font-barlow-condensed text-theme-text font-semibold hover:text-[#D4AF37] transition-colors"
                     >
                       {bind.fighter?.full_name || 'Lutador'}
                     </Link>
-                    <p className="font-barlow text-white/40 text-xs">
+                    <p className="font-barlow text-theme-text/40 text-xs">
                       {bind.martial_art?.art_name || 'Modalidade'}
                     </p>
                   </div>
@@ -1726,7 +1726,7 @@ export default function PerfilPage() {
         {isCoach && (
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bebas text-xl tracking-wider text-white/80">
+              <h3 className="font-bebas text-xl tracking-wider text-theme-text/80">
                 MINHAS EXPERIENCIAS
               </h3>
               <button
@@ -1745,16 +1745,16 @@ export default function PerfilPage() {
                     {/* Timeline dot */}
                     <div className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-[#D4AF37]/30 border-2 border-[#D4AF37]" />
 
-                    <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-5 border border-white/10">
+                    <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-5 border border-theme-border/10">
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <h4 className="font-barlow-condensed text-white font-semibold uppercase tracking-wider">
+                          <h4 className="font-barlow-condensed text-theme-text font-semibold uppercase tracking-wider">
                             {exp.title}
                           </h4>
                           <p className="font-barlow text-[#D4AF37] text-sm mt-1">
                             {exp.organization}
                           </p>
-                          <p className="font-barlow text-white/40 text-xs mt-1">
+                          <p className="font-barlow text-theme-text/40 text-xs mt-1">
                             {exp.period_start}
                             {exp.period_end ? ` - ${exp.period_end}` : ' - Atual'}
                           </p>
@@ -1762,14 +1762,14 @@ export default function PerfilPage() {
                         <div className="flex items-center gap-1 shrink-0">
                           <button
                             onClick={() => openEditExp(exp)}
-                            className="p-1.5 rounded-lg text-white/30 hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all"
+                            className="p-1.5 rounded-lg text-theme-text/30 hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all"
                             title="Editar"
                           >
                             <Icon name="settings" size={14} />
                           </button>
                           <button
                             onClick={() => handleDeleteExperience(exp.id)}
-                            className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                            className="p-1.5 rounded-lg text-theme-text/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
                             title="Excluir"
                           >
                             <Icon name="x" size={14} />
@@ -1777,7 +1777,7 @@ export default function PerfilPage() {
                         </div>
                       </div>
                       {exp.description && (
-                        <p className="font-barlow text-white/30 text-sm mt-3">
+                        <p className="font-barlow text-theme-text/30 text-sm mt-3">
                           {exp.description}
                         </p>
                       )}
@@ -1786,8 +1786,8 @@ export default function PerfilPage() {
                 ))}
               </div>
             ) : (
-              <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-8 border border-white/10 text-center">
-                <p className="font-barlow text-white/30">
+              <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-8 border border-theme-border/10 text-center">
+                <p className="font-barlow text-theme-text/30">
                   Nenhuma experiência cadastrada ainda.
                 </p>
               </div>
@@ -1798,14 +1798,14 @@ export default function PerfilPage() {
         {/* Academy: Binding Requests */}
         {isAcademy && academyBindingRequests.length > 0 && (
           <div className="mb-8">
-            <h3 className="font-bebas text-xl tracking-wider text-white/80 mb-4">
+            <h3 className="font-bebas text-xl tracking-wider text-theme-text/80 mb-4">
               PEDIDOS DE VINCULO
             </h3>
             <div className="space-y-3">
               {academyBindingRequests.map((req) => (
                 <div
                   key={req.id}
-                  className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-4 border border-blue-400/20"
+                  className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-4 border border-blue-400/20"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
@@ -1813,11 +1813,11 @@ export default function PerfilPage() {
                       <div>
                         <Link
                           href={`/lutadores/${req.fighter?.id}`}
-                          className="font-barlow-condensed text-white font-semibold hover:text-blue-400 transition-colors"
+                          className="font-barlow-condensed text-theme-text font-semibold hover:text-blue-400 transition-colors"
                         >
                           {req.fighter?.full_name || 'Lutador'}
                         </Link>
-                        <p className="font-barlow text-white/40 text-xs">
+                        <p className="font-barlow text-theme-text/40 text-xs">
                           Solicitou vinculo · {req.martial_art?.art_name || 'Modalidade'}
                         </p>
                       </div>
@@ -1846,24 +1846,24 @@ export default function PerfilPage() {
         {/* Academy: Active Bindings */}
         {isAcademy && academyActiveBindings.length > 0 && (
           <div className="mb-8">
-            <h3 className="font-bebas text-xl tracking-wider text-white/80 mb-4">
+            <h3 className="font-bebas text-xl tracking-wider text-theme-text/80 mb-4">
               LUTADORES VINCULADOS
             </h3>
             <div className="space-y-3">
               {academyActiveBindings.map((bind) => (
                 <div
                   key={bind.id}
-                  className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-4 border border-white/10 flex items-center gap-3"
+                  className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-4 border border-theme-border/10 flex items-center gap-3"
                 >
                   <Avatar name={bind.fighter?.full_name} url={bind.fighter?.avatar_url} size={40} />
                   <div className="min-w-0">
                     <Link
                       href={`/lutadores/${bind.fighter?.id}`}
-                      className="font-barlow-condensed text-white font-semibold hover:text-blue-400 transition-colors"
+                      className="font-barlow-condensed text-theme-text font-semibold hover:text-blue-400 transition-colors"
                     >
                       {bind.fighter?.full_name || 'Lutador'}
                     </Link>
-                    <p className="font-barlow text-white/40 text-xs">
+                    <p className="font-barlow text-theme-text/40 text-xs">
                       {bind.martial_art?.art_name || 'Modalidade'}
                     </p>
                   </div>
@@ -1906,7 +1906,7 @@ export default function PerfilPage() {
               }
             />
             <div>
-              <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-white/50 mb-2">
+              <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/50 mb-2">
                 Descricao
               </label>
               <textarea
@@ -1916,7 +1916,7 @@ export default function PerfilPage() {
                 }
                 rows={3}
                 placeholder="Conte um pouco sobre sua experiência..."
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-barlow text-sm placeholder:text-white/20 focus:outline-none focus:border-[#C41E3A]/50 transition-colors resize-none"
+                className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg px-4 py-3 text-theme-text font-barlow text-sm placeholder:text-theme-text/20 focus:outline-none focus:border-[#C41E3A]/50 transition-colors resize-none"
               />
             </div>
             <button
@@ -1971,7 +1971,7 @@ export default function PerfilPage() {
               />
             </div>
             <div>
-              <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-white/50 mb-2">
+              <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/50 mb-2">
                 Descricao
               </label>
               <textarea
@@ -1981,7 +1981,7 @@ export default function PerfilPage() {
                 }
                 rows={3}
                 placeholder="Descreva suas atividades e conquistas..."
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-barlow text-sm placeholder:text-white/20 focus:outline-none focus:border-[#D4AF37]/50 transition-colors resize-none"
+                className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg px-4 py-3 text-theme-text font-barlow text-sm placeholder:text-theme-text/20 focus:outline-none focus:border-[#D4AF37]/50 transition-colors resize-none"
               />
             </div>
             <button
@@ -2008,7 +2008,7 @@ export default function PerfilPage() {
                   <img
                     src={avatarPreview}
                     alt="Preview"
-                    className="w-24 h-24 rounded-full object-cover border-2 border-white/20"
+                    className="w-24 h-24 rounded-full object-cover border-2 border-theme-border/20"
                   />
                 ) : (
                   <Avatar name={editForm.full_name} size={96} />
@@ -2027,7 +2027,7 @@ export default function PerfilPage() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="text-xs text-white/40 hover:text-white/60 font-barlow-condensed uppercase tracking-wider transition-colors"
+                className="text-xs text-theme-text/40 hover:text-theme-text/60 font-barlow-condensed uppercase tracking-wider transition-colors"
               >
                 Alterar foto
               </button>
@@ -2046,11 +2046,11 @@ export default function PerfilPage() {
 
             {/* Handle (@identificador) */}
             <div>
-              <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-white/50 mb-1.5 font-semibold">
+              <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/50 mb-1.5 font-semibold">
                 @ Identificador
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 font-barlow text-sm pointer-events-none">@</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-theme-text/30 font-barlow text-sm pointer-events-none">@</span>
                 <input
                   type="text"
                   value={editForm.handle}
@@ -2061,12 +2061,12 @@ export default function PerfilPage() {
                   }}
                   placeholder="seu_identificador"
                   maxLength={30}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg pl-8 pr-10 py-3 text-white font-barlow text-sm placeholder:text-white/20 focus:outline-none focus:border-[#C41E3A]/50 transition-colors"
+                  className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg pl-8 pr-10 py-3 text-theme-text font-barlow text-sm placeholder:text-theme-text/20 focus:outline-none focus:border-[#C41E3A]/50 transition-colors"
                 />
                 {editForm.handle && editForm.handle.length >= 3 && (
                   <span className="absolute right-3 top-1/2 -translate-y-1/2">
                     {checkingHandle ? (
-                      <svg className="animate-spin h-4 w-4 text-white/40" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin h-4 w-4 text-theme-text/40" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                       </svg>
@@ -2079,7 +2079,7 @@ export default function PerfilPage() {
                 )}
               </div>
               {editForm.handle && editForm.handle.length > 0 && editForm.handle.length < 3 && (
-                <p className="font-barlow text-xs text-white/30 mt-1">Mínimo de 3 caracteres</p>
+                <p className="font-barlow text-xs text-theme-text/30 mt-1">Mínimo de 3 caracteres</p>
               )}
               {handleAvailable === false && (
                 <p className="font-barlow text-xs text-red-400 mt-1">Este @ já está em uso</p>
@@ -2087,7 +2087,7 @@ export default function PerfilPage() {
               {handleAvailable === true && editForm.handle !== profile?.handle && (
                 <p className="font-barlow text-xs text-green-400 mt-1">Disponível!</p>
               )}
-              <p className="font-barlow text-white/25 text-xs mt-1">
+              <p className="font-barlow text-theme-text/25 text-xs mt-1">
                 Letras minúsculas, números e _ (3 a 30 caracteres)
               </p>
             </div>
@@ -2115,7 +2115,7 @@ export default function PerfilPage() {
 
             {/* Bio */}
             <div>
-              <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-white/50 mb-1.5 font-semibold">
+              <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/50 mb-1.5 font-semibold">
                 {isAcademy ? 'Descricao da Academia' : 'Bio'}
               </label>
               <textarea
@@ -2123,7 +2123,7 @@ export default function PerfilPage() {
                 onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
                 rows={3}
                 placeholder="Conte um pouco sobre voce..."
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-barlow text-sm placeholder:text-white/20 focus:outline-none focus:border-[#C41E3A]/50 transition-colors resize-none"
+                className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg px-4 py-3 text-theme-text font-barlow text-sm placeholder:text-theme-text/20 focus:outline-none focus:border-[#C41E3A]/50 transition-colors resize-none"
               />
             </div>
 
@@ -2153,8 +2153,8 @@ export default function PerfilPage() {
             />
 
             {/* Social Separator */}
-            <div className="border-t border-white/10 pt-4">
-              <p className="font-barlow-condensed text-xs uppercase tracking-widest text-white/40 mb-3 font-semibold">
+            <div className="border-t border-theme-border/10 pt-4">
+              <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/40 mb-3 font-semibold">
                 Redes Sociais
               </p>
               <div className="space-y-3">
@@ -2247,16 +2247,16 @@ export default function PerfilPage() {
         <Modal onClose={() => { setShowResultModal(false); setResultChallenge(null); }} title="Registrar Resultado">
           <div className="space-y-4">
             <div className="text-center mb-4">
-              <p className="font-barlow text-white/60 text-sm">
+              <p className="font-barlow text-theme-text/60 text-sm">
                 Desafio contra{' '}
-                <span className="text-white font-semibold">
+                <span className="text-theme-text font-semibold">
                   {resultChallenge.challenger_id === user?.id
                     ? resultChallenge.challenged?.full_name
                     : resultChallenge.challenger?.full_name}
                 </span>
               </p>
               {resultChallenge.modality && (
-                <p className="font-barlow text-white/40 text-xs mt-1">
+                <p className="font-barlow text-theme-text/40 text-xs mt-1">
                   Modalidade: {resultChallenge.modality}
                 </p>
               )}
@@ -2304,13 +2304,13 @@ export default function PerfilPage() {
               {availableCoaches.map((coach) => {
                 const existing = myCoaches.find(mc => mc.coach_id === coach.id && mc.martial_art_id === showCoachModalForArt);
                 return (
-                  <div key={coach.id} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
+                  <div key={coach.id} className="flex items-center justify-between p-3 rounded-lg bg-theme-text/5 border border-theme-border/10">
                     <div className="flex items-center gap-3">
                       <Avatar name={coach.full_name} url={coach.avatar_url} size={36} />
-                      <p className="font-barlow-condensed text-white font-semibold text-sm">{coach.full_name}</p>
+                      <p className="font-barlow-condensed text-theme-text font-semibold text-sm">{coach.full_name}</p>
                     </div>
                     {existing ? (
-                      <span className="text-xs font-barlow-condensed text-white/40 uppercase tracking-wider">
+                      <span className="text-xs font-barlow-condensed text-theme-text/40 uppercase tracking-wider">
                         {existing.status === 'active' ? 'Vinculado' : existing.status === 'pending' ? 'Pendente' : 'Rejeitado'}
                       </span>
                     ) : (
@@ -2327,7 +2327,7 @@ export default function PerfilPage() {
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="font-barlow text-white/30">Nenhum treinador disponivel na plataforma.</p>
+              <p className="font-barlow text-theme-text/30">Nenhum treinador disponivel na plataforma.</p>
             </div>
           )}
         </Modal>
@@ -2348,13 +2348,13 @@ export default function PerfilPage() {
               {availableAcademiesForBinding.map((academy) => {
                 const existing = myAcademies.find(ma => ma.academy_id === academy.id && ma.martial_art_id === showAcademyModalForArt);
                 return (
-                  <div key={academy.id} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
+                  <div key={academy.id} className="flex items-center justify-between p-3 rounded-lg bg-theme-text/5 border border-theme-border/10">
                     <div className="flex items-center gap-3">
                       <Avatar name={academy.full_name} url={academy.avatar_url} size={36} />
-                      <p className="font-barlow-condensed text-white font-semibold text-sm">{academy.full_name}</p>
+                      <p className="font-barlow-condensed text-theme-text font-semibold text-sm">{academy.full_name}</p>
                     </div>
                     {existing ? (
-                      <span className="text-xs font-barlow-condensed text-white/40 uppercase tracking-wider">
+                      <span className="text-xs font-barlow-condensed text-theme-text/40 uppercase tracking-wider">
                         {existing.status === 'active' ? 'Vinculada' : existing.status === 'pending' ? 'Pendente' : 'Rejeitado'}
                       </span>
                     ) : (
@@ -2371,7 +2371,7 @@ export default function PerfilPage() {
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="font-barlow text-white/30">Nenhuma academia disponivel na plataforma.</p>
+              <p className="font-barlow text-theme-text/30">Nenhuma academia disponivel na plataforma.</p>
             </div>
           )}
         </Modal>
@@ -2380,10 +2380,10 @@ export default function PerfilPage() {
       {/* Change Password Modal */}
       {showChangePassword && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4" onClick={() => setShowChangePassword(false)}>
-          <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl w-full max-w-sm p-6" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-theme-border/10 shadow-2xl w-full max-w-sm p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
-              <h3 className="font-bebas text-xl tracking-wider text-white">ALTERAR SENHA</h3>
-              <button onClick={() => setShowChangePassword(false)} className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 transition-all">
+              <h3 className="font-bebas text-xl tracking-wider text-theme-text">ALTERAR SENHA</h3>
+              <button onClick={() => setShowChangePassword(false)} className="w-8 h-8 rounded-lg bg-theme-text/5 border border-theme-border/10 flex items-center justify-center text-theme-text/40 hover:text-theme-text hover:border-theme-border/20 transition-all">
                 ✕
               </button>
             </div>
@@ -2406,40 +2406,40 @@ export default function PerfilPage() {
             ) : (
               <form onSubmit={handleChangePassword} className="space-y-4">
                 <div>
-                  <label className="uppercase text-xs tracking-wider text-white/50 font-barlow-condensed font-semibold mb-1.5 block">Senha Atual</label>
+                  <label className="uppercase text-xs tracking-wider text-theme-text/50 font-barlow-condensed font-semibold mb-1.5 block">Senha Atual</label>
                   <input
                     type="password"
                     value={pwForm.current}
                     onChange={(e) => setPwForm({ ...pwForm, current: e.target.value })}
                     placeholder="Digite sua senha atual"
                     required
-                    className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-white/25"
+                    className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg text-theme-text font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-theme-text/25"
                   />
                 </div>
                 <div>
-                  <label className="uppercase text-xs tracking-wider text-white/50 font-barlow-condensed font-semibold mb-1.5 block">Nova Senha</label>
+                  <label className="uppercase text-xs tracking-wider text-theme-text/50 font-barlow-condensed font-semibold mb-1.5 block">Nova Senha</label>
                   <input
                     type="password"
                     value={pwForm.newPw}
                     onChange={(e) => setPwForm({ ...pwForm, newPw: e.target.value })}
                     placeholder="Mínimo 6 caracteres"
                     required
-                    className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-white/25"
+                    className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg text-theme-text font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-theme-text/25"
                   />
                 </div>
                 <div>
-                  <label className="uppercase text-xs tracking-wider text-white/50 font-barlow-condensed font-semibold mb-1.5 block">Confirmar Nova Senha</label>
+                  <label className="uppercase text-xs tracking-wider text-theme-text/50 font-barlow-condensed font-semibold mb-1.5 block">Confirmar Nova Senha</label>
                   <input
                     type="password"
                     value={pwForm.confirm}
                     onChange={(e) => setPwForm({ ...pwForm, confirm: e.target.value })}
                     placeholder="Repita a nova senha"
                     required
-                    className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-white/25"
+                    className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg text-theme-text font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-theme-text/25"
                   />
                 </div>
                 <div className="flex gap-3 pt-2">
-                  <button type="button" onClick={() => setShowChangePassword(false)} className="flex-1 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all font-barlow-condensed text-sm uppercase tracking-wider">
+                  <button type="button" onClick={() => setShowChangePassword(false)} className="flex-1 py-2.5 rounded-lg bg-theme-text/5 border border-theme-border/10 text-theme-text/60 hover:text-theme-text hover:border-theme-border/20 transition-all font-barlow-condensed text-sm uppercase tracking-wider">
                     Cancelar
                   </button>
                   <button

@@ -14,10 +14,15 @@ module.exports = {
           gold: '#D4AF37',
         },
         dark: {
-          bg: '#0a0a0f',
-          card: '#1a1a2e',
-          card2: '#16213e',
-          accent: '#0f3460',
+          bg: 'var(--color-bg)',
+          card: 'var(--color-surface)',
+          card2: 'var(--color-surface2)',
+          accent: 'var(--color-accent)',
+        },
+        theme: {
+          text: 'rgb(var(--color-text) / <alpha-value>)',
+          border: 'rgb(var(--color-border) / <alpha-value>)',
+          'text-inv': 'rgb(var(--color-text-inv) / <alpha-value>)',
         },
       },
       fontFamily: {

@@ -120,8 +120,8 @@ export default function RequestAcademyBindingButton({ academyId }) {
 
   if (state === 'loading') {
     return (
-      <div className="flex items-center gap-2 text-white/30">
-        <div className="w-4 h-4 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
+      <div className="flex items-center gap-2 text-theme-text/30">
+        <div className="w-4 h-4 border-2 border-theme-border/20 border-t-theme-text/60 rounded-full animate-spin" />
       </div>
     );
   }
@@ -143,7 +143,7 @@ export default function RequestAcademyBindingButton({ academyId }) {
 
   return (
     <div className="w-full">
-      <p className="font-barlow-condensed text-xs uppercase tracking-widest text-white/40 mb-3 text-center">
+      <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/40 mb-3 text-center">
         Solicitar Vínculo por Modalidade
       </p>
       <div className="space-y-2">
@@ -155,9 +155,9 @@ export default function RequestAcademyBindingButton({ academyId }) {
           return (
             <div
               key={art.id}
-              className="flex items-center justify-between p-3 rounded-lg bg-white/[0.03] border border-white/[0.08]"
+              className="flex items-center justify-between p-3 rounded-lg bg-theme-text/[0.03] border border-theme-border/[0.08]"
             >
-              <span className="font-barlow-condensed text-sm text-white">
+              <span className="font-barlow-condensed text-sm text-theme-text">
                 {art.art_name}
               </span>
               {binding ? (
@@ -168,7 +168,7 @@ export default function RequestAcademyBindingButton({ academyId }) {
                   {statusLabels[binding.status]}
                 </span>
               ) : limitReached ? (
-                <span className="text-xs font-barlow-condensed text-white/30 uppercase tracking-wider">
+                <span className="text-xs font-barlow-condensed text-theme-text/30 uppercase tracking-wider">
                   Limite atingido
                 </span>
               ) : (
@@ -178,7 +178,7 @@ export default function RequestAcademyBindingButton({ academyId }) {
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-barlow-condensed uppercase tracking-widest text-xs font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting === art.id ? (
-                    <div className="w-3 h-3 border-2 border-white/30 border-t-white/70 rounded-full animate-spin" />
+                    <div className="w-3 h-3 border-2 border-theme-border/30 border-t-theme-text/70 rounded-full animate-spin" />
                   ) : (
                     <Icon name="send" size={12} />
                   )}

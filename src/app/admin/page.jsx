@@ -163,7 +163,7 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+      <div className="min-h-screen bg-dark-bg flex items-center justify-center">
         <svg
           className="animate-spin h-10 w-10 text-[#C41E3A]"
           xmlns="http://www.w3.org/2000/svg"
@@ -222,7 +222,7 @@ export default function AdminPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] px-4 py-10">
+    <div className="min-h-screen bg-dark-bg px-4 py-10">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-10">
@@ -230,10 +230,10 @@ export default function AdminPage() {
             <Icon name="shield" size={24} className="text-white" />
           </div>
           <div>
-            <h1 className="font-bebas text-4xl tracking-wider text-white">
+            <h1 className="font-bebas text-4xl tracking-wider text-theme-text">
               PAINEL <span className="text-[#C41E3A]">ADMIN</span>
             </h1>
-            <p className="font-barlow text-white/40 text-sm">
+            <p className="font-barlow text-theme-text/40 text-sm">
               Gerencie cadastros e aprovações
             </p>
           </div>
@@ -244,7 +244,7 @@ export default function AdminPage() {
           {statCards.map((stat) => (
             <div
               key={stat.label}
-              className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-5 border border-white/10"
+              className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-5 border border-theme-border/10"
             >
               <div className="flex items-center justify-between mb-3">
                 <div
@@ -260,7 +260,7 @@ export default function AdminPage() {
               >
                 {stat.value}
               </p>
-              <p className="font-barlow-condensed text-xs uppercase tracking-widest text-white/40 mt-1">
+              <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/40 mt-1">
                 {stat.label}
               </p>
             </div>
@@ -268,11 +268,11 @@ export default function AdminPage() {
         </div>
 
         {/* Pending Approvals Table */}
-        <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+        <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-theme-border/10 shadow-2xl overflow-hidden">
           {/* Table Header */}
-          <div className="p-6 border-b border-white/5 flex items-center justify-between">
+          <div className="p-6 border-b border-theme-border/5 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <h2 className="font-bebas text-xl tracking-wider text-white">
+              <h2 className="font-bebas text-xl tracking-wider text-theme-text">
                 CADASTROS PENDENTES
               </h2>
               {stats.pending > 0 && (
@@ -285,19 +285,19 @@ export default function AdminPage() {
 
           {/* Table Body */}
           {pendingUsers.length > 0 ? (
-            <div className="divide-y divide-white/5">
+            <div className="divide-y divide-theme-border/5">
               {pendingUsers.map((user) => (
                 <div
                   key={user.id}
-                  className="p-5 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
+                  className="p-5 flex items-center justify-between hover:bg-theme-text/[0.02] transition-colors"
                 >
                   <div className="flex items-center gap-4 flex-1">
                     <Avatar name={user.full_name} size={44} />
                     <div className="flex-1 min-w-0">
-                      <p className="font-barlow-condensed text-white font-semibold truncate">
+                      <p className="font-barlow-condensed text-theme-text font-semibold truncate">
                         {user.full_name}
                       </p>
-                      <p className="font-barlow text-white/40 text-sm truncate">
+                      <p className="font-barlow text-theme-text/40 text-sm truncate">
                         {user.is_fighter && user.is_coach ? 'Lutador & Treinador' : user.role === 'fighter' ? 'Lutador' : user.role === 'coach' ? 'Treinador' : user.role === 'academy' ? 'Academia' : user.role} · {formatDate(user.created_at)}
                       </p>
                     </div>
@@ -323,7 +323,7 @@ export default function AdminPage() {
                           </span>
                         )}
                       </div>
-                      <span className="font-barlow text-white/30 text-xs">
+                      <span className="font-barlow text-theme-text/30 text-xs">
                         {formatDate(user.created_at)}
                       </span>
                     </div>
@@ -333,7 +333,7 @@ export default function AdminPage() {
                   <div className="flex items-center gap-2 ml-6">
                     <button
                       onClick={() => setSelectedUser(user)}
-                      className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider"
+                      className="px-3 py-1.5 rounded-lg bg-theme-text/5 border border-theme-border/10 text-theme-text/60 hover:text-theme-text hover:border-theme-border/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider"
                       disabled={actionLoading === user.id}
                     >
                       Ver
@@ -359,7 +359,7 @@ export default function AdminPage() {
           ) : (
             <div className="p-12 text-center">
               <span className="text-4xl mb-3 block">✅</span>
-              <p className="font-barlow text-white/40 text-sm">
+              <p className="font-barlow text-theme-text/40 text-sm">
                 Nenhum cadastro pendente!
               </p>
             </div>
@@ -367,10 +367,10 @@ export default function AdminPage() {
         </div>
 
         {/* Unverified Fight Records */}
-        <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl overflow-hidden mt-8">
-          <div className="p-6 border-b border-white/5 flex items-center justify-between">
+        <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-theme-border/10 shadow-2xl overflow-hidden mt-8">
+          <div className="p-6 border-b border-theme-border/5 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <h2 className="font-bebas text-xl tracking-wider text-white">
+              <h2 className="font-bebas text-xl tracking-wider text-theme-text">
                 CARTÉIS PENDENTES DE VERIFICAÇÃO
               </h2>
               {stats.unverifiedRecords > 0 && (
@@ -382,19 +382,19 @@ export default function AdminPage() {
           </div>
 
           {unverifiedRecords.length > 0 ? (
-            <div className="divide-y divide-white/5">
+            <div className="divide-y divide-theme-border/5">
               {unverifiedRecords.map((record) => (
                 <div
                   key={record.id}
-                  className="p-5 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
+                  className="p-5 flex items-center justify-between hover:bg-theme-text/[0.02] transition-colors"
                 >
                   <div className="flex items-center gap-4 flex-1">
                     <Avatar name={record.fighter?.full_name} url={record.fighter?.avatar_url} size={44} />
                     <div className="flex-1 min-w-0">
-                      <p className="font-barlow-condensed text-white font-semibold truncate">
+                      <p className="font-barlow-condensed text-theme-text font-semibold truncate">
                         {record.fighter?.full_name || 'Lutador'}
                       </p>
-                      <p className="font-barlow text-white/40 text-sm">
+                      <p className="font-barlow text-theme-text/40 text-sm">
                         {record.modality}
                       </p>
                     </div>
@@ -413,7 +413,7 @@ export default function AdminPage() {
                           <p className="font-barlow-condensed text-[10px] uppercase tracking-wider text-[#D4AF37]/60">E</p>
                         </div>
                       </div>
-                      <span className="font-barlow text-white/30 text-xs">
+                      <span className="font-barlow text-theme-text/30 text-xs">
                         {formatDate(record.updated_at)}
                       </span>
                     </div>
@@ -441,7 +441,7 @@ export default function AdminPage() {
           ) : (
             <div className="p-12 text-center">
               <span className="text-4xl mb-3 block">✅</span>
-              <p className="font-barlow text-white/40 text-sm">
+              <p className="font-barlow text-theme-text/40 text-sm">
                 Todos os cartéis estão verificados!
               </p>
             </div>
@@ -456,7 +456,7 @@ export default function AdminPage() {
           onClick={() => setSelectedUser(null)}
         >
           <div
-            className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl w-full max-w-md p-6"
+            className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-theme-border/10 shadow-2xl w-full max-w-md p-6"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -464,7 +464,7 @@ export default function AdminPage() {
               <div className="flex items-center gap-3">
                 <Avatar name={selectedUser.full_name} size={48} />
                 <div>
-                  <h3 className="font-bebas text-xl tracking-wider text-white">
+                  <h3 className="font-bebas text-xl tracking-wider text-theme-text">
                     {selectedUser.full_name}
                   </h3>
                   <div className="flex items-center gap-1">
@@ -492,7 +492,7 @@ export default function AdminPage() {
               </div>
               <button
                 onClick={() => setSelectedUser(null)}
-                className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 transition-all"
+                className="w-8 h-8 rounded-lg bg-theme-text/5 border border-theme-border/10 flex items-center justify-center text-theme-text/40 hover:text-theme-text hover:border-theme-border/20 transition-all"
               >
                 ✕
               </button>
@@ -500,29 +500,29 @@ export default function AdminPage() {
 
             {/* Dados Cadastrais */}
             <div className="space-y-3">
-              <div className="flex justify-between items-center py-2 border-b border-white/5">
-                <span className="font-barlow text-white/40 text-sm">Data de Nascimento</span>
-                <span className="font-barlow text-white text-sm">{formatDate(selectedUser.birth_date)}</span>
+              <div className="flex justify-between items-center py-2 border-b border-theme-border/5">
+                <span className="font-barlow text-theme-text/40 text-sm">Data de Nascimento</span>
+                <span className="font-barlow text-theme-text text-sm">{formatDate(selectedUser.birth_date)}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-white/5">
-                <span className="font-barlow text-white/40 text-sm">CPF</span>
-                <span className="font-barlow text-white text-sm">{selectedUser.cpf || 'Não informado'}</span>
+              <div className="flex justify-between items-center py-2 border-b border-theme-border/5">
+                <span className="font-barlow text-theme-text/40 text-sm">CPF</span>
+                <span className="font-barlow text-theme-text text-sm">{selectedUser.cpf || 'Não informado'}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-white/5">
-                <span className="font-barlow text-white/40 text-sm">RG</span>
-                <span className="font-barlow text-white text-sm">{selectedUser.rg || 'Não informado'}</span>
+              <div className="flex justify-between items-center py-2 border-b border-theme-border/5">
+                <span className="font-barlow text-theme-text/40 text-sm">RG</span>
+                <span className="font-barlow text-theme-text text-sm">{selectedUser.rg || 'Não informado'}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-white/5">
-                <span className="font-barlow text-white/40 text-sm">Tipo</span>
-                <span className="font-barlow text-white text-sm capitalize">{selectedUser.is_fighter && selectedUser.is_coach ? 'Lutador & Treinador' : selectedUser.role === 'fighter' ? 'Lutador' : selectedUser.role === 'coach' ? 'Treinador' : selectedUser.role === 'academy' ? 'Academia' : selectedUser.role}</span>
+              <div className="flex justify-between items-center py-2 border-b border-theme-border/5">
+                <span className="font-barlow text-theme-text/40 text-sm">Tipo</span>
+                <span className="font-barlow text-theme-text text-sm capitalize">{selectedUser.is_fighter && selectedUser.is_coach ? 'Lutador & Treinador' : selectedUser.role === 'fighter' ? 'Lutador' : selectedUser.role === 'coach' ? 'Treinador' : selectedUser.role === 'academy' ? 'Academia' : selectedUser.role}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-white/5">
-                <span className="font-barlow text-white/40 text-sm">Status</span>
+              <div className="flex justify-between items-center py-2 border-b border-theme-border/5">
+                <span className="font-barlow text-theme-text/40 text-sm">Status</span>
                 <span className="font-barlow text-[#D4AF37] text-sm capitalize">{selectedUser.status}</span>
               </div>
               <div className="flex justify-between items-center py-2">
-                <span className="font-barlow text-white/40 text-sm">Cadastrado em</span>
-                <span className="font-barlow text-white text-sm">{formatDate(selectedUser.created_at)}</span>
+                <span className="font-barlow text-theme-text/40 text-sm">Cadastrado em</span>
+                <span className="font-barlow text-theme-text text-sm">{formatDate(selectedUser.created_at)}</span>
               </div>
             </div>
 

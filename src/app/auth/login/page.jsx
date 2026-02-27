@@ -53,16 +53,16 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex items-start justify-center px-4">
+    <div className="min-h-screen bg-dark-bg flex items-start justify-center px-4">
       <div className="max-w-md w-full mx-auto mt-32 mb-20">
-        <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl p-8 border border-white/10 shadow-2xl">
+        <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl p-8 border border-theme-border/10 shadow-2xl">
           {/* Header */}
           <div className="text-center mb-8">
             <img src="/logo.png" alt="FightLog" className="w-14 h-14 object-contain mx-auto mb-3" />
-            <h1 className="font-bebas text-3xl tracking-wider text-white">
+            <h1 className="font-bebas text-3xl tracking-wider text-theme-text">
               ENTRAR
             </h1>
-            <p className="font-barlow text-white/50 text-sm mt-1">
+            <p className="font-barlow text-theme-text/50 text-sm mt-1">
               Acesse sua conta
             </p>
           </div>
@@ -99,7 +99,7 @@ export default function LoginPage() {
             <div className="text-right -mt-2">
               <Link
                 href="/auth/forgot-password"
-                className="font-barlow text-white/40 text-xs hover:text-[#C41E3A] transition-colors"
+                className="font-barlow text-theme-text/40 text-xs hover:text-[#C41E3A] transition-colors"
               >
                 Esqueci minha senha
               </Link>
@@ -141,7 +141,7 @@ export default function LoginPage() {
           </form>
 
           {/* Register Link */}
-          <p className="text-center mt-6 font-barlow text-white/40 text-sm">
+          <p className="text-center mt-6 font-barlow text-theme-text/40 text-sm">
             Não tem conta?{' '}
             <Link
               href="/auth/register"

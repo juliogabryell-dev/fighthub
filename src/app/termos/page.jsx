@@ -55,10 +55,10 @@ export default function TermosPage() {
     <main className="min-h-screen px-6 py-16 max-w-4xl mx-auto">
       {/* Header */}
       <div className="text-center mb-16">
-        <h1 className="font-bebas text-5xl text-white tracking-wider">
+        <h1 className="font-bebas text-5xl text-theme-text tracking-wider">
           TERMOS DE <span className="text-brand-red">USO</span>
         </h1>
-        <p className="font-barlow text-white/50 mt-3 text-lg">
+        <p className="font-barlow text-theme-text/50 mt-3 text-lg">
           Ultima atualizacao: Fevereiro de 2026
         </p>
       </div>
@@ -68,12 +68,12 @@ export default function TermosPage() {
         {sections.map((section) => (
           <div
             key={section.title}
-            className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl border border-white/10 p-6"
+            className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl border border-theme-border/10 p-6"
           >
             <h2 className="font-bebas text-lg text-brand-gold tracking-wider mb-3">
               {section.title}
             </h2>
-            <p className="font-barlow text-sm text-white/50 leading-relaxed">
+            <p className="font-barlow text-sm text-theme-text/50 leading-relaxed">
               {section.content}
             </p>
           </div>

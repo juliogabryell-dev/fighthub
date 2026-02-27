@@ -121,8 +121,8 @@ export default function RequestBindingButton({ coachId }) {
 
   if (state === 'loading') {
     return (
-      <div className="flex items-center gap-2 text-white/30">
-        <div className="w-4 h-4 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
+      <div className="flex items-center gap-2 text-theme-text/30">
+        <div className="w-4 h-4 border-2 border-theme-border/20 border-t-theme-text/60 rounded-full animate-spin" />
       </div>
     );
   }
@@ -144,7 +144,7 @@ export default function RequestBindingButton({ coachId }) {
 
   return (
     <div className="w-full">
-      <p className="font-barlow-condensed text-xs uppercase tracking-widest text-white/40 mb-3 text-center">
+      <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/40 mb-3 text-center">
         Solicitar Vínculo por Modalidade
       </p>
       <div className="space-y-2">
@@ -156,9 +156,9 @@ export default function RequestBindingButton({ coachId }) {
           return (
             <div
               key={art.id}
-              className="flex items-center justify-between p-3 rounded-lg bg-white/[0.03] border border-white/[0.08]"
+              className="flex items-center justify-between p-3 rounded-lg bg-theme-text/[0.03] border border-theme-border/[0.08]"
             >
-              <span className="font-barlow-condensed text-sm text-white">
+              <span className="font-barlow-condensed text-sm text-theme-text">
                 {art.art_name}
               </span>
               {binding ? (
@@ -169,7 +169,7 @@ export default function RequestBindingButton({ coachId }) {
                   {statusLabels[binding.status]}
                 </span>
               ) : limitReached ? (
-                <span className="text-xs font-barlow-condensed text-white/30 uppercase tracking-wider">
+                <span className="text-xs font-barlow-condensed text-theme-text/30 uppercase tracking-wider">
                   Limite atingido
                 </span>
               ) : (

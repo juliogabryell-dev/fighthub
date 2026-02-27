@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Icon from './Icon';
 import Avatar from './Avatar';
+import ThemeToggle from './ThemeToggle';
 
 const NAV_LINKS = [
   { href: '/', label: 'Home', icon: 'home' },
@@ -71,7 +72,7 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-dark-bg/95 backdrop-blur-xl border-b border-brand-red/30">
+    <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b border-brand-red/30" style={{ backgroundColor: 'var(--color-navbar-bg)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -79,7 +80,7 @@ export default function Navbar() {
             <img src="/logo.png" alt="FightLog" className="w-9 h-9 rounded-lg object-contain" />
             <div className="flex flex-col leading-none">
               <span className="font-bebas text-xl tracking-wider">
-                <span className="text-white">FIGHT</span>
+                <span className="text-theme-text">FIGHT</span>
                 <span className="text-brand-red">LOG</span>
               </span>
               <span className="text-[9px] text-brand-gold font-barlow-condensed uppercase tracking-[0.2em] -mt-0.5">
@@ -97,7 +98,7 @@ export default function Navbar() {
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-barlow-condensed uppercase tracking-wider transition-all duration-200 ${
                   isActive(link.href)
                     ? 'bg-brand-red/20 border border-brand-red/40 text-brand-red'
-                    : 'text-white/50 hover:text-white hover:bg-white/5 border border-transparent'
+                    : 'text-theme-text/50 hover:text-theme-text hover:bg-theme-text/5 border border-transparent'
                 }`}
               >
                 <Icon name={link.icon} size={16} />
@@ -108,6 +109,11 @@ export default function Navbar() {
 
           {/* Auth Area */}
           <div className="flex items-center gap-3">
+            {/* Theme Toggle - Desktop */}
+            <div className="hidden md:block">
+              <ThemeToggle />
+            </div>
+
             {!user ? (
               <Link
                 href="/auth/login"
@@ -120,19 +126,19 @@ export default function Navbar() {
                 {getRoleLink(user.role) ? (
                   <Link
                     href={getRoleLink(user.role)}
-                    className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg border border-transparent hover:bg-white/5 hover:border-white/10 transition-all group"
+                    className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg border border-transparent hover:bg-theme-text/5 hover:border-theme-border/10 transition-all group"
                   >
                     <div className="relative">
                       <Avatar name={user.full_name} url={user.avatar_url} size={32} />
-                      <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#1a1a2e] flex items-center justify-center border border-white/10 group-hover:border-[#C41E3A]/40 transition-colors">
-                        <Icon name="user" size={8} className="text-white/50 group-hover:text-[#C41E3A] transition-colors" />
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-dark-card flex items-center justify-center border border-theme-border/10 group-hover:border-[#C41E3A]/40 transition-colors">
+                        <Icon name="user" size={8} className="text-theme-text/50 group-hover:text-[#C41E3A] transition-colors" />
                       </div>
                     </div>
                     <div className="flex flex-col leading-none">
-                      <span className="text-sm text-white font-barlow font-medium truncate max-w-[120px] group-hover:text-[#C41E3A] transition-colors">
+                      <span className="text-sm text-theme-text font-barlow font-medium truncate max-w-[120px] group-hover:text-[#C41E3A] transition-colors">
                         {user.full_name}
                       </span>
-                      <span className="text-[10px] text-white/30 font-barlow-condensed uppercase tracking-wider group-hover:text-white/50 transition-colors">
+                      <span className="text-[10px] text-theme-text/30 font-barlow-condensed uppercase tracking-wider group-hover:text-theme-text/50 transition-colors">
                         Meu Perfil
                       </span>
                     </div>
@@ -141,10 +147,10 @@ export default function Navbar() {
                   <div className="flex items-center gap-2.5 px-3 py-1.5">
                     <Avatar name={user.full_name} url={user.avatar_url} size={32} />
                     <div className="flex flex-col leading-none">
-                      <span className="text-sm text-white font-barlow font-medium truncate max-w-[120px]">
+                      <span className="text-sm text-theme-text font-barlow font-medium truncate max-w-[120px]">
                         {user.full_name}
                       </span>
-                      <span className="text-[10px] text-white/30 font-barlow-condensed uppercase tracking-wider">
+                      <span className="text-[10px] text-theme-text/30 font-barlow-condensed uppercase tracking-wider">
                         {user.is_fighter && user.is_coach ? 'Lutador & Treinador' : { fighter: 'Lutador', coach: 'Treinador', admin: 'Admin', academy: 'Academia' }[user.role] || user.role}
                       </span>
                     </div>
@@ -152,7 +158,7 @@ export default function Navbar() {
                 )}
                 <button
                   onClick={handleLogout}
-                  className="text-white/40 hover:text-brand-red transition-colors ml-1"
+                  className="text-theme-text/40 hover:text-brand-red transition-colors ml-1"
                   title="Sair"
                 >
                   <Icon name="logout" size={18} />
@@ -163,7 +169,7 @@ export default function Navbar() {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden text-white/60 hover:text-white transition-colors"
+              className="md:hidden text-theme-text/60 hover:text-theme-text transition-colors"
             >
               <Icon name={mobileMenuOpen ? 'x' : 'menu'} size={24} />
             </button>
@@ -173,7 +179,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-dark-card/98 backdrop-blur-xl border-t border-white/5">
+        <div className="md:hidden bg-dark-card/98 backdrop-blur-xl border-t border-theme-border/5">
           <div className="px-4 py-3 space-y-1">
             {NAV_LINKS.map((link) => (
               <Link
@@ -183,7 +189,7 @@ export default function Navbar() {
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-barlow-condensed uppercase tracking-wider transition-all ${
                   isActive(link.href)
                     ? 'bg-brand-red/20 border border-brand-red/40 text-brand-red'
-                    : 'text-white/50 hover:text-white hover:bg-white/5 border border-transparent'
+                    : 'text-theme-text/50 hover:text-theme-text hover:bg-theme-text/5 border border-transparent'
                 }`}
               >
                 <Icon name={link.icon} size={18} />
@@ -191,8 +197,14 @@ export default function Navbar() {
               </Link>
             ))}
 
+            {/* Theme Toggle - Mobile */}
+            <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-barlow-condensed uppercase tracking-wider text-theme-text/50">
+              <ThemeToggle />
+              <span>Alternar tema</span>
+            </div>
+
             {/* Mobile Auth */}
-            <div className="pt-2 mt-2 border-t border-white/5">
+            <div className="pt-2 mt-2 border-t border-theme-border/5">
               {!user ? (
                 <Link
                   href="/auth/login"
@@ -206,10 +218,10 @@ export default function Navbar() {
                   <div className="flex items-center gap-2 px-3 py-2">
                     <Avatar name={user.full_name} url={user.avatar_url} size={32} />
                     <div className="flex flex-col leading-none">
-                      <span className="text-sm text-white font-barlow font-medium">
+                      <span className="text-sm text-theme-text font-barlow font-medium">
                         {user.full_name}
                       </span>
-                      <span className="text-[10px] text-white/30 font-barlow-condensed uppercase tracking-wider">
+                      <span className="text-[10px] text-theme-text/30 font-barlow-condensed uppercase tracking-wider">
                         {user.is_fighter && user.is_coach ? 'Lutador & Treinador' : { fighter: 'Lutador', coach: 'Treinador', admin: 'Admin', academy: 'Academia' }[user.role] || user.role}
                       </span>
                     </div>
@@ -218,7 +230,7 @@ export default function Navbar() {
                     <Link
                       href={getRoleLink(user.role)}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-barlow-condensed uppercase tracking-wider text-white/50 hover:text-white hover:bg-white/5 transition-all"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-barlow-condensed uppercase tracking-wider text-theme-text/50 hover:text-theme-text hover:bg-theme-text/5 transition-all"
                     >
                       <Icon name={user.role === 'admin' ? 'settings' : 'user'} size={18} />
                       {user.role === 'admin' ? 'Painel Admin' : 'Meu Perfil'}
@@ -229,7 +241,7 @@ export default function Navbar() {
                       handleLogout();
                       setMobileMenuOpen(false);
                     }}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-barlow-condensed uppercase tracking-wider text-white/50 hover:text-brand-red hover:bg-white/5 transition-all w-full"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-barlow-condensed uppercase tracking-wider text-theme-text/50 hover:text-brand-red hover:bg-theme-text/5 transition-all w-full"
                   >
                     <Icon name="logout" size={18} />
                     Sair

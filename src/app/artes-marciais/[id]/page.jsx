@@ -36,7 +36,7 @@ export default async function MartialArtDetail({ params }) {
       </Link>
 
       {/* Card Container */}
-      <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/[0.06] overflow-hidden">
+      <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-theme-border/[0.06] overflow-hidden">
         {/* Header Area */}
         <div className="relative h-48 bg-gradient-to-br from-brand-red/30 to-brand-gold/15 flex items-center justify-center">
           <span className="text-[72px]">{art.icon}</span>
@@ -45,7 +45,7 @@ export default async function MartialArtDetail({ params }) {
         {/* Content Area */}
         <div className="p-10">
           {/* Title */}
-          <h1 className="font-bebas text-5xl text-white tracking-wider mb-4">
+          <h1 className="font-bebas text-5xl text-theme-text tracking-wider mb-4">
             {art.name}
           </h1>
 
@@ -69,7 +69,7 @@ export default async function MartialArtDetail({ params }) {
               <h2 className="font-barlow-condensed text-brand-gold uppercase tracking-widest text-sm font-semibold mb-3">
                 HISTÓRIA
               </h2>
-              <p className="font-barlow text-base text-white/70 leading-relaxed">
+              <p className="font-barlow text-base text-theme-text/70 leading-relaxed">
                 {art.history}
               </p>
             </div>
@@ -82,7 +82,7 @@ export default async function MartialArtDetail({ params }) {
                 SISTEMA DE GRADUAÇÃO
               </h2>
               <div className="bg-brand-red/[0.08] rounded-xl border border-brand-red/15 p-6">
-                <p className="font-barlow text-base text-white/70 leading-relaxed">
+                <p className="font-barlow text-base text-theme-text/70 leading-relaxed">
                   {art.ranking}
                 </p>
               </div>

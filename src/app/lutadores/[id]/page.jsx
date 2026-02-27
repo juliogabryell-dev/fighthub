@@ -45,12 +45,12 @@ export default async function FighterProfile({ params }) {
         </Link>
 
         <div className="text-center py-20">
-          <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/[0.06] p-12 max-w-md mx-auto">
-            <p className="font-bebas text-3xl text-white/30 mb-3">👤</p>
-            <p className="font-barlow-condensed text-xl text-white/40 uppercase tracking-wider">
+          <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-theme-border/[0.06] p-12 max-w-md mx-auto">
+            <p className="font-bebas text-3xl text-theme-text/30 mb-3">👤</p>
+            <p className="font-barlow-condensed text-xl text-theme-text/40 uppercase tracking-wider">
               Perfil não encontrado
             </p>
-            <p className="font-barlow text-sm text-white/25 mt-2">
+            <p className="font-barlow text-sm text-theme-text/25 mt-2">
               O lutador pode ter sido removido ou o banco de dados não está configurado.
             </p>
             <Link
@@ -82,7 +82,7 @@ export default async function FighterProfile({ params }) {
       </Link>
 
       {/* Profile Card */}
-      <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/[0.06] overflow-hidden">
+      <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-theme-border/[0.06] overflow-hidden">
         {/* Header */}
         <div className="relative bg-gradient-to-br from-brand-red/20 to-brand-red/5 p-10">
           <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -102,16 +102,16 @@ export default async function FighterProfile({ params }) {
             </div>
 
             <div className="text-center sm:text-left">
-              <h1 className="font-bebas text-4xl text-white tracking-wider">
+              <h1 className="font-bebas text-4xl text-theme-text tracking-wider">
                 {fighter.full_name}
               </h1>
               {fighter.handle && (
-                <p className="font-barlow text-sm text-white/50 mt-0.5">
+                <p className="font-barlow text-sm text-theme-text/50 mt-0.5">
                   @{fighter.handle}
                 </p>
               )}
               {fighter.birth_date && (
-                <p className="font-barlow text-sm text-white/40 mt-1">
+                <p className="font-barlow text-sm text-theme-text/40 mt-1">
                   Nascimento: {new Date(fighter.birth_date).toLocaleDateString('pt-BR')}
                 </p>
               )}
@@ -119,7 +119,7 @@ export default async function FighterProfile({ params }) {
                 className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-barlow-condensed uppercase tracking-wider ${
                   fighter.status === 'active'
                     ? 'bg-green-500/15 text-green-400 border border-green-500/30'
-                    : 'bg-white/10 text-white/40 border border-white/10'
+                    : 'bg-theme-text/10 text-theme-text/40 border border-theme-border/10'
                 }`}
               >
                 {fighter.status === 'active' ? 'Ativo' : fighter.status}
@@ -130,16 +130,16 @@ export default async function FighterProfile({ params }) {
 
         {/* Social Info */}
         {(fighter.bio || fighter.city || fighter.state || fighter.phone || fighter.instagram || fighter.facebook || fighter.youtube || fighter.tiktok) && (
-          <div className="px-10 pt-6 pb-2 border-t border-white/[0.06]">
+          <div className="px-10 pt-6 pb-2 border-t border-theme-border/[0.06]">
             {fighter.bio && (
-              <p className="font-barlow text-sm text-white/60 leading-relaxed mb-4">
+              <p className="font-barlow text-sm text-theme-text/60 leading-relaxed mb-4">
                 {fighter.bio}
               </p>
             )}
 
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
               {(fighter.city || fighter.state) && (
-                <div className="flex items-center gap-2 text-white/50">
+                <div className="flex items-center gap-2 text-theme-text/50">
                   <Icon name="map-pin" size={16} />
                   <span className="font-barlow text-sm">
                     {[fighter.city, fighter.state].filter(Boolean).join(', ')}
@@ -148,7 +148,7 @@ export default async function FighterProfile({ params }) {
               )}
 
               {fighter.phone && (
-                <div className="flex items-center gap-2 text-white/50">
+                <div className="flex items-center gap-2 text-theme-text/50">
                   <Icon name="phone" size={16} />
                   <span className="font-barlow text-sm">{fighter.phone}</span>
                 </div>
@@ -164,7 +164,7 @@ export default async function FighterProfile({ params }) {
                       href={`https://instagram.com/${handle}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/50 hover:text-pink-400 hover:border-pink-400/30 hover:bg-pink-400/10 transition-all"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-theme-text/[0.04] border border-theme-border/[0.08] text-theme-text/50 hover:text-pink-400 hover:border-pink-400/30 hover:bg-pink-400/10 transition-all"
                     >
                       <Icon name="instagram" size={16} />
                       <span className="font-barlow text-xs">@{handle}</span>
@@ -181,7 +181,7 @@ export default async function FighterProfile({ params }) {
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/50 hover:text-blue-400 hover:border-blue-400/30 hover:bg-blue-400/10 transition-all"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-theme-text/[0.04] border border-theme-border/[0.08] text-theme-text/50 hover:text-blue-400 hover:border-blue-400/30 hover:bg-blue-400/10 transition-all"
                     >
                       <Icon name="facebook" size={16} />
                       <span className="font-barlow text-xs">{displayName}</span>
@@ -199,7 +199,7 @@ export default async function FighterProfile({ params }) {
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/50 hover:text-red-400 hover:border-red-400/30 hover:bg-red-400/10 transition-all"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-theme-text/[0.04] border border-theme-border/[0.08] text-theme-text/50 hover:text-red-400 hover:border-red-400/30 hover:bg-red-400/10 transition-all"
                     >
                       <Icon name="youtube" size={16} />
                       <span className="font-barlow text-xs">{displayName}</span>
@@ -214,7 +214,7 @@ export default async function FighterProfile({ params }) {
                       href={`https://tiktok.com/@${handle}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/50 hover:text-white hover:border-white/30 hover:bg-white/10 transition-all"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-theme-text/[0.04] border border-theme-border/[0.08] text-theme-text/50 hover:text-theme-text hover:border-theme-border/30 hover:bg-theme-text/10 transition-all"
                     >
                       <Icon name="tiktok" size={16} />
                       <span className="font-barlow text-xs">@{handle}</span>
@@ -232,19 +232,19 @@ export default async function FighterProfile({ params }) {
           <div className="grid grid-cols-3 gap-4 mb-10">
             <div className="text-center p-6 bg-[#22c55e]/10 rounded-xl border border-[#22c55e]/20">
               <p className="font-bebas text-4xl text-[#22c55e]">{wins}</p>
-              <p className="font-barlow-condensed text-sm text-white/40 uppercase tracking-widest mt-1">
+              <p className="font-barlow-condensed text-sm text-theme-text/40 uppercase tracking-widest mt-1">
                 Vitórias
               </p>
             </div>
             <div className="text-center p-6 bg-brand-red/10 rounded-xl border border-brand-red/20">
               <p className="font-bebas text-4xl text-brand-red">{losses}</p>
-              <p className="font-barlow-condensed text-sm text-white/40 uppercase tracking-widest mt-1">
+              <p className="font-barlow-condensed text-sm text-theme-text/40 uppercase tracking-widest mt-1">
                 Derrotas
               </p>
             </div>
             <div className="text-center p-6 bg-brand-gold/10 rounded-xl border border-brand-gold/20">
               <p className="font-bebas text-4xl text-brand-gold">{draws}</p>
-              <p className="font-barlow-condensed text-sm text-white/40 uppercase tracking-widest mt-1">
+              <p className="font-barlow-condensed text-sm text-theme-text/40 uppercase tracking-widest mt-1">
                 Empates
               </p>
             </div>
@@ -263,26 +263,26 @@ export default async function FighterProfile({ params }) {
                   return (
                     <div
                       key={index}
-                      className="p-4 bg-white/[0.02] rounded-lg border-l-2 border-brand-red"
+                      className="p-4 bg-theme-text/[0.02] rounded-lg border-l-2 border-brand-red"
                     >
                       <div>
-                        <p className="font-barlow-condensed text-lg text-white">
+                        <p className="font-barlow-condensed text-lg text-theme-text">
                           {fma.art_name || `Arte Marcial #${fma.martial_art_id}`}
                         </p>
                         <div className="flex gap-3 mt-1">
                           {fma.level && (
-                            <span className="font-barlow text-sm text-white/50">
+                            <span className="font-barlow text-sm text-theme-text/50">
                               Nível: <span className="text-brand-gold">{fma.level}</span>
                             </span>
                           )}
                           {fma.started_at && (() => {
                             const years = Math.floor((Date.now() - new Date(fma.started_at).getTime()) / (365.25 * 24 * 60 * 60 * 1000));
                             return years > 0 ? (
-                              <span className="font-barlow text-sm text-white/50">
+                              <span className="font-barlow text-sm text-theme-text/50">
                                 {years} {years === 1 ? 'ano' : 'anos'} praticando
                               </span>
                             ) : (
-                              <span className="font-barlow text-sm text-white/50">
+                              <span className="font-barlow text-sm text-theme-text/50">
                                 Menos de 1 ano praticando
                               </span>
                             );
@@ -292,7 +292,7 @@ export default async function FighterProfile({ params }) {
 
                       {/* Coaches for this modality */}
                       {activeCoaches.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-white/[0.06]">
+                        <div className="mt-3 pt-3 border-t border-theme-border/[0.06]">
                           <p className="font-barlow-condensed text-xs uppercase tracking-widest text-brand-gold/60 mb-2">
                             Treinadores
                           </p>
@@ -301,12 +301,12 @@ export default async function FighterProfile({ params }) {
                               <Link
                                 key={i}
                                 href={`/treinadores/${fc.coach?.id || fc.coach_id}`}
-                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] transition-colors"
+                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-theme-text/[0.04] border border-theme-border/[0.08] hover:bg-theme-text/[0.08] transition-colors"
                               >
                                 <div className="w-6 h-6 rounded-full bg-brand-gold/15 flex items-center justify-center flex-shrink-0">
                                   <Icon name="award" size={12} className="text-brand-gold" />
                                 </div>
-                                <span className="font-barlow-condensed text-sm text-white">
+                                <span className="font-barlow-condensed text-sm text-theme-text">
                                   {fc.coach?.full_name || 'Treinador'}
                                 </span>
                               </Link>
@@ -317,7 +317,7 @@ export default async function FighterProfile({ params }) {
 
                       {/* Academies for this modality */}
                       {activeAcademies.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-white/[0.06]">
+                        <div className="mt-3 pt-3 border-t border-theme-border/[0.06]">
                           <p className="font-barlow-condensed text-xs uppercase tracking-widest text-blue-400/60 mb-2">
                             Academias
                           </p>
@@ -326,12 +326,12 @@ export default async function FighterProfile({ params }) {
                               <Link
                                 key={i}
                                 href={`/academias/${fa.academy?.id || fa.academy_id}`}
-                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] transition-colors"
+                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-theme-text/[0.04] border border-theme-border/[0.08] hover:bg-theme-text/[0.08] transition-colors"
                               >
                                 <div className="w-6 h-6 rounded-full bg-blue-500/15 flex items-center justify-center flex-shrink-0">
                                   <Icon name="home" size={12} className="text-blue-400" />
                                 </div>
-                                <span className="font-barlow-condensed text-sm text-white">
+                                <span className="font-barlow-condensed text-sm text-theme-text">
                                   {fa.academy?.full_name || 'Academia'}
                                 </span>
                               </Link>
@@ -359,17 +359,17 @@ export default async function FighterProfile({ params }) {
                     href={video.youtube_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-4 p-4 bg-white/[0.02] rounded-lg border border-white/[0.06] hover:bg-white/[0.04] transition-colors group"
+                    className="flex items-center gap-4 p-4 bg-theme-text/[0.02] rounded-lg border border-theme-border/[0.06] hover:bg-theme-text/[0.04] transition-colors group"
                   >
                     <div className="w-10 h-10 rounded-full bg-brand-red/15 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-red/25 transition-colors">
                       <Icon name="play" size={18} className="text-brand-red" />
                     </div>
                     <div className="min-w-0">
-                      <p className="font-barlow-condensed text-white truncate">
+                      <p className="font-barlow-condensed text-theme-text truncate">
                         {video.title || 'Vídeo'}
                       </p>
                       {video.modality && (
-                        <p className="font-barlow text-sm text-white/30 truncate">
+                        <p className="font-barlow text-sm text-theme-text/30 truncate">
                           {video.modality}
                         </p>
                       )}
@@ -381,7 +381,7 @@ export default async function FighterProfile({ params }) {
           )}
 
           {/* Challenge Button */}
-          <div className="mt-10 pt-8 border-t border-white/[0.06] flex justify-center">
+          <div className="mt-10 pt-8 border-t border-theme-border/[0.06] flex justify-center">
             <ChallengeButton fighterId={id} />
           </div>
         </div>

@@ -132,16 +132,16 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex items-start justify-center px-4">
+    <div className="min-h-screen bg-dark-bg flex items-start justify-center px-4">
       <div className="max-w-lg w-full mx-auto mt-28 mb-20">
-        <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl p-8 border border-white/10 shadow-2xl">
+        <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl p-8 border border-theme-border/10 shadow-2xl">
           {/* Header */}
           <div className="text-center mb-8">
             <img src="/logo.png" alt="FightLog" className="w-14 h-14 object-contain mx-auto mb-3" />
-            <h1 className="font-bebas text-3xl tracking-wider text-white">
+            <h1 className="font-bebas text-3xl tracking-wider text-theme-text">
               CADASTRAR
             </h1>
-            <p className="font-barlow text-white/50 text-sm mt-1">
+            <p className="font-barlow text-theme-text/50 text-sm mt-1">
               Crie sua conta no FightLog
             </p>
           </div>
@@ -154,7 +154,7 @@ export default function RegisterPage() {
               className={`flex items-center justify-center gap-2 py-3 rounded-lg border-2 font-barlow-condensed uppercase tracking-wide text-sm font-semibold transition-all duration-300 ${
                 role === 'fighter'
                   ? 'bg-[#C41E3A]/20 border-[#C41E3A] text-[#C41E3A]'
-                  : 'bg-white/5 border-white/10 text-white/50 hover:border-white/20'
+                  : 'bg-theme-text/5 border-theme-border/10 text-theme-text/50 hover:border-theme-border/20'
               }`}
             >
               <Icon name="swords" size={18} />
@@ -166,7 +166,7 @@ export default function RegisterPage() {
               className={`flex items-center justify-center gap-2 py-3 rounded-lg border-2 font-barlow-condensed uppercase tracking-wide text-sm font-semibold transition-all duration-300 ${
                 role === 'coach'
                   ? 'bg-[#C41E3A]/20 border-[#C41E3A] text-[#C41E3A]'
-                  : 'bg-white/5 border-white/10 text-white/50 hover:border-white/20'
+                  : 'bg-theme-text/5 border-theme-border/10 text-theme-text/50 hover:border-theme-border/20'
               }`}
             >
               <Icon name="award" size={18} />
@@ -178,7 +178,7 @@ export default function RegisterPage() {
               className={`flex items-center justify-center gap-2 py-3 rounded-lg border-2 font-barlow-condensed uppercase tracking-wide text-sm font-semibold transition-all duration-300 ${
                 role === 'academy'
                   ? 'bg-[#C41E3A]/20 border-[#C41E3A] text-[#C41E3A]'
-                  : 'bg-white/5 border-white/10 text-white/50 hover:border-white/20'
+                  : 'bg-theme-text/5 border-theme-border/10 text-theme-text/50 hover:border-theme-border/20'
               }`}
             >
               <Icon name="building" size={18} />
@@ -275,7 +275,7 @@ export default function RegisterPage() {
                 placeholder="seu_identificador"
                 maxLength={30}
               />
-              <p className="font-barlow text-white/30 text-xs mt-1">
+              <p className="font-barlow text-theme-text/30 text-xs mt-1">
                 Opcional. Letras minúsculas, números e _ (3 a 30 caracteres)
               </p>
             </div>
@@ -341,7 +341,7 @@ export default function RegisterPage() {
           </form>
 
           {/* Login Link */}
-          <p className="text-center mt-6 font-barlow text-white/40 text-sm">
+          <p className="text-center mt-6 font-barlow text-theme-text/40 text-sm">
             Já tem conta?{' '}
             <Link
               href="/auth/login"

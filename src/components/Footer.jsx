@@ -9,16 +9,16 @@ const FOOTER_LINKS = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/10 mt-auto">
+    <footer className="border-t border-theme-border/10 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Logo + Copyright */}
           <div className="flex flex-col items-center md:items-start gap-1">
             <span className="font-bebas text-lg tracking-wider">
-              <span className="text-white">FIGHT</span>
+              <span className="text-theme-text">FIGHT</span>
               <span className="text-brand-red">LOG</span>
             </span>
-            <p className="text-xs text-white/50 font-barlow">
+            <p className="text-xs text-theme-text/50 font-barlow">
               Portal de Modalidades &copy; 2026
             </p>
           </div>
@@ -29,7 +29,7 @@ export default function Footer() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-xs text-white/60 hover:text-white font-barlow-condensed uppercase tracking-wider transition-colors"
+                className="text-xs text-theme-text/60 hover:text-theme-text font-barlow-condensed uppercase tracking-wider transition-colors"
               >
                 {link.label}
               </Link>
@@ -37,7 +37,7 @@ export default function Footer() {
           </div>
 
           {/* Tech Credit */}
-          <p className="text-[11px] text-white/40 font-barlow-condensed tracking-wider">
+          <p className="text-[11px] text-theme-text/40 font-barlow-condensed tracking-wider">
             Desenvolvido por{' '}
             <a
               href="https://neobyte.site"

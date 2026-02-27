@@ -8,31 +8,31 @@ export default function CoachCard({ coach }) {
 
   return (
     <Link href={`/treinadores/${id}`}>
-      <div className="card-hover bg-gradient-to-b from-dark-card to-dark-card2 rounded-xl border border-white/5 p-5 transition-all duration-300 hover:border-brand-red/30 group">
+      <div className="card-hover bg-gradient-to-b from-dark-card to-dark-card2 rounded-xl border border-theme-border/5 p-5 transition-all duration-300 hover:border-brand-red/30 group">
         {/* Header: Avatar + Name + Status */}
         <div className="flex items-center gap-3 mb-4">
           <Avatar name={full_name} url={avatar_url} size={48} />
           <div className="flex-1 min-w-0">
-            <h3 className="font-bebas text-xl text-white tracking-wide truncate group-hover:text-brand-red transition-colors">
+            <h3 className="font-bebas text-xl text-theme-text tracking-wide truncate group-hover:text-brand-red transition-colors">
               {full_name}
             </h3>
             {coach.handle && (
-              <p className="text-xs text-white/40 font-barlow truncate -mt-0.5 mb-0.5">
+              <p className="text-xs text-theme-text/40 font-barlow truncate -mt-0.5 mb-0.5">
                 @{coach.handle}
               </p>
             )}
             {city && (
-              <p className="text-xs text-white/35 font-barlow truncate -mt-0.5 mb-0.5">
+              <p className="text-xs text-theme-text/35 font-barlow truncate -mt-0.5 mb-0.5">
                 {city}
               </p>
             )}
             <div className="flex items-center gap-1.5">
               <span
                 className={`w-2 h-2 rounded-full ${
-                  status === 'active' ? 'bg-green-500' : 'bg-white/30'
+                  status === 'active' ? 'bg-green-500' : 'bg-theme-text/30'
                 }`}
               />
-              <span className="text-xs text-white/40 font-barlow-condensed uppercase tracking-wider">
+              <span className="text-xs text-theme-text/40 font-barlow-condensed uppercase tracking-wider">
                 {status === 'active' ? 'Ativo' : status || 'Inativo'}
               </span>
             </div>
@@ -47,13 +47,13 @@ export default function CoachCard({ coach }) {
                 key={i}
                 className="border-l-2 border-brand-gold pl-3 py-0.5"
               >
-                <p className="text-sm text-white/80 font-barlow font-medium leading-tight">
+                <p className="text-sm text-theme-text/80 font-barlow font-medium leading-tight">
                   {exp.title}
                 </p>
-                <p className="text-xs text-white/40 font-barlow-condensed">
+                <p className="text-xs text-theme-text/40 font-barlow-condensed">
                   {exp.organization}
                   {exp.period_start && (
-                    <span className="ml-1.5 text-white/25">
+                    <span className="ml-1.5 text-theme-text/25">
                       {exp.period_start}
                       {exp.period_end ? ` - ${exp.period_end}` : ' - Presente'}
                     </span>
@@ -63,7 +63,7 @@ export default function CoachCard({ coach }) {
             ))}
           </div>
         ) : (
-          <p className="text-xs text-white/25 font-barlow italic">
+          <p className="text-xs text-theme-text/25 font-barlow italic">
             Nenhuma experiência cadastrada
           </p>
         )}

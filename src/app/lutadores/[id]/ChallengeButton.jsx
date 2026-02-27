@@ -92,15 +92,15 @@ export default function ChallengeButton({ fighterId }) {
               <div className="w-16 h-16 rounded-full bg-green-500/15 flex items-center justify-center mx-auto mb-4">
                 <Icon name="check" size={32} className="text-green-400" />
               </div>
-              <p className="font-barlow-condensed text-xl text-white uppercase tracking-wider mb-2">
+              <p className="font-barlow-condensed text-xl text-theme-text uppercase tracking-wider mb-2">
                 Desafio Enviado!
               </p>
-              <p className="font-barlow text-sm text-white/50">
+              <p className="font-barlow text-sm text-theme-text/50">
                 O lutador recebera seu desafio e podera aceitar ou recusar.
               </p>
               <button
                 onClick={handleClose}
-                className="mt-6 px-6 py-2.5 rounded-lg bg-white/10 text-white font-barlow-condensed uppercase tracking-wider text-sm hover:bg-white/15 transition-colors"
+                className="mt-6 px-6 py-2.5 rounded-lg bg-theme-text/10 text-theme-text font-barlow-condensed uppercase tracking-wider text-sm hover:bg-theme-text/15 transition-colors"
               >
                 Fechar
               </button>

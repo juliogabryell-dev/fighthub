@@ -16,14 +16,14 @@ export default function Modal({ onClose, children, title, maxWidth = 'max-w-lg' 
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors"
+          className="absolute top-4 right-4 text-theme-text/40 hover:text-theme-text transition-colors"
         >
           <Icon name="x" size={20} />
         </button>
 
         {/* Title */}
         {title && (
-          <h2 className="font-bebas text-3xl text-white tracking-wider mb-4 pr-8">
+          <h2 className="font-bebas text-3xl text-theme-text tracking-wider mb-4 pr-8">
             {title}
           </h2>
         )}

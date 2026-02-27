@@ -28,10 +28,10 @@ export default function ContatoPage() {
     <main className="min-h-screen px-6 py-16 max-w-4xl mx-auto">
       {/* Header */}
       <div className="text-center mb-16">
-        <h1 className="font-bebas text-5xl text-white tracking-wider">
+        <h1 className="font-bebas text-5xl text-theme-text tracking-wider">
           ENTRE EM <span className="text-brand-red">CONTATO</span>
         </h1>
-        <p className="font-barlow text-white/50 mt-3 text-lg">
+        <p className="font-barlow text-theme-text/50 mt-3 text-lg">
           Estamos aqui para ajudar. Fale conosco!
         </p>
       </div>
@@ -42,14 +42,14 @@ export default function ContatoPage() {
           {contacts.map((item) => (
             <div
               key={item.label}
-              className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl border border-white/10 p-5"
+              className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl border border-theme-border/10 p-5"
             >
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-10 h-10 rounded-lg bg-brand-red/10 flex items-center justify-center">
                   <Icon name={item.icon} size={20} className="text-brand-red" />
                 </div>
                 <div>
-                  <p className="font-barlow-condensed text-white text-sm uppercase tracking-wider font-semibold">
+                  <p className="font-barlow-condensed text-theme-text text-sm uppercase tracking-wider font-semibold">
                     {item.label}
                   </p>
                   <p className="font-barlow text-brand-gold text-sm">
@@ -57,22 +57,22 @@ export default function ContatoPage() {
                   </p>
                 </div>
               </div>
-              <p className="font-barlow text-white/30 text-xs ml-[52px]">
+              <p className="font-barlow text-theme-text/30 text-xs ml-[52px]">
                 {item.description}
               </p>
             </div>
           ))}
 
           {/* Social */}
-          <div className="bg-white/[0.02] rounded-xl border border-white/[0.06] p-5">
-            <p className="font-barlow-condensed text-white text-sm uppercase tracking-wider font-semibold mb-3">
+          <div className="bg-theme-text/[0.02] rounded-xl border border-theme-border/[0.06] p-5">
+            <p className="font-barlow-condensed text-theme-text text-sm uppercase tracking-wider font-semibold mb-3">
               Redes Sociais
             </p>
             <div className="flex gap-3">
               {['Instagram', 'YouTube', 'Twitter'].map((social) => (
                 <span
                   key={social}
-                  className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/40 font-barlow text-xs hover:text-white hover:border-white/20 transition-all cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-theme-text/5 border border-theme-border/10 text-theme-text/40 font-barlow text-xs hover:text-theme-text hover:border-theme-border/20 transition-all cursor-pointer"
                 >
                   {social}
                 </span>
@@ -82,36 +82,36 @@ export default function ContatoPage() {
         </div>
 
         {/* Contact Form */}
-        <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 p-6">
-          <h2 className="font-bebas text-xl text-white tracking-wider mb-5">
+        <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-theme-border/10 p-6">
+          <h2 className="font-bebas text-xl text-theme-text tracking-wider mb-5">
             ENVIE UMA <span className="text-brand-gold">MENSAGEM</span>
           </h2>
           <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
             <div>
-              <label className="font-barlow-condensed text-xs text-white/40 uppercase tracking-wider block mb-1.5">
+              <label className="font-barlow-condensed text-xs text-theme-text/40 uppercase tracking-wider block mb-1.5">
                 Nome
               </label>
               <input
                 type="text"
                 placeholder="Seu nome"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-barlow text-sm placeholder:text-white/20 focus:border-brand-red/50 focus:outline-none transition-colors"
+                className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg px-4 py-2.5 text-theme-text font-barlow text-sm placeholder:text-theme-text/20 focus:border-brand-red/50 focus:outline-none transition-colors"
               />
             </div>
             <div>
-              <label className="font-barlow-condensed text-xs text-white/40 uppercase tracking-wider block mb-1.5">
+              <label className="font-barlow-condensed text-xs text-theme-text/40 uppercase tracking-wider block mb-1.5">
                 Email
               </label>
               <input
                 type="email"
                 placeholder="seu@email.com"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-barlow text-sm placeholder:text-white/20 focus:border-brand-red/50 focus:outline-none transition-colors"
+                className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg px-4 py-2.5 text-theme-text font-barlow text-sm placeholder:text-theme-text/20 focus:border-brand-red/50 focus:outline-none transition-colors"
               />
             </div>
             <div>
-              <label className="font-barlow-condensed text-xs text-white/40 uppercase tracking-wider block mb-1.5">
+              <label className="font-barlow-condensed text-xs text-theme-text/40 uppercase tracking-wider block mb-1.5">
                 Assunto
               </label>
-              <select className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white/60 font-barlow text-sm focus:border-brand-red/50 focus:outline-none transition-colors">
+              <select className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg px-4 py-2.5 text-theme-text/60 font-barlow text-sm focus:border-brand-red/50 focus:outline-none transition-colors">
                 <option value="">Selecione...</option>
                 <option value="suporte">Suporte</option>
                 <option value="parceria">Parceria</option>
@@ -121,13 +121,13 @@ export default function ContatoPage() {
               </select>
             </div>
             <div>
-              <label className="font-barlow-condensed text-xs text-white/40 uppercase tracking-wider block mb-1.5">
+              <label className="font-barlow-condensed text-xs text-theme-text/40 uppercase tracking-wider block mb-1.5">
                 Mensagem
               </label>
               <textarea
                 rows={4}
                 placeholder="Escreva sua mensagem..."
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-barlow text-sm placeholder:text-white/20 focus:border-brand-red/50 focus:outline-none transition-colors resize-none"
+                className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg px-4 py-2.5 text-theme-text font-barlow text-sm placeholder:text-theme-text/20 focus:border-brand-red/50 focus:outline-none transition-colors resize-none"
               />
             </div>
             <button

@@ -118,7 +118,7 @@ export default function ResetPasswordPage() {
 
   if (initializing) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+      <div className="min-h-screen bg-dark-bg flex items-center justify-center">
         <svg
           className="animate-spin h-10 w-10 text-[#C41E3A]"
           xmlns="http://www.w3.org/2000/svg"
@@ -133,16 +133,16 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex items-start justify-center px-4">
+    <div className="min-h-screen bg-dark-bg flex items-start justify-center px-4">
       <div className="max-w-md w-full mx-auto mt-32 mb-20">
-        <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl p-8 border border-white/10 shadow-2xl">
+        <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl p-8 border border-theme-border/10 shadow-2xl">
           {/* Header */}
           <div className="text-center mb-8">
             <span className="text-4xl mb-3 block">🔒</span>
-            <h1 className="font-bebas text-3xl tracking-wider text-white">
+            <h1 className="font-bebas text-3xl tracking-wider text-theme-text">
               NOVA SENHA
             </h1>
-            <p className="font-barlow text-white/50 text-sm mt-1">
+            <p className="font-barlow text-theme-text/50 text-sm mt-1">
               Digite sua nova senha
             </p>
           </div>
@@ -165,7 +165,7 @@ export default function ResetPasswordPage() {
               </div>
               <Link
                 href="/auth/login"
-                className="block w-full py-3 rounded-lg bg-white/5 border border-white/10 text-white/60 font-barlow-condensed uppercase tracking-widest text-sm font-semibold text-center hover:bg-white/10 transition-all"
+                className="block w-full py-3 rounded-lg bg-theme-text/5 border border-theme-border/10 text-theme-text/60 font-barlow-condensed uppercase tracking-widest text-sm font-semibold text-center hover:bg-theme-text/10 transition-all"
               >
                 IR PARA O LOGIN
               </Link>

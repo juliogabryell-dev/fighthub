@@ -1,6 +1,7 @@
 import { Bebas_Neue, Barlow, Barlow_Condensed } from 'next/font/google';
 import './globals.css';
 import LayoutShell from '@/components/LayoutShell';
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 const bebasNeue = Bebas_Neue({
   weight: '400',
@@ -34,9 +35,19 @@ export default function RootLayout({ children }) {
     <html
       lang="pt-BR"
       className={`${bebasNeue.variable} ${barlow.variable} ${barlowCondensed.variable}`}
+      suppressHydrationWarning
     >
-      <body className="bg-dark-bg min-h-screen text-white">
-        <LayoutShell>{children}</LayoutShell>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t)}else{document.documentElement.setAttribute('data-theme','dark')}}catch(e){document.documentElement.setAttribute('data-theme','dark')}})()`,
+          }}
+        />
+      </head>
+      <body className="bg-dark-bg min-h-screen text-theme-text">
+        <ThemeProvider>
+          <LayoutShell>{children}</LayoutShell>
+        </ThemeProvider>
       </body>
     </html>
   );

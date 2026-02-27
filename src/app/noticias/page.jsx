@@ -46,11 +46,11 @@ export default async function NoticiasPage() {
     <main className="min-h-screen px-6 py-16 max-w-7xl mx-auto">
       {/* Page Header */}
       <div className="text-center mb-12">
-        <h1 className="font-bebas text-5xl text-white tracking-wider">
+        <h1 className="font-bebas text-5xl text-theme-text tracking-wider">
           NOTÍCIAS &{' '}
           <span className="text-brand-red">DIVULGAÇÕES</span>
         </h1>
-        <p className="font-barlow text-white/50 mt-3 text-lg">
+        <p className="font-barlow text-theme-text/50 mt-3 text-lg">
           Fique por dentro de tudo sobre o mundo das lutas
         </p>
       </div>

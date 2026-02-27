@@ -11,14 +11,14 @@ export default function InputField({
   required = false,
 }) {
   const inputClasses =
-    'w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-3.5 py-2.5 focus:border-brand-red/50 outline-none transition-colors placeholder:text-white/25';
+    'w-full bg-theme-text/5 border border-theme-border/10 rounded-lg text-theme-text font-barlow text-sm px-3.5 py-2.5 focus:border-brand-red/50 outline-none transition-colors placeholder:text-theme-text/25';
 
   return (
     <div className="flex flex-col gap-0">
       {label && (
         <label
           htmlFor={name}
-          className="uppercase text-xs tracking-wider text-white/50 font-barlow-condensed font-semibold mb-1.5"
+          className="uppercase text-xs tracking-wider text-theme-text/50 font-barlow-condensed font-semibold mb-1.5"
         >
           {label}
         </label>
