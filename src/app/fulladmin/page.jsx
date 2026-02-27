@@ -151,7 +151,19 @@ export default function FullAdminDashboard() {
 
   async function handleBindingAction(table, bindingId, newStatus) {
     setActionLoading(bindingId);
-    await supabase.from(table).update({ status: newStatus }).eq('id', bindingId);
+    try {
+      const res = await fetch('/api/fulladmin/update-binding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table, binding_id: bindingId, new_status: newStatus }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        alert('Erro: ' + (data.error || 'Erro desconhecido'));
+      }
+    } catch {
+      alert('Erro ao atualizar vínculo.');
+    }
     await fetchData();
     setActionLoading(null);
   }
