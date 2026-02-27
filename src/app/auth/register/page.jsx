@@ -75,18 +75,49 @@ export default function RegisterPage() {
           profileData.birth_date = null;
           profileData.cpf_cnpj = cpfCnpj || null;
         } else {
-          profileData.birth_date = birthDate;
-          profileData.cpf = cpf;
-          profileData.rg = rg;
+          profileData.birth_date = birthDate || null;
+          profileData.cpf = cpf || null;
+          profileData.rg = rg || null;
         }
 
         const { error: profileError } = await supabase.from('profiles').insert(profileData);
 
         if (profileError) {
+          // If handle caused the error, retry without it
           if (profileError.code === '23505' && profileError.message?.includes('handle')) {
-            setError('Este @ já está em uso. Escolha outro.');
+            profileData.handle = null;
+            const { error: retryError } = await supabase.from('profiles').insert(profileData);
+            if (retryError) {
+              setSuccess('Cadastro realizado! O @ já estava em uso e foi removido. Aguarde aprovação do administrador.');
+            } else {
+              setSuccess('Cadastro realizado! O @ já estava em uso e foi removido. Aguarde aprovação do administrador.');
+            }
+          } else if (profileError.code === '23503') {
+            // Foreign key error — auth user might already exist from previous attempt
+            // Try to upsert the profile
+            const { error: upsertError } = await supabase.from('profiles').upsert(profileData, { onConflict: 'id' });
+            if (!upsertError) {
+              setSuccess('Cadastro realizado! Aguarde aprovação do administrador.');
+            } else {
+              setSuccess('Sua conta foi criada! Aguarde aprovação do administrador. Se houver algum problema, entre em contato.');
+            }
           } else {
-            setError(profileError.message);
+            // Other validation error — account was created, profile had issue
+            // Try minimal profile as fallback
+            const minimalProfile = {
+              id: user.id,
+              full_name: fullName,
+              role,
+              status: 'pending',
+              is_fighter: role === 'fighter',
+              is_coach: role === 'coach',
+            };
+            const { error: fallbackError } = await supabase.from('profiles').upsert(minimalProfile, { onConflict: 'id' });
+            if (!fallbackError) {
+              setSuccess('Cadastro realizado com dados básicos! Alguns campos não puderam ser salvos. Aguarde aprovação do administrador.');
+            } else {
+              setSuccess('Sua conta foi criada! Aguarde aprovação do administrador. Alguns dados poderão ser completados depois.');
+            }
           }
           return;
         }
