@@ -271,7 +271,7 @@ export default function PerfilPage() {
   }
 
   async function handleDeleteMartialArt(artId) {
-    if (!confirm('Tem certeza que deseja excluir esta arte marcial?')) return;
+    if (!confirm('Tem certeza que deseja excluir esta modalidade?')) return;
     const { error } = await supabase
       .from('fighter_martial_arts')
       .delete()
@@ -1367,7 +1367,7 @@ export default function PerfilPage() {
                 <Icon name="plus" size={18} className="text-[#C41E3A]" />
               </div>
               <p className="font-barlow-condensed text-white font-semibold text-sm uppercase tracking-wider">
-                Adicionar Arte Marcial
+                Adicionar Modalidade
               </p>
               <p className="font-barlow text-white/40 text-xs mt-1">
                 Registre suas modalidades
@@ -1879,10 +1879,10 @@ export default function PerfilPage() {
 
       {/* Add/Edit Martial Art Modal (Fighter) */}
       {showArtModal && (
-        <Modal onClose={() => setShowArtModal(false)} title={editingArtId ? 'Editar Arte Marcial' : 'Adicionar Arte Marcial'}>
+        <Modal onClose={() => setShowArtModal(false)} title={editingArtId ? 'Editar Modalidade' : 'Adicionar Modalidade'}>
           <form onSubmit={handleSaveMartialArt} className="space-y-4">
             <InputField
-              label="Nome da Arte Marcial"
+              label="Nome da Modalidade"
               type="text"
               value={artForm.art_name}
               onChange={(e) => setArtForm({ ...artForm, art_name: e.target.value })}
