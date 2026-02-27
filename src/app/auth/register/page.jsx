@@ -137,7 +137,7 @@ export default function RegisterPage() {
         <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl p-8 border border-white/10 shadow-2xl">
           {/* Header */}
           <div className="text-center mb-8">
-            <span className="text-4xl mb-3 block">⚔️</span>
+            <img src="/logo.png" alt="FightLog" className="w-14 h-14 object-contain mx-auto mb-3" />
             <h1 className="font-bebas text-3xl tracking-wider text-white">
               CADASTRAR
             </h1>
