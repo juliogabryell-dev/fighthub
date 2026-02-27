@@ -409,9 +409,7 @@ export default function FullAdminDashboard() {
       <div className="bg-[#1a1a2e]/80 border-b border-white/10 sticky top-0 z-40 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#C41E3A] to-[#a01830] flex items-center justify-center">
-              <Icon name="shield" size={18} className="text-white" />
-            </div>
+            <img src="/logo.png" alt="FightLog" className="w-9 h-9 rounded-lg object-contain" />
             <div className="flex flex-col leading-none">
               <span className="font-bebas text-lg tracking-wider">
                 <span className="text-white">FIGHT</span>
