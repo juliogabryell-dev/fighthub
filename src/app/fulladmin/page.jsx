@@ -30,6 +30,10 @@ export default function FullAdminDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
 
+  // Admin users
+  const [adminUsers, setAdminUsers] = useState([]);
+  const [createAdminModal, setCreateAdminModal] = useState(null);
+
   // UI states
   const [actionLoading, setActionLoading] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -122,7 +126,10 @@ export default function FullAdminDashboard() {
   }, [supabase]);
 
   useEffect(() => {
-    if (admin) fetchData().then(() => setLastRefresh(new Date()));
+    if (admin) {
+      fetchData().then(() => setLastRefresh(new Date()));
+      fetchAdmins();
+    }
   }, [admin, fetchData]);
 
   // Auto-refresh every 30 minutes
@@ -234,6 +241,62 @@ export default function FullAdminDashboard() {
     setEditModal(null);
   }
 
+  async function fetchAdmins() {
+    try {
+      const res = await fetch('/api/fulladmin/manage-admins');
+      const data = await res.json();
+      if (res.ok) setAdminUsers(data.admins || []);
+    } catch { /* ignore */ }
+  }
+
+  async function handleCreateAdmin() {
+    if (!createAdminModal) return;
+    const { name, email, password } = createAdminModal;
+    if (!name || !email || !password) {
+      alert('Preencha todos os campos.');
+      return;
+    }
+    setActionLoading('create-admin');
+    try {
+      const res = await fetch('/api/fulladmin/manage-admins', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email: email.toLowerCase(), password }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setCreateAdminModal(null);
+        await fetchAdmins();
+      } else {
+        alert('Erro: ' + (data.error || 'Erro desconhecido'));
+      }
+    } catch {
+      alert('Erro ao criar admin.');
+    }
+    setActionLoading(null);
+  }
+
+  async function handleDeleteAdmin(adminId, adminName) {
+    if (!confirm(`Tem certeza que deseja excluir o admin "${adminName}"?`)) return;
+    setActionLoading(adminId);
+    try {
+      const res = await fetch('/api/fulladmin/manage-admins', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ admin_id: adminId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        await fetchAdmins();
+      } else {
+        alert('Erro: ' + (data.error || 'Erro desconhecido'));
+      }
+    } catch {
+      alert('Erro ao excluir admin.');
+    }
+    setActionLoading(null);
+  }
+
   async function handleLogout() {
     await fetch('/api/fulladmin/session', { method: 'DELETE' });
     router.push('/fulladmin/login');
@@ -305,6 +368,7 @@ export default function FullAdminDashboard() {
     { id: 'pending', label: 'Pendentes', count: stats.pending },
     { id: 'users', label: 'Todos Usuários', count: stats.total },
     { id: 'bindings', label: 'Vínculos', count: stats.pendingBindings },
+    { id: 'admins', label: 'Admins', count: adminUsers.length },
   ];
 
   return (
@@ -678,7 +742,118 @@ export default function FullAdminDashboard() {
             </div>
           </div>
         )}
+
+        {/* Tab: Admins */}
+        {activeTab === 'admins' && (
+          <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+            <div className="p-5 border-b border-white/5 flex items-center justify-between">
+              <h2 className="font-bebas text-xl tracking-wider text-white">ADMINISTRADORES</h2>
+              <button
+                onClick={() => setCreateAdminModal({ name: '', email: '', password: '' })}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-[#C41E3A] to-[#a01830] text-white font-barlow-condensed text-xs uppercase tracking-wider hover:from-[#d42a46] hover:to-[#b82040] transition-all"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Novo Admin
+              </button>
+            </div>
+            {adminUsers.length > 0 ? (
+              <div className="divide-y divide-white/5">
+                {adminUsers.map((adm) => (
+                  <div key={adm.id} className="p-4 flex items-center justify-between gap-3 hover:bg-white/[0.02] transition-colors">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 rounded-full bg-[#C41E3A]/20 border border-[#C41E3A]/30 flex items-center justify-center flex-shrink-0">
+                        <span className="font-bebas text-lg text-[#C41E3A]">{adm.name?.charAt(0) || '?'}</span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-barlow-condensed text-white font-semibold truncate">{adm.name}</p>
+                        <p className="font-barlow text-white/30 text-xs">{adm.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-barlow text-white/20 text-xs hidden sm:block">{formatDate(adm.created_at)}</span>
+                      {admin?.id === adm.id ? (
+                        <span className="px-2.5 py-1 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 font-barlow-condensed text-[10px] uppercase tracking-wider">
+                          Você
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleDeleteAdmin(adm.id, adm.name)}
+                          disabled={actionLoading === adm.id}
+                          className="px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all font-barlow-condensed text-[10px] uppercase tracking-wider disabled:opacity-50"
+                        >
+                          {actionLoading === adm.id ? '...' : 'Excluir'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-12 text-center">
+                <p className="font-barlow text-white/40 text-sm">Nenhum administrador encontrado.</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Create Admin Modal */}
+      {createAdminModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4" onClick={() => setCreateAdminModal(null)}>
+          <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl w-full max-w-sm p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-bebas text-xl tracking-wider text-white">NOVO ADMINISTRADOR</h3>
+              <button onClick={() => setCreateAdminModal(null)} className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 transition-all">
+                ✕
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="uppercase text-xs tracking-wider text-white/50 font-barlow-condensed font-semibold mb-1.5 block">Nome</label>
+                <input
+                  type="text"
+                  value={createAdminModal.name}
+                  onChange={(e) => setCreateAdminModal({ ...createAdminModal, name: e.target.value })}
+                  placeholder="Nome do administrador"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-white/25"
+                />
+              </div>
+              <div>
+                <label className="uppercase text-xs tracking-wider text-white/50 font-barlow-condensed font-semibold mb-1.5 block">Email</label>
+                <input
+                  type="email"
+                  value={createAdminModal.email}
+                  onChange={(e) => setCreateAdminModal({ ...createAdminModal, email: e.target.value.toLowerCase() })}
+                  placeholder="admin@email.com"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-white/25"
+                />
+              </div>
+              <div>
+                <label className="uppercase text-xs tracking-wider text-white/50 font-barlow-condensed font-semibold mb-1.5 block">Senha</label>
+                <input
+                  type="password"
+                  value={createAdminModal.password}
+                  onChange={(e) => setCreateAdminModal({ ...createAdminModal, password: e.target.value })}
+                  placeholder="Mínimo 6 caracteres"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-white/25"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setCreateAdminModal(null)} className="flex-1 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all font-barlow-condensed text-sm uppercase tracking-wider">
+                Cancelar
+              </button>
+              <button
+                onClick={handleCreateAdmin}
+                disabled={actionLoading === 'create-admin'}
+                className="flex-1 py-2.5 rounded-lg bg-gradient-to-r from-[#C41E3A] to-[#a01830] text-white font-barlow-condensed text-sm uppercase tracking-wider hover:from-[#d42a46] hover:to-[#b82040] transition-all disabled:opacity-50"
+              >
+                {actionLoading === 'create-admin' ? 'Criando...' : 'Criar Admin'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* View Modal */}
       {selectedUser && (
