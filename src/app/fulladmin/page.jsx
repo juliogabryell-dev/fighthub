@@ -145,6 +145,27 @@ export default function FullAdminDashboard() {
     setActionLoading(null);
   }
 
+  async function handleDeleteUser(userId, userName) {
+    if (!confirm(`Tem certeza que deseja excluir "${userName}"? Esta ação não pode ser desfeita.`)) return;
+    setActionLoading(userId);
+    try {
+      const res = await fetch('/api/fulladmin/delete-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        await fetchData();
+      } else {
+        alert('Erro ao excluir: ' + (data.error || 'Erro desconhecido'));
+      }
+    } catch {
+      alert('Erro ao excluir usuário.');
+    }
+    setActionLoading(null);
+  }
+
   async function handleResetPassword(userId, userName) {
     setActionLoading(userId);
     try {
@@ -475,6 +496,9 @@ export default function FullAdminDashboard() {
                             <button onClick={() => handleResetPassword(user.id, user.full_name)} disabled={actionLoading === user.id} className="px-2.5 py-1 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37]/20 transition-all font-barlow-condensed text-[10px] uppercase tracking-wider disabled:opacity-50">
                               {actionLoading === user.id ? '...' : 'Reset Senha'}
                             </button>
+                            <button onClick={() => handleDeleteUser(user.id, user.full_name)} disabled={actionLoading === user.id} className="px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all font-barlow-condensed text-[10px] uppercase tracking-wider disabled:opacity-50">
+                              {actionLoading === user.id ? '...' : 'Excluir'}
+                            </button>
                             {user.status === 'pending' && (
                               <button onClick={() => handleApprove(user.id)} disabled={actionLoading === user.id} className="px-2.5 py-1 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 hover:bg-green-500/20 transition-all font-barlow-condensed text-[10px] uppercase tracking-wider disabled:opacity-50">
                                 {actionLoading === user.id ? '...' : 'Aprovar'}
@@ -663,6 +687,9 @@ export default function FullAdminDashboard() {
               </button>
               <button onClick={() => { handleResetPassword(selectedUser.id, selectedUser.full_name); setSelectedUser(null); }} className="flex-1 py-2.5 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37]/20 transition-all font-barlow-condensed text-sm uppercase tracking-wider">
                 Reset Senha
+              </button>
+              <button onClick={() => { handleDeleteUser(selectedUser.id, selectedUser.full_name); setSelectedUser(null); }} className="flex-1 py-2.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all font-barlow-condensed text-sm uppercase tracking-wider">
+                Excluir
               </button>
               {selectedUser.status === 'pending' && (
                 <>
