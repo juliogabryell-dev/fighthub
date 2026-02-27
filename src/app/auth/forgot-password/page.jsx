@@ -79,7 +79,7 @@ export default function ForgotPasswordPage() {
                 label="Email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value.toLowerCase())}
                 placeholder="seu@email.com"
                 required
               />

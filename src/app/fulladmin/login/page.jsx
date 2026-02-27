@@ -94,7 +94,7 @@ export default function FullAdminLoginPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value.toLowerCase())}
                 placeholder="admin@email.com"
                 required
                 className={inputClasses}
