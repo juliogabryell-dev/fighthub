@@ -258,12 +258,13 @@ export default function LutadoresPage() {
                                 <p className="font-barlow-condensed text-xs uppercase tracking-widest text-[#D4AF37]/60 mb-2">Treinadores</p>
                                 <div className="flex flex-wrap gap-2">
                                   {activeCoaches.map((fc, i) => (
-                                    <div key={i} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08]">
-                                      <div className="w-6 h-6 rounded-full bg-[#D4AF37]/15 flex items-center justify-center flex-shrink-0">
-                                        <Icon name="award" size={12} className="text-[#D4AF37]" />
+                                    <a key={i} href={`/treinadores/${fc.coach?.id || fc.coach_id}`} onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-2.5 px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] hover:bg-[#D4AF37]/10 hover:border-[#D4AF37]/30 transition-all">
+                                      <Avatar name={fc.coach?.full_name} url={fc.coach?.avatar_url} size={28} />
+                                      <div className="min-w-0">
+                                        <p className="font-barlow-condensed text-sm text-white leading-tight">{fc.coach?.full_name || 'Treinador'}</p>
+                                        {fc.coach?.handle && <p className="font-barlow text-[10px] text-white/30 leading-tight">@{fc.coach.handle}</p>}
                                       </div>
-                                      <span className="font-barlow-condensed text-sm text-white">{fc.coach?.full_name || 'Treinador'}</span>
-                                    </div>
+                                    </a>
                                   ))}
                                 </div>
                               </div>
@@ -275,12 +276,13 @@ export default function LutadoresPage() {
                                 <p className="font-barlow-condensed text-xs uppercase tracking-widest text-blue-400/60 mb-2">Academias</p>
                                 <div className="flex flex-wrap gap-2">
                                   {activeAcademies.map((fa, i) => (
-                                    <div key={i} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08]">
-                                      <div className="w-6 h-6 rounded-full bg-blue-500/15 flex items-center justify-center flex-shrink-0">
-                                        <Icon name="building" size={12} className="text-blue-400" />
+                                    <a key={i} href={`/academias/${fa.academy?.id || fa.academy_id}`} onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-2.5 px-3 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] hover:bg-blue-500/10 hover:border-blue-500/30 transition-all">
+                                      <Avatar name={fa.academy?.full_name} url={fa.academy?.avatar_url} size={28} />
+                                      <div className="min-w-0">
+                                        <p className="font-barlow-condensed text-sm text-white leading-tight">{fa.academy?.full_name || 'Academia'}</p>
+                                        {fa.academy?.handle && <p className="font-barlow text-[10px] text-white/30 leading-tight">@{fa.academy.handle}</p>}
                                       </div>
-                                      <span className="font-barlow-condensed text-sm text-white">{fa.academy?.full_name || 'Academia'}</span>
-                                    </div>
+                                    </a>
                                   ))}
                                 </div>
                               </div>
