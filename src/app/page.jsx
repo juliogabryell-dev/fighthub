@@ -1,11 +1,39 @@
 import Link from 'next/link';
 import NewsCard from '@/components/NewsCard';
+import EventCarousel from '@/components/EventCarousel';
 import { scrapeNews } from '@/lib/scrapeNews';
+import { createClient } from '@supabase/supabase-js';
 
 export const revalidate = 3600;
 
+async function getUpcomingEvents() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) return [];
+
+  const supabase = createClient(url, key, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+
+  const { data } = await supabase
+    .from('events')
+    .select('*, event_images(id, image_url, display_order)')
+    .eq('is_published', true)
+    .gte('event_date', new Date().toISOString())
+    .order('event_date', { ascending: true })
+    .limit(10);
+
+  return (data || []).map((event) => ({
+    ...event,
+    event_images: (event.event_images || []).sort((a, b) => a.display_order - b.display_order),
+  }));
+}
+
 export default async function HomePage() {
-  const allNews = await scrapeNews();
+  const [allNews, upcomingEvents] = await Promise.all([
+    scrapeNews(),
+    getUpcomingEvents(),
+  ]);
   const latestNews = allNews.slice(0, 3);
 
   return (
@@ -71,6 +99,11 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ====== EVENTS SECTION ====== */}
+      {upcomingEvents.length > 0 && (
+        <EventCarousel events={upcomingEvents} />
+      )}
 
       {/* ====== PRICING SECTION ====== */}
       <section className="px-6 pb-20 max-w-7xl mx-auto">

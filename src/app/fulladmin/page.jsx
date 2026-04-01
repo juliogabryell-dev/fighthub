@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Avatar from '@/components/Avatar';
 import Icon from '@/components/Icon';
+import EventsManager from '@/components/EventsManager';
 
 export default function FullAdminDashboard() {
   const router = useRouter();
@@ -401,6 +402,7 @@ export default function FullAdminDashboard() {
     { id: 'users', label: 'Todos Usuários', count: stats.total },
     { id: 'bindings', label: 'Vínculos', count: stats.pendingBindings },
     { id: 'admins', label: 'Admins', count: adminUsers.length },
+    { id: 'events', label: 'Eventos' },
   ];
 
   return (
@@ -831,6 +833,11 @@ export default function FullAdminDashboard() {
               </div>
             )}
           </div>
+        )}
+
+        {/* Tab: Events */}
+        {activeTab === 'events' && (
+          <EventsManager />
         )}
       </div>
 
