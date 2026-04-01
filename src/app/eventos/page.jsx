@@ -25,13 +25,15 @@ async function getEvents() {
       .select('*, event_images(id, image_url, display_order)')
       .eq('is_published', true)
       .gte('event_date', now)
-      .order('event_date', { ascending: true }),
+      .order('event_date', { ascending: true })
+      .order('display_order', { ascending: true, referencedTable: 'event_images' }),
     supabase
       .from('events')
       .select('*, event_images(id, image_url, display_order)')
       .eq('is_published', true)
       .lt('event_date', now)
       .order('event_date', { ascending: false })
+      .order('display_order', { ascending: true, referencedTable: 'event_images' })
       .limit(12),
   ]);
 

@@ -30,7 +30,8 @@ export async function GET(request) {
     let query = supabase
       .from('events')
       .select('*, event_images(id, image_url, display_order)')
-      .order('event_date', { ascending: true });
+      .order('event_date', { ascending: true })
+      .order('display_order', { ascending: true, referencedTable: 'event_images' });
 
     if (publicOnly) {
       query = query

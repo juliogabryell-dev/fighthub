@@ -19,6 +19,7 @@ async function getEvent(id) {
     .select('*, event_images(id, image_url, display_order)')
     .eq('id', id)
     .eq('is_published', true)
+    .order('display_order', { ascending: true, referencedTable: 'event_images' })
     .single();
 
   if (!data) return null;

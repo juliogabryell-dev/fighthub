@@ -22,6 +22,7 @@ async function getUpcomingEvents() {
     .eq('is_published', true)
     .gte('event_date', new Date().toISOString())
     .order('event_date', { ascending: false })
+    .order('display_order', { ascending: true, referencedTable: 'event_images' })
     .limit(10);
 
   return (data || []).map((event) => ({
