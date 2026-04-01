@@ -1,31 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
 export default function EventCarousel({ events }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const intervalRef = useRef(null);
-
-  const maxIndex = Math.max(0, events.length - 3);
-
-  useEffect(() => {
-    if (!isAutoPlaying || events.length <= 3) return;
-    intervalRef.current = setInterval(() => {
-      setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
-    }, 5000);
-    return () => clearInterval(intervalRef.current);
-  }, [isAutoPlaying, maxIndex, events.length]);
-
-  function goTo(direction) {
-    setIsAutoPlaying(false);
-    setCurrentIndex((prev) => {
-      if (direction === 'prev') return prev <= 0 ? maxIndex : prev - 1;
-      return prev >= maxIndex ? 0 : prev + 1;
-    });
-  }
-
   function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString('pt-BR', {
       day: '2-digit',
@@ -36,8 +13,8 @@ export default function EventCarousel({ events }) {
 
   if (!events || events.length === 0) return null;
 
-  // For 1 or 2 events, use a simple centered grid instead of carousel
-  const useGrid = events.length <= 3;
+  const visibleEvents = events.slice(0, 3);
+  const hasMore = events.length > 3;
 
   return (
     <section className="px-6 pb-20 max-w-7xl mx-auto">
@@ -51,72 +28,29 @@ export default function EventCarousel({ events }) {
         </p>
       </div>
 
-      {!useGrid && (
-        <div className="flex items-center justify-end gap-2 mb-4">
-          <button
-            onClick={() => goTo('prev')}
-            className="w-10 h-10 rounded-full bg-theme-text/5 border border-theme-border/10 flex items-center justify-center text-theme-text/40 hover:text-brand-red hover:border-brand-red/30 transition-all"
-            aria-label="Anterior"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-          </button>
-          <button
-            onClick={() => goTo('next')}
-            className="w-10 h-10 rounded-full bg-theme-text/5 border border-theme-border/10 flex items-center justify-center text-theme-text/40 hover:text-brand-red hover:border-brand-red/30 transition-all"
-            aria-label="Próximo"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-        </div>
-      )}
+      {/* Grid - always max 3 */}
+      <div className={`grid gap-5 ${
+        visibleEvents.length === 1
+          ? 'grid-cols-1 max-w-md mx-auto'
+          : visibleEvents.length === 2
+            ? 'grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto'
+            : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+      }`}>
+        {visibleEvents.map((event) => (
+          <EventCard key={event.id} event={event} formatDate={formatDate} />
+        ))}
+      </div>
 
-      {/* Grid for 1-3 events, carousel for 4+ */}
-      {useGrid ? (
-        <div className={`grid gap-5 ${
-          events.length === 1
-            ? 'grid-cols-1 max-w-md mx-auto'
-            : events.length === 2
-              ? 'grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto'
-              : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
-        }`}>
-          {events.map((event) => (
-            <EventCard key={event.id} event={event} formatDate={formatDate} />
-          ))}
+      {/* Ver Todos button */}
+      {hasMore && (
+        <div className="text-center mt-10">
+          <Link
+            href="/eventos"
+            className="font-barlow-condensed uppercase tracking-wider text-sm font-semibold px-8 py-3.5 rounded-lg bg-transparent border border-brand-gold/40 text-brand-gold hover:bg-brand-gold/10 transition-all duration-300 inline-block"
+          >
+            Ver Todos os Eventos
+          </Link>
         </div>
-      ) : (
-        <>
-          <div className="overflow-hidden">
-            <div
-              className="flex gap-5 transition-transform duration-500 ease-in-out"
-              style={{
-                transform: `translateX(calc(-${currentIndex} * (33.333% + 6.67px)))`,
-              }}
-            >
-              {events.map((event) => (
-                <div
-                  key={event.id}
-                  className="flex-shrink-0 w-full sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)]"
-                >
-                  <EventCard event={event} formatDate={formatDate} />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Dots indicator */}
-          <div className="flex items-center justify-center gap-2 mt-6">
-            {Array.from({ length: maxIndex + 1 }, (_, i) => (
-              <button
-                key={i}
-                onClick={() => { setCurrentIndex(i); setIsAutoPlaying(false); }}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  i === currentIndex ? 'bg-brand-red w-6' : 'bg-theme-text/20 hover:bg-theme-text/40'
-                }`}
-                aria-label={`Ir para slide ${i + 1}`}
-              />
-            ))}
-          </div>
-        </>
       )}
     </section>
   );
