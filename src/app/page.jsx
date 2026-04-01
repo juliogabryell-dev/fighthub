@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import NewsCard from '@/components/NewsCard';
 import EventCarousel from '@/components/EventCarousel';
+import NewsCarousel from '@/components/NewsCarousel';
 import FadeInOnScroll from '@/components/FadeInOnScroll';
 import { scrapeNews } from '@/lib/scrapeNews';
 import { createClient } from '@supabase/supabase-js';
@@ -35,7 +35,7 @@ export default async function HomePage() {
     scrapeNews(),
     getUpcomingEvents(),
   ]);
-  const latestNews = allNews.slice(0, 3);
+  const latestNews = allNews.slice(0, 9);
 
   return (
     <main>
@@ -248,32 +248,9 @@ export default async function HomePage() {
       </section>
 
       {/* ====== LATEST NEWS SECTION ====== */}
-      <section className="px-6 pb-24 max-w-7xl mx-auto">
-        {/* Header */}
-        <FadeInOnScroll>
-          <div className="text-center mb-8">
-            <h2 className="font-bebas text-4xl text-theme-text tracking-wider">
-              ÚLTIMAS{' '}
-              <span className="text-brand-red">NOTÍCIAS</span>
-            </h2>
-            <Link
-              href="/noticias"
-              className="font-barlow-condensed uppercase text-sm text-brand-gold tracking-wider hover:text-brand-gold/80 transition-colors mt-4 inline-block"
-            >
-              Ver Todas
-            </Link>
-          </div>
-        </FadeInOnScroll>
-
-        {/* News Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {latestNews.map((news, i) => (
-            <FadeInOnScroll key={news.id} delay={i * 150}>
-              <NewsCard news={news} />
-            </FadeInOnScroll>
-          ))}
-        </div>
-      </section>
+      <FadeInOnScroll>
+        <NewsCarousel news={latestNews} />
+      </FadeInOnScroll>
     </main>
   );
 }
