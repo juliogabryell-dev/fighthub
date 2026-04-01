@@ -42,7 +42,7 @@ export async function POST(request) {
     const buffer = Buffer.from(await file.arrayBuffer());
 
     const { error: uploadError } = await supabase.storage
-      .from('event-images')
+      .from('events')
       .upload(fileName, buffer, {
         contentType: file.type,
         upsert: false,
@@ -51,7 +51,7 @@ export async function POST(request) {
     if (uploadError) throw uploadError;
 
     const { data: urlData } = supabase.storage
-      .from('event-images')
+      .from('events')
       .getPublicUrl(fileName);
 
     const imageUrl = urlData.publicUrl;
@@ -125,9 +125,9 @@ export async function DELETE(request) {
 
     // Delete from storage
     if (image_url) {
-      const match = image_url.match(/event-images\/(.+)$/);
+      const match = image_url.match(/events\/(.+)$/);
       if (match) {
-        await supabase.storage.from('event-images').remove([match[1]]);
+        await supabase.storage.from('events').remove([match[1]]);
       }
     }
 

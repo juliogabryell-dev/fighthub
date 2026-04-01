@@ -160,13 +160,13 @@ export async function DELETE(request) {
     if (images && images.length > 0) {
       const paths = images
         .map((img) => {
-          const match = img.image_url.match(/event-images\/(.+)$/);
+          const match = img.image_url.match(/events\/(.+)$/);
           return match ? match[1] : null;
         })
         .filter(Boolean);
 
       if (paths.length > 0) {
-        await supabase.storage.from('event-images').remove(paths);
+        await supabase.storage.from('events').remove(paths);
       }
     }
 

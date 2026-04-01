@@ -59,4 +59,4 @@ CREATE POLICY "Public can view event images"
 -- Note: service_role key bypasses RLS by default in Supabase
 
 -- Create storage bucket for event images (run in Supabase dashboard if needed)
--- INSERT INTO storage.buckets (id, name, public) VALUES ('event-images', 'event-images', true);
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('events', 'events', true);
