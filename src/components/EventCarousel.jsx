@@ -39,11 +39,11 @@ export default function EventCarousel({ events }) {
   return (
     <section className="px-6 pb-20 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="text-center mb-8">
         <h2 className="font-bebas text-4xl text-theme-text tracking-wider">
-          EVEN<span className="text-brand-red">TOS</span>
+          FIQUE POR DENTRO DOS <span className="text-brand-red">EVENTOS</span>
         </h2>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-center gap-3 mt-4">
           {totalPages > 1 && (
             <div className="flex items-center gap-2">
               <button

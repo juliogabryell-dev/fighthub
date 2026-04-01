@@ -233,14 +233,14 @@ export default async function HomePage() {
       {/* ====== LATEST NEWS SECTION ====== */}
       <section className="px-6 pb-24 max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="font-bebas text-4xl text-theme-text">
+        <div className="text-center mb-8">
+          <h2 className="font-bebas text-4xl text-theme-text tracking-wider">
             ÚLTIMAS{' '}
             <span className="text-brand-red">NOTÍCIAS</span>
           </h2>
           <Link
             href="/noticias"
-            className="font-barlow-condensed uppercase text-sm text-brand-gold tracking-wider hover:text-brand-gold/80 transition-colors"
+            className="font-barlow-condensed uppercase text-sm text-brand-gold tracking-wider hover:text-brand-gold/80 transition-colors mt-4 inline-block"
           >
             Ver Todas
           </Link>
