@@ -12,10 +12,7 @@ export default function FadeInOnScroll({ children, className = '', delay = 0 }) 
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.unobserve(element);
-        }
+        setIsVisible(entry.isIntersecting);
       },
       { threshold: 0.1 }
     );
