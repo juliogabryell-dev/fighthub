@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
+import Avatar from '@/components/Avatar';
 
 export default function EventCarousel({ events }) {
   const [page, setPage] = useState(0);
@@ -332,6 +333,31 @@ function EventModal({ event, eventIndex, totalEvents, formatDateFull, onClose, o
               </h3>
               <div className="font-barlow text-sm text-white/50 leading-relaxed whitespace-pre-line">
                 {event.description_full}
+              </div>
+            </div>
+          )}
+
+          {/* Fighters */}
+          {event.event_fighters && event.event_fighters.length > 0 && (
+            <div className="mt-5 pt-5 border-t border-white/10">
+              <h3 className="font-bebas text-lg text-white tracking-wider mb-3">
+                LUTADORES <span className="text-[#C41E3A]">CONFIRMADOS</span>
+                <span className="font-barlow text-xs text-white/30 ml-2 normal-case tracking-normal">({event.event_fighters.length})</span>
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {event.event_fighters.map((ef) => (
+                  <Link
+                    key={ef.id}
+                    href={`/lutadores/${ef.fighter?.id}`}
+                    className="flex items-center gap-2.5 p-2.5 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] hover:border-[#C41E3A]/30 transition-all"
+                  >
+                    <Avatar name={ef.fighter?.full_name} url={ef.fighter?.avatar_url} size={32} />
+                    <div className="min-w-0">
+                      <p className="font-barlow-condensed text-sm text-white truncate">{ef.fighter?.full_name}</p>
+                      {ef.fighter?.handle && <p className="font-barlow text-[10px] text-white/30 truncate">@{ef.fighter.handle}</p>}
+                    </div>
+                  </Link>
+                ))}
               </div>
             </div>
           )}

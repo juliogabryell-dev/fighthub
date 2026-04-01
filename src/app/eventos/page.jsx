@@ -22,14 +22,14 @@ async function getEvents() {
   const [{ data: upcoming }, { data: past }] = await Promise.all([
     supabase
       .from('events')
-      .select('*, event_images(id, image_url, display_order)')
+      .select('*, event_images(id, image_url, display_order), event_fighters(id, fighter:fighter_id(id, full_name, handle, avatar_url))')
       .eq('is_published', true)
       .gte('event_date', now)
       .order('event_date', { ascending: true })
       .order('display_order', { ascending: true, referencedTable: 'event_images' }),
     supabase
       .from('events')
-      .select('*, event_images(id, image_url, display_order)')
+      .select('*, event_images(id, image_url, display_order), event_fighters(id, fighter:fighter_id(id, full_name, handle, avatar_url))')
       .eq('is_published', true)
       .lt('event_date', now)
       .order('event_date', { ascending: false })

@@ -16,7 +16,7 @@ async function getEvent(id) {
 
   const { data } = await supabase
     .from('events')
-    .select('*, event_images(id, image_url, display_order)')
+    .select('*, event_images(id, image_url, display_order), event_fighters(id, fighter:fighter_id(id, full_name, handle, avatar_url))')
     .eq('id', id)
     .eq('is_published', true)
     .order('display_order', { ascending: true, referencedTable: 'event_images' })
@@ -156,6 +156,37 @@ export default async function EventPage({ params }) {
               </h2>
               <div className="font-barlow text-theme-text/60 leading-relaxed whitespace-pre-line">
                 {event.description_full}
+              </div>
+            </div>
+          )}
+
+          {/* Fighters */}
+          {event.event_fighters && event.event_fighters.length > 0 && (
+            <div className="mt-10 pt-8 border-t border-theme-border/10">
+              <h2 className="font-bebas text-2xl text-theme-text tracking-wider mb-4">
+                LUTADORES <span className="text-brand-red">CONFIRMADOS</span>
+                <span className="font-barlow text-sm text-theme-text/30 ml-2 normal-case tracking-normal">({event.event_fighters.length})</span>
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {event.event_fighters.map((ef) => (
+                  <Link
+                    key={ef.id}
+                    href={`/lutadores/${ef.fighter?.id}`}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-br from-dark-card to-dark-card2 border border-theme-border/10 hover:border-brand-red/30 transition-all group"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-brand-red/10 border border-brand-red/20 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {ef.fighter?.avatar_url ? (
+                        <img src={ef.fighter.avatar_url} alt={ef.fighter.full_name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="font-bebas text-lg text-brand-red">{ef.fighter?.full_name?.charAt(0) || '?'}</span>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-barlow-condensed text-sm text-theme-text truncate group-hover:text-brand-red transition-colors">{ef.fighter?.full_name}</p>
+                      {ef.fighter?.handle && <p className="font-barlow text-[10px] text-theme-text/30 truncate">@{ef.fighter.handle}</p>}
+                    </div>
+                  </Link>
+                ))}
               </div>
             </div>
           )}

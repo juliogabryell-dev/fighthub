@@ -18,7 +18,7 @@ async function getUpcomingEvents() {
 
   const { data } = await supabase
     .from('events')
-    .select('*, event_images(id, image_url, display_order)')
+    .select('*, event_images(id, image_url, display_order), event_fighters(id, fighter:fighter_id(id, full_name, handle, avatar_url))')
     .eq('is_published', true)
     .gte('event_date', new Date().toISOString())
     .order('event_date', { ascending: false })

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Icon from '@/components/Icon';
+import Avatar from '@/components/Avatar';
 
 export default function EventsManager() {
   const [events, setEvents] = useState([]);
@@ -10,6 +11,13 @@ export default function EventsManager() {
   const [editingEvent, setEditingEvent] = useState(null);
   const [saving, setSaving] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(false);
+
+  // Fighter linking state
+  const [eventFighters, setEventFighters] = useState([]);
+  const [fighterSearch, setFighterSearch] = useState('');
+  const [fighterResults, setFighterResults] = useState([]);
+  const [searchingFighters, setSearchingFighters] = useState(false);
+  const fighterSearchTimeout = useRef(null);
 
   // Form state
   const [form, setForm] = useState({
@@ -41,6 +49,68 @@ export default function EventsManager() {
     fetchEvents();
   }, [fetchEvents]);
 
+  async function fetchEventFighters(eventId) {
+    try {
+      const res = await fetch(`/api/fulladmin/events/fighters?event_id=${eventId}`);
+      const data = await res.json();
+      if (res.ok) setEventFighters(data.event_fighters || []);
+    } catch { /* ignore */ }
+  }
+
+  function handleFighterSearch(query) {
+    setFighterSearch(query);
+    if (fighterSearchTimeout.current) clearTimeout(fighterSearchTimeout.current);
+    if (!query || query.length < 2) {
+      setFighterResults([]);
+      return;
+    }
+    setSearchingFighters(true);
+    fighterSearchTimeout.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/fulladmin/events/fighters?search=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        if (res.ok) setFighterResults(data.fighters || []);
+      } catch { /* ignore */ }
+      setSearchingFighters(false);
+    }, 300);
+  }
+
+  async function handleAddFighter(fighterId) {
+    if (!editingEvent) return;
+    try {
+      const res = await fetch('/api/fulladmin/events/fighters', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event_id: editingEvent.id, fighter_id: fighterId }),
+      });
+      const data = await res.json();
+      if (res.ok && data.event_fighter) {
+        setEventFighters((prev) => [...prev, data.event_fighter]);
+        setFighterSearch('');
+        setFighterResults([]);
+      } else {
+        alert(data.error || 'Erro ao vincular lutador');
+      }
+    } catch {
+      alert('Erro ao vincular lutador.');
+    }
+  }
+
+  async function handleRemoveFighter(efId) {
+    try {
+      const res = await fetch('/api/fulladmin/events/fighters', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: efId }),
+      });
+      if (res.ok) {
+        setEventFighters((prev) => prev.filter((ef) => ef.id !== efId));
+      }
+    } catch {
+      alert('Erro ao remover lutador.');
+    }
+  }
+
   function resetForm() {
     setForm({
       title: '',
@@ -55,6 +125,9 @@ export default function EventsManager() {
       is_published: true,
     });
     setEventImages([]);
+    setEventFighters([]);
+    setFighterSearch('');
+    setFighterResults([]);
     setEditingEvent(null);
     setShowForm(false);
   }
@@ -75,6 +148,7 @@ export default function EventsManager() {
     setEventImages(event.event_images || []);
     setEditingEvent(event);
     setShowForm(true);
+    fetchEventFighters(event.id);
   }
 
   async function handleSave() {
@@ -489,6 +563,83 @@ export default function EventsManager() {
                   <Icon name="camera" size={32} className="text-white/20 mx-auto mb-2" />
                   <p className="font-barlow text-white/30 text-sm">Nenhuma imagem adicionada</p>
                 </div>
+              )}
+            </div>
+          )}
+
+          {/* Fighters Section */}
+          {editingEvent && (
+            <div className="mt-6 pt-6 border-t border-white/10">
+              <div className="flex items-center justify-between mb-4">
+                <label className="uppercase text-xs tracking-wider text-white/50 font-barlow-condensed font-semibold">
+                  Lutadores Vinculados ({eventFighters.length})
+                </label>
+              </div>
+
+              {/* Search */}
+              <div className="relative mb-3">
+                <Icon name="search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+                <input
+                  type="text"
+                  value={fighterSearch}
+                  onChange={(e) => handleFighterSearch(e.target.value)}
+                  placeholder="Buscar lutador pelo nome..."
+                  className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm pl-9 pr-4 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-white/25"
+                />
+                {searchingFighters && (
+                  <svg className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin h-4 w-4 text-white/30" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                )}
+              </div>
+
+              {/* Search Results */}
+              {fighterResults.length > 0 && (
+                <div className="bg-[#0f0f1a] border border-white/10 rounded-lg mb-3 max-h-48 overflow-y-auto divide-y divide-white/5">
+                  {fighterResults
+                    .filter((f) => !eventFighters.some((ef) => ef.fighter?.id === f.id))
+                    .map((f) => (
+                      <button
+                        key={f.id}
+                        onClick={() => handleAddFighter(f.id)}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/5 transition-colors text-left"
+                      >
+                        <Avatar name={f.full_name} url={f.avatar_url} size={32} />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-barlow-condensed text-sm text-white truncate">{f.full_name}</p>
+                          {f.handle && <p className="font-barlow text-xs text-white/30">@{f.handle}</p>}
+                        </div>
+                        <Icon name="plus" size={14} className="text-[#C41E3A] flex-shrink-0" />
+                      </button>
+                    ))}
+                </div>
+              )}
+
+              {/* Linked Fighters */}
+              {eventFighters.length > 0 ? (
+                <div className="space-y-2">
+                  {eventFighters.map((ef) => (
+                    <div key={ef.id} className="flex items-center gap-3 px-3 py-2.5 bg-white/[0.02] rounded-lg border border-white/5">
+                      <Avatar name={ef.fighter?.full_name} url={ef.fighter?.avatar_url} size={32} />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-barlow-condensed text-sm text-white truncate">{ef.fighter?.full_name}</p>
+                        <p className="font-barlow text-xs text-white/30">
+                          {[ef.fighter?.handle && `@${ef.fighter.handle}`, ef.fighter?.city].filter(Boolean).join(' · ')}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveFighter(ef.id)}
+                        className="w-7 h-7 rounded-full bg-red-500/10 hover:bg-red-500/20 flex items-center justify-center text-red-400 transition-colors flex-shrink-0"
+                        title="Remover lutador"
+                      >
+                        <Icon name="x" size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="font-barlow text-white/25 text-sm text-center py-4">Nenhum lutador vinculado</p>
               )}
             </div>
           )}
