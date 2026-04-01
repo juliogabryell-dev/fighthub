@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 
 export default function EventCarousel({ events }) {
@@ -122,8 +123,8 @@ export default function EventCarousel({ events }) {
         </div>
       )}
 
-      {/* Modal */}
-      {modalEvent && (
+      {/* Modal via portal */}
+      {modalEvent && typeof document !== 'undefined' && createPortal(
         <EventModal
           event={modalEvent}
           eventIndex={modalIndex}
@@ -132,7 +133,8 @@ export default function EventCarousel({ events }) {
           onClose={() => setModalIndex(null)}
           onPrev={() => setModalIndex((prev) => (prev <= 0 ? events.length - 1 : prev - 1))}
           onNext={() => setModalIndex((prev) => (prev >= events.length - 1 ? 0 : prev + 1))}
-        />
+        />,
+        document.body
       )}
     </section>
   );
@@ -217,7 +219,7 @@ function EventModal({ event, eventIndex, totalEvents, formatDateFull, onClose, o
   }, [event.id]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4 py-4" onClick={onClose}>
       <div
         className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
