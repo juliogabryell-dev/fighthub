@@ -129,12 +129,33 @@ export default async function FighterProfile({ params }) {
         </div>
 
         {/* Social Info */}
-        {(fighter.bio || fighter.city || fighter.state || fighter.phone || fighter.instagram || fighter.facebook || fighter.youtube || fighter.tiktok) && (
+        {(fighter.bio || fighter.city || fighter.state || fighter.phone || fighter.whatsapp || fighter.height_cm || fighter.weight_kg || fighter.blood_type || fighter.instagram || fighter.facebook || fighter.youtube || fighter.tiktok) && (
           <div className="px-10 pt-6 pb-2 border-t border-theme-border/[0.06]">
             {fighter.bio && (
               <p className="font-barlow text-sm text-theme-text/60 leading-relaxed mb-4">
                 {fighter.bio}
               </p>
+            )}
+
+            {/* Physical info */}
+            {(fighter.height_cm || fighter.weight_kg || fighter.blood_type) && (
+              <div className="flex flex-wrap items-center gap-3 mb-4">
+                {fighter.height_cm && (
+                  <span className="px-3 py-1 rounded-lg bg-theme-text/5 border border-theme-border/10 font-barlow text-sm text-theme-text/60">
+                    {fighter.height_cm} cm
+                  </span>
+                )}
+                {fighter.weight_kg && (
+                  <span className="px-3 py-1 rounded-lg bg-theme-text/5 border border-theme-border/10 font-barlow text-sm text-theme-text/60">
+                    {fighter.weight_kg} kg
+                  </span>
+                )}
+                {fighter.blood_type && (
+                  <span className="px-3 py-1 rounded-lg bg-brand-red/10 border border-brand-red/20 font-barlow text-sm text-brand-red/70">
+                    {fighter.blood_type}
+                  </span>
+                )}
+              </div>
             )}
 
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
@@ -152,6 +173,13 @@ export default async function FighterProfile({ params }) {
                   <Icon name="phone" size={16} />
                   <span className="font-barlow text-sm">{fighter.phone}</span>
                 </div>
+              )}
+
+              {fighter.whatsapp && (
+                <a href={`https://wa.me/${fighter.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-green-400/70 hover:text-green-400 transition-colors">
+                  <Icon name="phone" size={16} />
+                  <span className="font-barlow text-sm">WhatsApp</span>
+                </a>
               )}
             </div>
 

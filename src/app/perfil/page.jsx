@@ -25,9 +25,13 @@ export default function PerfilPage() {
     birth_date: '',
     cpf_cnpj: '',
     phone: '',
+    whatsapp: '',
     city: '',
     state: '',
     bio: '',
+    height_cm: '',
+    weight_kg: '',
+    blood_type: '',
     instagram: '',
     facebook: '',
     youtube: '',
@@ -481,9 +485,13 @@ export default function PerfilPage() {
       birth_date: profile?.birth_date || '',
       cpf_cnpj: profile?.cpf_cnpj || '',
       phone: profile?.phone || '',
+      whatsapp: profile?.whatsapp || '',
       city: profile?.city || '',
       state: profile?.state || '',
       bio: profile?.bio || '',
+      height_cm: profile?.height_cm || '',
+      weight_kg: profile?.weight_kg || '',
+      blood_type: profile?.blood_type || '',
       instagram: profile?.instagram || '',
       facebook: profile?.facebook || '',
       youtube: profile?.youtube || '',
@@ -536,9 +544,13 @@ export default function PerfilPage() {
         handle: editForm.handle || null,
         avatar_url,
         phone: editForm.phone || null,
+        whatsapp: editForm.whatsapp || null,
         city: editForm.city || null,
         state: editForm.state || null,
         bio: editForm.bio || null,
+        height_cm: editForm.height_cm ? parseInt(editForm.height_cm, 10) : null,
+        weight_kg: editForm.weight_kg ? parseFloat(editForm.weight_kg) : null,
+        blood_type: editForm.blood_type || null,
         instagram: editForm.instagram || null,
         facebook: editForm.facebook || null,
         youtube: editForm.youtube || null,
@@ -2127,6 +2139,46 @@ export default function PerfilPage() {
               />
             </div>
 
+            {/* Fighter physical info */}
+            {profile?.is_fighter && (
+              <div className="grid grid-cols-3 gap-4">
+                <InputField
+                  label="Altura (cm)"
+                  type="number"
+                  value={editForm.height_cm}
+                  onChange={(e) => setEditForm({ ...editForm, height_cm: e.target.value })}
+                  placeholder="175"
+                />
+                <InputField
+                  label="Peso (kg)"
+                  type="number"
+                  value={editForm.weight_kg}
+                  onChange={(e) => setEditForm({ ...editForm, weight_kg: e.target.value })}
+                  placeholder="70.5"
+                />
+                <div>
+                  <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/50 mb-1.5 font-semibold">
+                    Tipo Sanguíneo
+                  </label>
+                  <select
+                    value={editForm.blood_type}
+                    onChange={(e) => setEditForm({ ...editForm, blood_type: e.target.value })}
+                    className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg px-4 py-3 text-theme-text font-barlow text-sm focus:outline-none focus:border-[#C41E3A]/50 transition-colors"
+                  >
+                    <option value="">Selecione</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <InputField
                 label="Telefone"
@@ -2136,21 +2188,30 @@ export default function PerfilPage() {
                 placeholder="(11) 99999-9999"
               />
               <InputField
+                label="WhatsApp"
+                type="tel"
+                value={editForm.whatsapp}
+                onChange={(e) => setEditForm({ ...editForm, whatsapp: e.target.value })}
+                placeholder="(11) 99999-9999"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <InputField
                 label="Cidade"
                 type="text"
                 value={editForm.city}
                 onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
                 placeholder="Sua cidade"
               />
+              <InputField
+                label="Estado"
+                type="text"
+                value={editForm.state}
+                onChange={(e) => setEditForm({ ...editForm, state: e.target.value })}
+                placeholder="Ex: SP, RJ, MG"
+              />
             </div>
-
-            <InputField
-              label="Estado"
-              type="text"
-              value={editForm.state}
-              onChange={(e) => setEditForm({ ...editForm, state: e.target.value })}
-              placeholder="Ex: SP, RJ, MG"
-            />
 
             {/* Social Separator */}
             <div className="border-t border-theme-border/10 pt-4">

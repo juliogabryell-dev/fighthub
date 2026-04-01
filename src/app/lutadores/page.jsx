@@ -172,6 +172,27 @@ export default function LutadoresPage() {
             <p className="font-barlow text-sm text-theme-text/60 leading-relaxed mb-6">{data.bio}</p>
           )}
 
+          {/* Physical info */}
+          {(data.height_cm || data.weight_kg || data.blood_type) && (
+            <div className="flex flex-wrap items-center gap-2 mb-6">
+              {data.height_cm && (
+                <span className="px-3 py-1 rounded-lg bg-theme-text/5 border border-theme-border/10 font-barlow text-sm text-theme-text/60">
+                  {data.height_cm} cm
+                </span>
+              )}
+              {data.weight_kg && (
+                <span className="px-3 py-1 rounded-lg bg-theme-text/5 border border-theme-border/10 font-barlow text-sm text-theme-text/60">
+                  {data.weight_kg} kg
+                </span>
+              )}
+              {data.blood_type && (
+                <span className="px-3 py-1 rounded-lg bg-brand-red/10 border border-brand-red/20 font-barlow text-sm text-brand-red/70">
+                  {data.blood_type}
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Coach Experiences */}
           {type === 'coach' && data.coach_experiences && data.coach_experiences.length > 0 && (
             <div className="mb-6">
@@ -195,11 +216,18 @@ export default function LutadoresPage() {
           )}
 
           {/* Contact Info */}
-          {data.phone && (
-            <div className="mb-4">
-              <span className="flex items-center gap-2 text-sm text-theme-text/50 font-barlow">
-                <Icon name="phone" size={14} /> {data.phone}
-              </span>
+          {(data.phone || data.whatsapp) && (
+            <div className="flex flex-wrap items-center gap-4 mb-4">
+              {data.phone && (
+                <span className="flex items-center gap-2 text-sm text-theme-text/50 font-barlow">
+                  <Icon name="phone" size={14} /> {data.phone}
+                </span>
+              )}
+              {data.whatsapp && (
+                <a href={`https://wa.me/${data.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-green-400/70 hover:text-green-400 transition-colors font-barlow">
+                  <Icon name="phone" size={14} /> WhatsApp
+                </a>
+              )}
             </div>
           )}
 

@@ -46,6 +46,27 @@ export default function FighterCard({ fighter }) {
           </div>
         </div>
 
+        {/* Physical info */}
+        {(fighter.height_cm || fighter.weight_kg || fighter.blood_type) && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {fighter.height_cm && (
+              <span className="text-[10px] bg-theme-text/5 border border-theme-border/10 rounded-full px-2 py-0.5 text-theme-text/50 font-barlow">
+                {fighter.height_cm}cm
+              </span>
+            )}
+            {fighter.weight_kg && (
+              <span className="text-[10px] bg-theme-text/5 border border-theme-border/10 rounded-full px-2 py-0.5 text-theme-text/50 font-barlow">
+                {fighter.weight_kg}kg
+              </span>
+            )}
+            {fighter.blood_type && (
+              <span className="text-[10px] bg-brand-red/10 border border-brand-red/20 rounded-full px-2 py-0.5 text-brand-red/60 font-barlow">
+                {fighter.blood_type}
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Martial Arts Tags */}
         {martial_arts.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-4">
