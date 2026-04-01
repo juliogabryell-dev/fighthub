@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import Link from 'next/link';
 
 export default function EventCarousel({ events }) {
@@ -16,12 +16,6 @@ export default function EventCarousel({ events }) {
     setPage((prev) => (prev <= 0 ? totalPages - 1 : prev - 1));
   }, [totalPages]);
 
-  // Auto-play
-  useEffect(() => {
-    if (totalPages <= 1) return;
-    const interval = setInterval(goNext, 6000);
-    return () => clearInterval(interval);
-  }, [totalPages, goNext]);
 
   function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString('pt-BR', {
