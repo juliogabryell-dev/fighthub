@@ -157,11 +157,19 @@ function EventCard({ event, formatDate }) {
         </div>
       )}
 
-      {/* Title + Description */}
+      {/* Title + Venue + Description */}
       <Link href={`/eventos/${event.id}`} className="block mt-3 px-1 group">
         <h3 className="font-bebas text-xl text-theme-text tracking-wider leading-tight group-hover:text-brand-red transition-colors">
           {event.title}
         </h3>
+        {(event.venue_name || event.venue_city) && (
+          <p className="font-barlow text-xs text-theme-text/40 mt-1 flex items-center gap-1">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-theme-text/30 flex-shrink-0">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
+            </svg>
+            {[event.venue_name, event.venue_city].filter(Boolean).join(' - ')}
+          </p>
+        )}
         <p className="font-barlow text-sm text-theme-text/50 mt-1 line-clamp-2">
           {event.description_short}
         </p>

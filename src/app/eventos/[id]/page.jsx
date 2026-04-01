@@ -77,8 +77,8 @@ export default async function EventPage({ params }) {
 
         {/* Event Info */}
         <div className="mt-8">
-          {/* Date badge */}
-          <div className="flex items-center gap-3 mb-4">
+          {/* Date & Venue badges */}
+          <div className="flex items-center gap-3 mb-4 flex-wrap">
             <div className="flex items-center gap-2 bg-brand-gold/10 border border-brand-gold/20 rounded-lg px-4 py-2">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-brand-gold">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
@@ -87,7 +87,27 @@ export default async function EventPage({ params }) {
                 {formattedDate} - {formattedTime}
               </span>
             </div>
+            {(event.venue_name || event.venue_city) && (
+              <div className="flex items-center gap-2 bg-theme-text/5 border border-theme-border/10 rounded-lg px-4 py-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-theme-text/50">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
+                </svg>
+                <span className="font-barlow text-sm text-theme-text/60">
+                  {[event.venue_name, event.venue_city].filter(Boolean).join(' - ')}
+                </span>
+              </div>
+            )}
           </div>
+
+          {/* Venue address */}
+          {event.venue_address && (
+            <p className="font-barlow text-sm text-theme-text/40 mb-4 flex items-center gap-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-theme-text/30 flex-shrink-0">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
+              </svg>
+              {event.venue_address}
+            </p>
+          )}
 
           {/* Title */}
           <h1 className="font-bebas text-4xl sm:text-5xl text-theme-text tracking-wider leading-tight">

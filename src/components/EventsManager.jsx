@@ -17,6 +17,9 @@ export default function EventsManager() {
     description_short: '',
     description_full: '',
     event_date: '',
+    venue_name: '',
+    venue_address: '',
+    venue_city: '',
     payment_link: '',
     external_link: '',
     is_published: true,
@@ -44,6 +47,9 @@ export default function EventsManager() {
       description_short: '',
       description_full: '',
       event_date: '',
+      venue_name: '',
+      venue_address: '',
+      venue_city: '',
       payment_link: '',
       external_link: '',
       is_published: true,
@@ -59,6 +65,9 @@ export default function EventsManager() {
       description_short: event.description_short,
       description_full: event.description_full || '',
       event_date: event.event_date ? event.event_date.slice(0, 16) : '',
+      venue_name: event.venue_name || '',
+      venue_address: event.venue_address || '',
+      venue_city: event.venue_city || '',
       payment_link: event.payment_link || '',
       external_link: event.external_link || '',
       is_published: event.is_published,
@@ -322,6 +331,48 @@ export default function EventsManager() {
                 placeholder="Descrição completa do evento, regras, card de lutas, etc."
                 rows={5}
                 className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors resize-y placeholder:text-white/25"
+              />
+            </div>
+
+            {/* Venue Name */}
+            <div>
+              <label className="uppercase text-xs tracking-wider text-white/50 font-barlow-condensed font-semibold mb-1.5 block">
+                Local
+              </label>
+              <input
+                type="text"
+                value={form.venue_name}
+                onChange={(e) => setForm({ ...form, venue_name: e.target.value })}
+                placeholder="Ex: Ginásio Esportivo Municipal"
+                className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-white/25"
+              />
+            </div>
+
+            {/* Venue City */}
+            <div>
+              <label className="uppercase text-xs tracking-wider text-white/50 font-barlow-condensed font-semibold mb-1.5 block">
+                Cidade
+              </label>
+              <input
+                type="text"
+                value={form.venue_city}
+                onChange={(e) => setForm({ ...form, venue_city: e.target.value })}
+                placeholder="Ex: São Paulo - SP"
+                className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-white/25"
+              />
+            </div>
+
+            {/* Venue Address */}
+            <div className="md:col-span-2">
+              <label className="uppercase text-xs tracking-wider text-white/50 font-barlow-condensed font-semibold mb-1.5 block">
+                Endereço
+              </label>
+              <input
+                type="text"
+                value={form.venue_address}
+                onChange={(e) => setForm({ ...form, venue_address: e.target.value })}
+                placeholder="Ex: Rua das Flores, 123 - Centro"
+                className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-white/25"
               />
             </div>
 
