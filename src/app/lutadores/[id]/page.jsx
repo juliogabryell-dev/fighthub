@@ -6,6 +6,12 @@ import ChallengeButton from './ChallengeButton';
 
 export const dynamic = 'force-dynamic';
 
+function isPublic(fighter, field) {
+  const pf = fighter.public_fields;
+  if (!pf) return true; // if no settings, show everything (backwards compat)
+  return pf[field] !== false;
+}
+
 async function getFighter(id) {
   try {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -110,7 +116,7 @@ export default async function FighterProfile({ params }) {
                   @{fighter.handle}
                 </p>
               )}
-              {fighter.birth_date && (
+              {fighter.birth_date && isPublic(fighter, 'birth_date') && (
                 <p className="font-barlow text-sm text-theme-text/40 mt-1">
                   Nascimento: {new Date(fighter.birth_date).toLocaleDateString('pt-BR')}
                 </p>
@@ -131,26 +137,26 @@ export default async function FighterProfile({ params }) {
         {/* Social Info */}
         {(fighter.bio || fighter.city || fighter.state || fighter.phone || fighter.whatsapp || fighter.height_cm || fighter.weight_kg || fighter.blood_type || fighter.instagram || fighter.facebook || fighter.youtube || fighter.tiktok) && (
           <div className="px-10 pt-6 pb-2 border-t border-theme-border/[0.06]">
-            {fighter.bio && (
+            {fighter.bio && isPublic(fighter, 'bio') && (
               <p className="font-barlow text-sm text-theme-text/60 leading-relaxed mb-4">
                 {fighter.bio}
               </p>
             )}
 
             {/* Physical info */}
-            {(fighter.height_cm || fighter.weight_kg || fighter.blood_type) && (
+            {((fighter.height_cm && isPublic(fighter, 'height_cm')) || (fighter.weight_kg && isPublic(fighter, 'weight_kg')) || (fighter.blood_type && isPublic(fighter, 'blood_type'))) && (
               <div className="flex flex-wrap items-center gap-3 mb-4">
-                {fighter.height_cm && (
+                {fighter.height_cm && isPublic(fighter, 'height_cm') && (
                   <span className="px-3 py-1 rounded-lg bg-theme-text/5 border border-theme-border/10 font-barlow text-sm text-theme-text/60">
                     {fighter.height_cm} cm
                   </span>
                 )}
-                {fighter.weight_kg && (
+                {fighter.weight_kg && isPublic(fighter, 'weight_kg') && (
                   <span className="px-3 py-1 rounded-lg bg-theme-text/5 border border-theme-border/10 font-barlow text-sm text-theme-text/60">
                     {fighter.weight_kg} kg
                   </span>
                 )}
-                {fighter.blood_type && (
+                {fighter.blood_type && isPublic(fighter, 'blood_type') && (
                   <span className="px-3 py-1 rounded-lg bg-brand-red/10 border border-brand-red/20 font-barlow text-sm text-brand-red/70">
                     {fighter.blood_type}
                   </span>
@@ -159,23 +165,23 @@ export default async function FighterProfile({ params }) {
             )}
 
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-              {(fighter.city || fighter.state) && (
+              {(fighter.city && isPublic(fighter, 'city') || fighter.state && isPublic(fighter, 'state')) && (
                 <div className="flex items-center gap-2 text-theme-text/50">
                   <Icon name="map-pin" size={16} />
                   <span className="font-barlow text-sm">
-                    {[fighter.city, fighter.state].filter(Boolean).join(', ')}
+                    {[fighter.city && isPublic(fighter, 'city') ? fighter.city : null, fighter.state && isPublic(fighter, 'state') ? fighter.state : null].filter(Boolean).join(', ')}
                   </span>
                 </div>
               )}
 
-              {fighter.phone && (
+              {fighter.phone && isPublic(fighter, 'phone') && (
                 <div className="flex items-center gap-2 text-theme-text/50">
                   <Icon name="phone" size={16} />
                   <span className="font-barlow text-sm">{fighter.phone}</span>
                 </div>
               )}
 
-              {fighter.whatsapp && (
+              {fighter.whatsapp && isPublic(fighter, 'whatsapp') && (
                 <a href={`https://wa.me/${fighter.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-green-400/70 hover:text-green-400 transition-colors">
                   <Icon name="phone" size={16} />
                   <span className="font-barlow text-sm">WhatsApp</span>
@@ -183,9 +189,9 @@ export default async function FighterProfile({ params }) {
               )}
             </div>
 
-            {(fighter.instagram || fighter.facebook || fighter.youtube || fighter.tiktok) && (
+            {((fighter.instagram && isPublic(fighter, 'instagram')) || (fighter.facebook && isPublic(fighter, 'facebook')) || (fighter.youtube && isPublic(fighter, 'youtube')) || (fighter.tiktok && isPublic(fighter, 'tiktok'))) && (
               <div className="flex flex-wrap items-center gap-3 mt-4">
-                {fighter.instagram && (() => {
+                {fighter.instagram && isPublic(fighter, 'instagram') && (() => {
                   const handle = fighter.instagram.replace(/^@/, '');
                   return (
                     <a
@@ -200,7 +206,7 @@ export default async function FighterProfile({ params }) {
                   );
                 })()}
 
-                {fighter.facebook && (() => {
+                {fighter.facebook && isPublic(fighter, 'facebook') && (() => {
                   const isUrl = fighter.facebook.startsWith('http');
                   const href = isUrl ? fighter.facebook : `https://facebook.com/${fighter.facebook}`;
                   const displayName = isUrl ? 'Facebook' : fighter.facebook;
@@ -217,7 +223,7 @@ export default async function FighterProfile({ params }) {
                   );
                 })()}
 
-                {fighter.youtube && (() => {
+                {fighter.youtube && isPublic(fighter, 'youtube') && (() => {
                   const isUrl = fighter.youtube.startsWith('http');
                   const handle = fighter.youtube.replace(/^@/, '');
                   const href = isUrl ? fighter.youtube : `https://youtube.com/@${handle}`;
@@ -235,7 +241,7 @@ export default async function FighterProfile({ params }) {
                   );
                 })()}
 
-                {fighter.tiktok && (() => {
+                {fighter.tiktok && isPublic(fighter, 'tiktok') && (() => {
                   const handle = fighter.tiktok.replace(/^@/, '');
                   return (
                     <a

@@ -37,6 +37,12 @@ export default function PerfilPage() {
     youtube: '',
     tiktok: '',
   });
+  const defaultPublicFields = {
+    bio: true, birth_date: true, phone: false, whatsapp: false,
+    city: true, state: true, height_cm: true, weight_kg: true,
+    blood_type: true, instagram: true, facebook: true, youtube: true, tiktok: true,
+  };
+  const [publicFields, setPublicFields] = useState(defaultPublicFields);
   const [handleAvailable, setHandleAvailable] = useState(null);
   const [checkingHandle, setCheckingHandle] = useState(false);
   const handleCheckTimeoutRef = useRef(null);
@@ -497,6 +503,7 @@ export default function PerfilPage() {
       youtube: profile?.youtube || '',
       tiktok: profile?.tiktok || '',
     });
+    setPublicFields({ ...defaultPublicFields, ...(profile?.public_fields || {}) });
     setHandleAvailable(null);
     setCheckingHandle(false);
     setAvatarFile(null);
@@ -555,6 +562,7 @@ export default function PerfilPage() {
         facebook: editForm.facebook || null,
         youtube: editForm.youtube || null,
         tiktok: editForm.tiktok || null,
+        public_fields: publicFields,
       };
 
       if (profile?.role === 'academy') {
@@ -2247,6 +2255,45 @@ export default function PerfilPage() {
                   onChange={(e) => setEditForm({ ...editForm, tiktok: e.target.value })}
                   placeholder="@seu_usuario"
                 />
+              </div>
+            </div>
+
+            {/* Visibility Settings */}
+            <div className="border-t border-theme-border/10 pt-4">
+              <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/40 mb-1 font-semibold">
+                Visibilidade Pública
+              </p>
+              <p className="font-barlow text-xs text-theme-text/30 mb-4">
+                Escolha quais informações ficam visíveis no seu perfil público
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { key: 'bio', label: 'Bio' },
+                  { key: 'birth_date', label: 'Data de Nascimento' },
+                  { key: 'phone', label: 'Telefone' },
+                  { key: 'whatsapp', label: 'WhatsApp' },
+                  { key: 'city', label: 'Cidade' },
+                  { key: 'state', label: 'Estado' },
+                  ...(profile?.is_fighter ? [
+                    { key: 'height_cm', label: 'Altura' },
+                    { key: 'weight_kg', label: 'Peso' },
+                    { key: 'blood_type', label: 'Tipo Sanguíneo' },
+                  ] : []),
+                  { key: 'instagram', label: 'Instagram' },
+                  { key: 'facebook', label: 'Facebook' },
+                  { key: 'youtube', label: 'YouTube' },
+                  { key: 'tiktok', label: 'TikTok' },
+                ].map(({ key, label }) => (
+                  <label key={key} className="flex items-center gap-2 cursor-pointer py-1.5 px-2 rounded-lg hover:bg-theme-text/5 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={publicFields[key] !== false}
+                      onChange={(e) => setPublicFields({ ...publicFields, [key]: e.target.checked })}
+                      className="w-4 h-4 rounded border-theme-border/20 bg-theme-text/5 text-[#C41E3A] focus:ring-[#C41E3A]"
+                    />
+                    <span className="font-barlow text-sm text-theme-text/60">{label}</span>
+                  </label>
+                ))}
               </div>
             </div>
 

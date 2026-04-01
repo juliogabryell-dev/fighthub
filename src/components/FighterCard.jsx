@@ -2,9 +2,16 @@ import Link from 'next/link';
 import Avatar from './Avatar';
 import Icon from './Icon';
 
+function isPublic(fighter, field) {
+  const pf = fighter.public_fields;
+  if (!pf) return true;
+  return pf[field] !== false;
+}
+
 export default function FighterCard({ fighter }) {
   const { id, full_name, status, avatar_url, city, phone, instagram, facebook, youtube, tiktok } = fighter;
-  const hasSocials = instagram || facebook || youtube || tiktok;
+  const pub = (field) => isPublic(fighter, field);
+  const hasSocials = (instagram && pub('instagram')) || (facebook && pub('facebook')) || (youtube && pub('youtube')) || (tiktok && pub('tiktok'));
   const martial_arts = fighter.fighter_martial_arts || [];
   const fight_records = fighter.fight_records || [];
 
@@ -28,7 +35,7 @@ export default function FighterCard({ fighter }) {
                 @{fighter.handle}
               </p>
             )}
-            {city && (
+            {city && pub('city') && (
               <p className="text-xs text-theme-text/35 font-barlow truncate -mt-0.5 mb-0.5">
                 {city}
               </p>
@@ -47,19 +54,19 @@ export default function FighterCard({ fighter }) {
         </div>
 
         {/* Physical info */}
-        {(fighter.height_cm || fighter.weight_kg || fighter.blood_type) && (
+        {((fighter.height_cm && pub('height_cm')) || (fighter.weight_kg && pub('weight_kg')) || (fighter.blood_type && pub('blood_type'))) && (
           <div className="flex flex-wrap gap-1.5 mb-3">
-            {fighter.height_cm && (
+            {fighter.height_cm && pub('height_cm') && (
               <span className="text-[10px] bg-theme-text/5 border border-theme-border/10 rounded-full px-2 py-0.5 text-theme-text/50 font-barlow">
                 {fighter.height_cm}cm
               </span>
             )}
-            {fighter.weight_kg && (
+            {fighter.weight_kg && pub('weight_kg') && (
               <span className="text-[10px] bg-theme-text/5 border border-theme-border/10 rounded-full px-2 py-0.5 text-theme-text/50 font-barlow">
                 {fighter.weight_kg}kg
               </span>
             )}
-            {fighter.blood_type && (
+            {fighter.blood_type && pub('blood_type') && (
               <span className="text-[10px] bg-brand-red/10 border border-brand-red/20 rounded-full px-2 py-0.5 text-brand-red/60 font-barlow">
                 {fighter.blood_type}
               </span>
@@ -87,33 +94,33 @@ export default function FighterCard({ fighter }) {
         )}
 
         {/* Contact & Social */}
-        {(phone || hasSocials) && (
+        {((phone && pub('phone')) || hasSocials) && (
           <div className="flex flex-wrap items-center gap-2 mb-4">
-            {phone && (
+            {phone && pub('phone') && (
               <span className="flex items-center gap-1 text-[10px] text-theme-text/35 font-barlow">
                 <Icon name="phone" size={11} />
                 {phone}
               </span>
             )}
-            {instagram && (
+            {instagram && pub('instagram') && (
               <span className="flex items-center gap-1 text-[10px] text-theme-text/35 font-barlow">
                 <Icon name="instagram" size={11} />
                 {instagram}
               </span>
             )}
-            {facebook && (
+            {facebook && pub('facebook') && (
               <span className="flex items-center gap-1 text-[10px] text-theme-text/35 font-barlow">
                 <Icon name="facebook" size={11} />
                 {facebook.startsWith('http') ? 'Facebook' : facebook}
               </span>
             )}
-            {youtube && (
+            {youtube && pub('youtube') && (
               <span className="flex items-center gap-1 text-[10px] text-theme-text/35 font-barlow">
                 <Icon name="youtube" size={11} />
                 {youtube.startsWith('http') ? 'YouTube' : youtube}
               </span>
             )}
-            {tiktok && (
+            {tiktok && pub('tiktok') && (
               <span className="flex items-center gap-1 text-[10px] text-theme-text/35 font-barlow">
                 <Icon name="tiktok" size={11} />
                 {tiktok}

@@ -5,6 +5,12 @@ import { createClient } from '@/lib/supabase/client';
 import Avatar from '@/components/Avatar';
 import Icon from '@/components/Icon';
 
+function isPublic(profile, field) {
+  const pf = profile?.public_fields;
+  if (!pf) return true;
+  return pf[field] !== false;
+}
+
 export default function LutadoresPage() {
   const supabase = createClient();
   const [fighters, setFighters] = useState([]);
@@ -168,24 +174,24 @@ export default function LutadoresPage() {
 
         {/* Body */}
         <div className="p-8">
-          {data.bio && (
+          {data.bio && isPublic(data, 'bio') && (
             <p className="font-barlow text-sm text-theme-text/60 leading-relaxed mb-6">{data.bio}</p>
           )}
 
           {/* Physical info */}
-          {(data.height_cm || data.weight_kg || data.blood_type) && (
+          {((data.height_cm && isPublic(data, 'height_cm')) || (data.weight_kg && isPublic(data, 'weight_kg')) || (data.blood_type && isPublic(data, 'blood_type'))) && (
             <div className="flex flex-wrap items-center gap-2 mb-6">
-              {data.height_cm && (
+              {data.height_cm && isPublic(data, 'height_cm') && (
                 <span className="px-3 py-1 rounded-lg bg-theme-text/5 border border-theme-border/10 font-barlow text-sm text-theme-text/60">
                   {data.height_cm} cm
                 </span>
               )}
-              {data.weight_kg && (
+              {data.weight_kg && isPublic(data, 'weight_kg') && (
                 <span className="px-3 py-1 rounded-lg bg-theme-text/5 border border-theme-border/10 font-barlow text-sm text-theme-text/60">
                   {data.weight_kg} kg
                 </span>
               )}
-              {data.blood_type && (
+              {data.blood_type && isPublic(data, 'blood_type') && (
                 <span className="px-3 py-1 rounded-lg bg-brand-red/10 border border-brand-red/20 font-barlow text-sm text-brand-red/70">
                   {data.blood_type}
                 </span>
@@ -216,14 +222,14 @@ export default function LutadoresPage() {
           )}
 
           {/* Contact Info */}
-          {(data.phone || data.whatsapp) && (
+          {((data.phone && isPublic(data, 'phone')) || (data.whatsapp && isPublic(data, 'whatsapp'))) && (
             <div className="flex flex-wrap items-center gap-4 mb-4">
-              {data.phone && (
+              {data.phone && isPublic(data, 'phone') && (
                 <span className="flex items-center gap-2 text-sm text-theme-text/50 font-barlow">
                   <Icon name="phone" size={14} /> {data.phone}
                 </span>
               )}
-              {data.whatsapp && (
+              {data.whatsapp && isPublic(data, 'whatsapp') && (
                 <a href={`https://wa.me/${data.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-green-400/70 hover:text-green-400 transition-colors font-barlow">
                   <Icon name="phone" size={14} /> WhatsApp
                 </a>
@@ -232,9 +238,9 @@ export default function LutadoresPage() {
           )}
 
           {/* Social Links */}
-          {(data.instagram || data.facebook || data.youtube || data.tiktok) && (
+          {((data.instagram && isPublic(data, 'instagram')) || (data.facebook && isPublic(data, 'facebook')) || (data.youtube && isPublic(data, 'youtube')) || (data.tiktok && isPublic(data, 'tiktok'))) && (
             <div className="flex flex-wrap gap-2 pt-4 border-t border-theme-border/[0.06]">
-              {data.instagram && (() => {
+              {data.instagram && isPublic(data, 'instagram') && (() => {
                 const h = data.instagram.replace(/^@/, '');
                 return (
                   <a href={`https://instagram.com/${h}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-theme-text/[0.04] border border-theme-border/[0.08] text-theme-text/50 hover:text-pink-400 hover:border-pink-400/30 transition-all">
@@ -242,7 +248,7 @@ export default function LutadoresPage() {
                   </a>
                 );
               })()}
-              {data.facebook && (() => {
+              {data.facebook && isPublic(data, 'facebook') && (() => {
                 const isUrl = data.facebook.startsWith('http');
                 return (
                   <a href={isUrl ? data.facebook : `https://facebook.com/${data.facebook}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-theme-text/[0.04] border border-theme-border/[0.08] text-theme-text/50 hover:text-blue-400 hover:border-blue-400/30 transition-all">
@@ -250,7 +256,7 @@ export default function LutadoresPage() {
                   </a>
                 );
               })()}
-              {data.youtube && (() => {
+              {data.youtube && isPublic(data, 'youtube') && (() => {
                 const isUrl = data.youtube.startsWith('http');
                 const h = data.youtube.replace(/^@/, '');
                 return (
@@ -259,7 +265,7 @@ export default function LutadoresPage() {
                   </a>
                 );
               })()}
-              {data.tiktok && (() => {
+              {data.tiktok && isPublic(data, 'tiktok') && (() => {
                 const h = data.tiktok.replace(/^@/, '');
                 return (
                   <a href={`https://tiktok.com/@${h}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-theme-text/[0.04] border border-theme-border/[0.08] text-theme-text/50 hover:text-theme-text hover:border-theme-border/30 transition-all">
