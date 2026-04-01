@@ -19,13 +19,16 @@ export default function EventCarousel({ events }) {
   return (
     <section className="px-6 pb-20 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="text-center mb-12">
-        <h2 className="font-bebas text-4xl sm:text-5xl text-theme-text tracking-wider">
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="font-bebas text-4xl text-theme-text tracking-wider">
           EVEN<span className="text-brand-red">TOS</span>
         </h2>
-        <p className="font-barlow text-theme-text/50 mt-3 text-lg max-w-2xl mx-auto">
-          Confira os próximos eventos
-        </p>
+        <Link
+          href="/eventos"
+          className="font-barlow-condensed uppercase text-sm text-brand-gold tracking-wider hover:text-brand-gold/80 transition-colors"
+        >
+          Ver Todos
+        </Link>
       </div>
 
       {/* Grid - always max 3 */}
@@ -41,17 +44,6 @@ export default function EventCarousel({ events }) {
         ))}
       </div>
 
-      {/* Ver Todos button */}
-      {hasMore && (
-        <div className="text-center mt-10">
-          <Link
-            href="/eventos"
-            className="font-barlow-condensed uppercase tracking-wider text-sm font-semibold px-8 py-3.5 rounded-lg bg-transparent border border-brand-gold/40 text-brand-gold hover:bg-brand-gold/10 transition-all duration-300 inline-block"
-          >
-            Ver Todos os Eventos
-          </Link>
-        </div>
-      )}
     </section>
   );
 }
