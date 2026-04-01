@@ -211,7 +211,8 @@ function EventCard({ event, formatDate, onOpen }) {
 function EventModal({ event, eventIndex, totalEvents, formatDateFull, onClose, onPrev, onNext }) {
   const [imageIndex, setImageIndex] = useState(0);
   const images = event.event_images || [];
-  const currentImage = images[imageIndex];
+  const safeIndex = imageIndex < images.length ? imageIndex : 0;
+  const currentImage = images[safeIndex];
 
   // Reset image index when event changes
   useEffect(() => {
@@ -225,7 +226,7 @@ function EventModal({ event, eventIndex, totalEvents, formatDateFull, onClose, o
         onClick={(e) => e.stopPropagation()}
       >
         {/* Image */}
-        {images.length > 0 && (
+        {images.length > 0 && currentImage && (
           <div className="relative aspect-[16/9] bg-black/40">
             <img
               src={currentImage.image_url}
