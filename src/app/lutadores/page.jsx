@@ -303,10 +303,10 @@ export default function LutadoresPage() {
                 <p className="font-barlow text-sm text-theme-text/50">@{selectedFighter.handle}</p>
               )}
               <div className="flex items-center gap-3 mt-1 justify-center sm:justify-start">
-                {selectedFighter.city && (
+                {(selectedFighter.city && isPublic(selectedFighter, 'city') || selectedFighter.state && isPublic(selectedFighter, 'state')) && (
                   <span className="flex items-center gap-1 text-theme-text/40 text-sm font-barlow">
                     <Icon name="map-pin" size={14} />
-                    {[selectedFighter.city, selectedFighter.state].filter(Boolean).join(', ')}
+                    {[selectedFighter.city && isPublic(selectedFighter, 'city') ? selectedFighter.city : null, selectedFighter.state && isPublic(selectedFighter, 'state') ? selectedFighter.state : null].filter(Boolean).join(', ')}
                   </span>
                 )}
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border ${selectedFighter.status === 'active' ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-theme-text/5 border-theme-border/10 text-theme-text/40'}`}>
@@ -327,9 +327,45 @@ export default function LutadoresPage() {
         ) : (
           <div className="p-8">
             {/* Bio */}
-            {selectedFighter.bio && (
+            {selectedFighter.bio && isPublic(selectedFighter, 'bio') && (
               <p className="font-barlow text-sm text-theme-text/60 leading-relaxed mb-6">{selectedFighter.bio}</p>
             )}
+
+            {/* Profile Details */}
+            {(() => {
+              const f = selectedFighter;
+              const details = [
+                f.birth_date && isPublic(f, 'birth_date') && { label: 'Nascimento', value: new Date(f.birth_date).toLocaleDateString('pt-BR'), icon: 'calendar' },
+                f.height_cm && isPublic(f, 'height_cm') && { label: 'Altura', value: `${f.height_cm} cm`, icon: 'user' },
+                f.weight_kg && isPublic(f, 'weight_kg') && { label: 'Peso', value: `${f.weight_kg} kg`, icon: 'user' },
+                f.blood_type && isPublic(f, 'blood_type') && { label: 'Tipo Sanguíneo', value: f.blood_type, icon: 'shield', accent: true },
+                (f.city && isPublic(f, 'city') || f.state && isPublic(f, 'state')) && { label: 'Local', value: [f.city && isPublic(f, 'city') ? f.city : null, f.state && isPublic(f, 'state') ? f.state : null].filter(Boolean).join(', '), icon: 'map-pin' },
+                f.phone && isPublic(f, 'phone') && { label: 'Telefone', value: f.phone, icon: 'phone' },
+                f.whatsapp && isPublic(f, 'whatsapp') && { label: 'WhatsApp', value: f.whatsapp, icon: 'phone', href: `https://wa.me/${f.whatsapp.replace(/\D/g, '')}`, green: true },
+              ].filter(Boolean);
+
+              return details.length > 0 ? (
+                <div className="mb-6">
+                  <h3 className="font-barlow-condensed text-[#D4AF37] uppercase tracking-widest text-sm font-semibold mb-4">DETALHES DO PERFIL</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {details.map((d, i) => {
+                      const content = (
+                        <div key={i} className={`flex items-center gap-3 p-3 rounded-lg bg-theme-text/[0.02] border border-theme-border/[0.06] ${d.href ? 'hover:bg-theme-text/[0.05] transition-colors' : ''}`}>
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${d.accent ? 'bg-brand-red/10' : d.green ? 'bg-green-500/10' : 'bg-theme-text/5'}`}>
+                            <Icon name={d.icon} size={14} className={d.accent ? 'text-brand-red/60' : d.green ? 'text-green-400/60' : 'text-theme-text/30'} />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-barlow-condensed text-[10px] uppercase tracking-widest text-theme-text/30">{d.label}</p>
+                            <p className={`font-barlow text-sm truncate ${d.accent ? 'text-brand-red/70' : d.green ? 'text-green-400/70' : 'text-theme-text/60'}`}>{d.value}</p>
+                          </div>
+                        </div>
+                      );
+                      return d.href ? <a key={i} href={d.href} target="_blank" rel="noopener noreferrer">{content}</a> : content;
+                    })}
+                  </div>
+                </div>
+              ) : null;
+            })()}
 
             {/* Record */}
             {(() => {
@@ -459,9 +495,9 @@ export default function LutadoresPage() {
             )}
 
             {/* Social Links */}
-            {(selectedFighter.instagram || selectedFighter.facebook || selectedFighter.youtube || selectedFighter.tiktok) && (
+            {((selectedFighter.instagram && isPublic(selectedFighter, 'instagram')) || (selectedFighter.facebook && isPublic(selectedFighter, 'facebook')) || (selectedFighter.youtube && isPublic(selectedFighter, 'youtube')) || (selectedFighter.tiktok && isPublic(selectedFighter, 'tiktok'))) && (
               <div className="flex flex-wrap gap-2 pt-4 border-t border-theme-border/[0.06]">
-                {selectedFighter.instagram && (() => {
+                {selectedFighter.instagram && isPublic(selectedFighter, 'instagram') && (() => {
                   const handle = selectedFighter.instagram.replace(/^@/, '');
                   return (
                     <a href={`https://instagram.com/${handle}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-theme-text/[0.04] border border-theme-border/[0.08] text-theme-text/50 hover:text-pink-400 hover:border-pink-400/30 transition-all">
@@ -469,7 +505,7 @@ export default function LutadoresPage() {
                     </a>
                   );
                 })()}
-                {selectedFighter.facebook && (() => {
+                {selectedFighter.facebook && isPublic(selectedFighter, 'facebook') && (() => {
                   const isUrl = selectedFighter.facebook.startsWith('http');
                   return (
                     <a href={isUrl ? selectedFighter.facebook : `https://facebook.com/${selectedFighter.facebook}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-theme-text/[0.04] border border-theme-border/[0.08] text-theme-text/50 hover:text-blue-400 hover:border-blue-400/30 transition-all">
@@ -477,7 +513,7 @@ export default function LutadoresPage() {
                     </a>
                   );
                 })()}
-                {selectedFighter.youtube && (() => {
+                {selectedFighter.youtube && isPublic(selectedFighter, 'youtube') && (() => {
                   const isUrl = selectedFighter.youtube.startsWith('http');
                   const handle = selectedFighter.youtube.replace(/^@/, '');
                   return (
@@ -486,7 +522,7 @@ export default function LutadoresPage() {
                     </a>
                   );
                 })()}
-                {selectedFighter.tiktok && (() => {
+                {selectedFighter.tiktok && isPublic(selectedFighter, 'tiktok') && (() => {
                   const handle = selectedFighter.tiktok.replace(/^@/, '');
                   return (
                     <a href={`https://tiktok.com/@${handle}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-theme-text/[0.04] border border-theme-border/[0.08] text-theme-text/50 hover:text-theme-text hover:border-theme-border/30 transition-all">
