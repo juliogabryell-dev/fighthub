@@ -38,35 +38,33 @@ export default function EventCarousel({ events }) {
   return (
     <section className="px-6 pb-20 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h2 className="font-bebas text-4xl sm:text-5xl text-theme-text tracking-wider">
-            EVENTOS{' '}
-            <span className="text-brand-red">DE LUTA</span>
-          </h2>
-          <p className="font-barlow text-theme-text/50 mt-1 text-lg">
-            Confira os próximos eventos
-          </p>
-        </div>
-        {events.length > 3 && (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => goTo('prev')}
-              className="w-10 h-10 rounded-full bg-theme-text/5 border border-theme-border/10 flex items-center justify-center text-theme-text/40 hover:text-brand-red hover:border-brand-red/30 transition-all"
-              aria-label="Anterior"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-            <button
-              onClick={() => goTo('next')}
-              className="w-10 h-10 rounded-full bg-theme-text/5 border border-theme-border/10 flex items-center justify-center text-theme-text/40 hover:text-brand-red hover:border-brand-red/30 transition-all"
-              aria-label="Próximo"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-          </div>
-        )}
+      <div className="text-center mb-12">
+        <h2 className="font-bebas text-4xl sm:text-5xl text-theme-text tracking-wider">
+          SE{' '}
+          <span className="text-brand-red">LIGA</span>
+        </h2>
+        <p className="font-barlow text-theme-text/50 mt-3 text-lg max-w-2xl mx-auto">
+          Confira os próximos eventos
+        </p>
       </div>
+      {events.length > 3 && (
+        <div className="flex items-center justify-end gap-2 mb-4">
+          <button
+            onClick={() => goTo('prev')}
+            className="w-10 h-10 rounded-full bg-theme-text/5 border border-theme-border/10 flex items-center justify-center text-theme-text/40 hover:text-brand-red hover:border-brand-red/30 transition-all"
+            aria-label="Anterior"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button
+            onClick={() => goTo('next')}
+            className="w-10 h-10 rounded-full bg-theme-text/5 border border-theme-border/10 flex items-center justify-center text-theme-text/40 hover:text-brand-red hover:border-brand-red/30 transition-all"
+            aria-label="Próximo"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      )}
 
       {/* Carousel */}
       <div className="overflow-hidden">
