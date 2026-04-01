@@ -44,8 +44,7 @@ export default function EventCarousel({ events }) {
       {/* Header */}
       <div className="text-center mb-12">
         <h2 className="font-bebas text-4xl sm:text-5xl text-theme-text tracking-wider">
-          SE{' '}
-          <span className="text-brand-red">LIGA</span>
+          EVEN<span className="text-brand-red">TOS</span>
         </h2>
         <p className="font-barlow text-theme-text/50 mt-3 text-lg max-w-2xl mx-auto">
           Confira os próximos eventos
