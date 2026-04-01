@@ -20,7 +20,7 @@ async function getUpcomingEvents() {
     .select('*, event_images(id, image_url, display_order)')
     .eq('is_published', true)
     .gte('event_date', new Date().toISOString())
-    .order('event_date', { ascending: true })
+    .order('event_date', { ascending: false })
     .limit(10);
 
   return (data || []).map((event) => ({

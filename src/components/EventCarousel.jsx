@@ -1,8 +1,28 @@
 'use client';
 
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 
 export default function EventCarousel({ events }) {
+  const [page, setPage] = useState(0);
+
+  const totalPages = Math.ceil(events.length / 3);
+
+  const goNext = useCallback(() => {
+    setPage((prev) => (prev >= totalPages - 1 ? 0 : prev + 1));
+  }, [totalPages]);
+
+  const goPrev = useCallback(() => {
+    setPage((prev) => (prev <= 0 ? totalPages - 1 : prev - 1));
+  }, [totalPages]);
+
+  // Auto-play
+  useEffect(() => {
+    if (totalPages <= 1) return;
+    const interval = setInterval(goNext, 6000);
+    return () => clearInterval(interval);
+  }, [totalPages, goNext]);
+
   function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString('pt-BR', {
       day: '2-digit',
@@ -13,8 +33,8 @@ export default function EventCarousel({ events }) {
 
   if (!events || events.length === 0) return null;
 
-  const visibleEvents = events.slice(0, 3);
-  const hasMore = events.length > 3;
+  // Current page events (3 per page)
+  const pageEvents = events.slice(page * 3, page * 3 + 3);
 
   return (
     <section className="px-6 pb-20 max-w-7xl mx-auto">
@@ -23,27 +43,62 @@ export default function EventCarousel({ events }) {
         <h2 className="font-bebas text-4xl text-theme-text tracking-wider">
           EVEN<span className="text-brand-red">TOS</span>
         </h2>
-        <Link
-          href="/eventos"
-          className="font-barlow-condensed uppercase text-sm text-brand-gold tracking-wider hover:text-brand-gold/80 transition-colors"
-        >
-          Ver Todos
-        </Link>
+        <div className="flex items-center gap-3">
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={goPrev}
+                className="w-9 h-9 rounded-full bg-theme-text/5 border border-theme-border/10 flex items-center justify-center text-theme-text/40 hover:text-brand-red hover:border-brand-red/30 transition-all"
+                aria-label="Anterior"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <button
+                onClick={goNext}
+                className="w-9 h-9 rounded-full bg-theme-text/5 border border-theme-border/10 flex items-center justify-center text-theme-text/40 hover:text-brand-red hover:border-brand-red/30 transition-all"
+                aria-label="Próximo"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+          )}
+          <Link
+            href="/eventos"
+            className="font-barlow-condensed uppercase text-sm text-brand-gold tracking-wider hover:text-brand-gold/80 transition-colors"
+          >
+            Ver Todos
+          </Link>
+        </div>
       </div>
 
-      {/* Grid - always max 3 */}
+      {/* Cards grid - 3 per page */}
       <div className={`grid gap-5 ${
-        visibleEvents.length === 1
+        pageEvents.length === 1
           ? 'grid-cols-1 max-w-md mx-auto'
-          : visibleEvents.length === 2
+          : pageEvents.length === 2
             ? 'grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto'
             : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
       }`}>
-        {visibleEvents.map((event) => (
+        {pageEvents.map((event) => (
           <EventCard key={event.id} event={event} formatDate={formatDate} />
         ))}
       </div>
 
+      {/* Dots */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-8">
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => setPage(i)}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                i === page ? 'bg-brand-red w-6' : 'bg-theme-text/20 w-2 hover:bg-theme-text/40'
+              }`}
+              aria-label={`Página ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
@@ -82,7 +137,7 @@ function EventCard({ event, formatDate }) {
         </div>
       </Link>
 
-      {/* Links outside the main card link */}
+      {/* Links */}
       {(event.payment_link || event.external_link) && (
         <div className="flex gap-2 mt-2 px-1">
           {event.payment_link && (
@@ -108,7 +163,7 @@ function EventCard({ event, formatDate }) {
         </div>
       )}
 
-      {/* Title + Description below card */}
+      {/* Title + Description */}
       <Link href={`/eventos/${event.id}`} className="block mt-3 px-1 group">
         <h3 className="font-bebas text-xl text-theme-text tracking-wider leading-tight group-hover:text-brand-red transition-colors">
           {event.title}
