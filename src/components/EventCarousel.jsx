@@ -211,14 +211,36 @@ function EventCard({ event, formatDate, onOpen }) {
 
 function EventModal({ event, eventIndex, totalEvents, formatDateFull, onClose, onPrev, onNext }) {
   const [imageIndex, setImageIndex] = useState(0);
+  const [viewingFighter, setViewingFighter] = useState(null);
+  const [fighterLoading, setFighterLoading] = useState(false);
   const images = event.event_images || [];
   const safeIndex = imageIndex < images.length ? imageIndex : 0;
   const currentImage = images[safeIndex];
 
-  // Reset image index when event changes
+  // Reset states when event changes
   useEffect(() => {
     setImageIndex(0);
+    setViewingFighter(null);
   }, [event.id]);
+
+  async function openFighterView(fighterId) {
+    setFighterLoading(true);
+    try {
+      const res = await fetch(`/api/fighter/${fighterId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setViewingFighter(data.fighter);
+      } else {
+        // Fallback: use basic data from event_fighters
+        const ef = event.event_fighters?.find((e) => e.fighter?.id === fighterId);
+        if (ef?.fighter) setViewingFighter(ef.fighter);
+      }
+    } catch {
+      const ef = event.event_fighters?.find((e) => e.fighter?.id === fighterId);
+      if (ef?.fighter) setViewingFighter(ef.fighter);
+    }
+    setFighterLoading(false);
+  }
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4 py-4" onClick={onClose}>
@@ -226,6 +248,7 @@ function EventModal({ event, eventIndex, totalEvents, formatDateFull, onClose, o
         className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
+      {!viewingFighter && !fighterLoading && (<>
         {/* Image */}
         {images.length > 0 && currentImage && (
           <div className="relative aspect-[16/9] bg-black/40">
@@ -346,11 +369,10 @@ function EventModal({ event, eventIndex, totalEvents, formatDateFull, onClose, o
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {event.event_fighters.map((ef) => (
-                  <Link
+                  <button
                     key={ef.id}
-                    href={`/lutadores/${ef.fighter?.id}`}
-                    onClick={onClose}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:bg-[#C41E3A]/10 hover:border-[#C41E3A]/30 transition-all group"
+                    onClick={() => openFighterView(ef.fighter?.id)}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:bg-[#C41E3A]/10 hover:border-[#C41E3A]/30 transition-all group text-left w-full"
                   >
                     <div className="w-10 h-10 rounded-full bg-[#C41E3A]/10 border border-[#C41E3A]/20 flex items-center justify-center overflow-hidden flex-shrink-0">
                       {ef.fighter?.avatar_url ? (
@@ -364,7 +386,7 @@ function EventModal({ event, eventIndex, totalEvents, formatDateFull, onClose, o
                       {ef.fighter?.handle && <p className="font-barlow text-[10px] text-white/30 truncate">@{ef.fighter.handle}</p>}
                     </div>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/15 group-hover:text-[#C41E3A]/50 ml-auto flex-shrink-0 transition-colors"><path d="M9 18l6-6-6-6"/></svg>
-                  </Link>
+                  </button>
                 ))}
               </div>
             </div>
@@ -393,6 +415,146 @@ function EventModal({ event, eventIndex, totalEvents, formatDateFull, onClose, o
             </div>
           )}
         </div>
+      </>)}
+
+      {/* Fighter Detail View (inside modal) */}
+      {(viewingFighter || fighterLoading) && (
+        <div className="p-6">
+          {/* Back button */}
+          <button
+            onClick={() => setViewingFighter(null)}
+            className="flex items-center gap-2 mb-5 text-white/40 hover:text-[#C41E3A] transition-colors font-barlow-condensed text-xs uppercase tracking-wider"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            Voltar ao Evento
+          </button>
+
+          {fighterLoading ? (
+            <div className="flex justify-center py-10">
+              <svg className="animate-spin h-8 w-8 text-[#C41E3A]" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            </div>
+          ) : viewingFighter && (
+            <>
+              {/* Fighter Header */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-16 h-16 rounded-full bg-[#C41E3A]/10 border-2 border-[#C41E3A]/30 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {viewingFighter.avatar_url ? (
+                    <img src={viewingFighter.avatar_url} alt={viewingFighter.full_name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="font-bebas text-2xl text-[#C41E3A]">{viewingFighter.full_name?.charAt(0) || '?'}</span>
+                  )}
+                </div>
+                <div>
+                  <h3 className="font-bebas text-2xl text-white tracking-wider">{viewingFighter.full_name}</h3>
+                  {viewingFighter.handle && <p className="font-barlow text-sm text-white/40">@{viewingFighter.handle}</p>}
+                  {(viewingFighter.city || viewingFighter.state) && (
+                    <p className="font-barlow text-xs text-white/30 mt-0.5">
+                      {[viewingFighter.city, viewingFighter.state].filter(Boolean).join(', ')}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Bio */}
+              {viewingFighter.bio && (!viewingFighter.public_fields || viewingFighter.public_fields.bio !== false) && (
+                <p className="font-barlow text-sm text-white/60 leading-relaxed mb-5">{viewingFighter.bio}</p>
+              )}
+
+              {/* Physical Info */}
+              {(() => {
+                const pf = viewingFighter.public_fields || {};
+                const show = (k, v) => v && pf[k] !== false;
+                const items = [
+                  show('height_cm', viewingFighter.height_cm) && `${viewingFighter.height_cm} cm`,
+                  show('weight_kg', viewingFighter.weight_kg) && `${viewingFighter.weight_kg} kg`,
+                ].filter(Boolean);
+                const blood = show('blood_type', viewingFighter.blood_type) ? viewingFighter.blood_type : null;
+                return (items.length > 0 || blood) ? (
+                  <div className="flex flex-wrap gap-2 mb-5">
+                    {items.map((v, i) => (
+                      <span key={i} className="px-3 py-1 rounded-lg bg-white/5 border border-white/10 font-barlow text-sm text-white/60">{v}</span>
+                    ))}
+                    {blood && <span className="px-3 py-1 rounded-lg bg-[#C41E3A]/10 border border-[#C41E3A]/20 font-barlow text-sm text-[#C41E3A]/70">{blood}</span>}
+                  </div>
+                ) : null;
+              })()}
+
+              {/* Fight Record */}
+              {viewingFighter.fight_records && viewingFighter.fight_records.length > 0 && (() => {
+                const wins = viewingFighter.fight_records.reduce((s, r) => s + (r.wins || 0), 0);
+                const losses = viewingFighter.fight_records.reduce((s, r) => s + (r.losses || 0), 0);
+                const draws = viewingFighter.fight_records.reduce((s, r) => s + (r.draws || 0), 0);
+                return (
+                  <div className="grid grid-cols-3 gap-3 mb-5">
+                    <div className="text-center p-3 bg-green-500/10 rounded-xl border border-green-500/20">
+                      <p className="font-bebas text-2xl text-green-500">{wins}</p>
+                      <p className="font-barlow-condensed text-[10px] text-white/40 uppercase tracking-widest">Vitórias</p>
+                    </div>
+                    <div className="text-center p-3 bg-[#C41E3A]/10 rounded-xl border border-[#C41E3A]/20">
+                      <p className="font-bebas text-2xl text-[#C41E3A]">{losses}</p>
+                      <p className="font-barlow-condensed text-[10px] text-white/40 uppercase tracking-widest">Derrotas</p>
+                    </div>
+                    <div className="text-center p-3 bg-[#D4AF37]/10 rounded-xl border border-[#D4AF37]/20">
+                      <p className="font-bebas text-2xl text-[#D4AF37]">{draws}</p>
+                      <p className="font-barlow-condensed text-[10px] text-white/40 uppercase tracking-widest">Empates</p>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Martial Arts */}
+              {viewingFighter.fighter_martial_arts && viewingFighter.fighter_martial_arts.length > 0 && (
+                <div className="mb-5">
+                  <h4 className="font-barlow-condensed text-[#D4AF37] uppercase tracking-widest text-xs font-semibold mb-3">Modalidades</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {viewingFighter.fighter_martial_arts.map((ma, i) => (
+                      <span key={i} className="px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06] font-barlow-condensed text-sm text-white">
+                        {ma.art_name}
+                        {ma.level && <span className="text-[#D4AF37] ml-1.5 text-xs">{ma.level}</span>}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Social Links */}
+              {(() => {
+                const pf = viewingFighter.public_fields || {};
+                const socials = [
+                  viewingFighter.instagram && pf.instagram !== false && { icon: 'instagram', label: `@${viewingFighter.instagram.replace(/^@/, '')}`, href: `https://instagram.com/${viewingFighter.instagram.replace(/^@/, '')}`, color: 'hover:text-pink-400' },
+                  viewingFighter.facebook && pf.facebook !== false && { icon: 'facebook', label: viewingFighter.facebook.startsWith('http') ? 'Facebook' : viewingFighter.facebook, href: viewingFighter.facebook.startsWith('http') ? viewingFighter.facebook : `https://facebook.com/${viewingFighter.facebook}`, color: 'hover:text-blue-400' },
+                  viewingFighter.youtube && pf.youtube !== false && { icon: 'youtube', label: viewingFighter.youtube.startsWith('http') ? 'YouTube' : `@${viewingFighter.youtube.replace(/^@/, '')}`, href: viewingFighter.youtube.startsWith('http') ? viewingFighter.youtube : `https://youtube.com/@${viewingFighter.youtube.replace(/^@/, '')}`, color: 'hover:text-red-400' },
+                  viewingFighter.tiktok && pf.tiktok !== false && { icon: 'tiktok', label: `@${viewingFighter.tiktok.replace(/^@/, '')}`, href: `https://tiktok.com/@${viewingFighter.tiktok.replace(/^@/, '')}`, color: 'hover:text-white' },
+                ].filter(Boolean);
+                return socials.length > 0 ? (
+                  <div className="flex flex-wrap gap-2 pt-4 border-t border-white/10">
+                    {socials.map((s, i) => (
+                      <a key={i} href={s.href} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/50 ${s.color} transition-all`}>
+                        <span className="font-barlow text-xs">{s.label}</span>
+                      </a>
+                    ))}
+                  </div>
+                ) : null;
+              })()}
+
+              {/* View full profile link */}
+              <div className="mt-5 pt-4 border-t border-white/10">
+                <Link
+                  href={`/lutadores/${viewingFighter.id}`}
+                  onClick={onClose}
+                  className="inline-flex items-center gap-2 font-barlow-condensed text-xs uppercase tracking-wider text-[#D4AF37] hover:text-[#D4AF37]/80 transition-colors"
+                >
+                  Ver perfil completo
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                </Link>
+              </div>
+            </>
+          )}
+        </div>
+      )}
       </div>
     </div>
   );
