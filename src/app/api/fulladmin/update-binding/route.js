@@ -14,8 +14,8 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Dados incompletos' }, { status: 400 });
     }
 
-    // Only allow known tables
-    if (table !== 'fighter_coaches' && table !== 'fighter_academies') {
+    const ALLOWED_TABLES = ['fighter_coaches', 'fighter_academies', 'team_fighters', 'federation_referees', 'federation_teams', 'match_maker_athletes', 'match_maker_teams', 'match_maker_federations'];
+    if (!ALLOWED_TABLES.includes(table)) {
       return NextResponse.json({ error: 'Tabela inválida' }, { status: 400 });
     }
 
