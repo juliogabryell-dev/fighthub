@@ -19,6 +19,10 @@ export default function FullAdminDashboard() {
     activeFighters: 0,
     activeCoaches: 0,
     activeAcademies: 0,
+    activeReferees: 0,
+    activeTeams: 0,
+    activeMatchMakers: 0,
+    activeFederations: 0,
     total: 0,
     pendingBindings: 0,
   });
@@ -70,12 +74,20 @@ export default function FullAdminDashboard() {
       { count: coachCount },
       { count: academyCount },
       { count: totalCount },
+      { count: refereeCount },
+      { count: teamCount },
+      { count: matchMakerCount },
+      { count: federationCount },
     ] = await Promise.all([
       supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
       supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('is_fighter', true).eq('status', 'active'),
       supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('is_coach', true).eq('status', 'active'),
       supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'academy').eq('status', 'active'),
       supabase.from('profiles').select('*', { count: 'exact', head: true }),
+      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'referee').eq('status', 'active'),
+      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'team').eq('status', 'active'),
+      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'match_maker').eq('status', 'active'),
+      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'federation').eq('status', 'active'),
     ]);
 
     // Pending bindings count
@@ -89,6 +101,10 @@ export default function FullAdminDashboard() {
       activeFighters: fighterCount || 0,
       activeCoaches: coachCount || 0,
       activeAcademies: academyCount || 0,
+      activeReferees: refereeCount || 0,
+      activeTeams: teamCount || 0,
+      activeMatchMakers: matchMakerCount || 0,
+      activeFederations: federationCount || 0,
       total: totalCount || 0,
       pendingBindings: (coachBindingsCount || 0) + (academyBindingsCount || 0),
     });
@@ -147,6 +163,11 @@ export default function FullAdminDashboard() {
   async function handleApprove(userId) {
     setActionLoading(userId);
     await supabase.from('profiles').update({ status: 'active' }).eq('id', userId);
+    // Also approve entity-specific records
+    const entityTables = ['referees', 'teams', 'match_makers', 'federations'];
+    for (const table of entityTables) {
+      await supabase.from(table).update({ status: 'active' }).eq('owner_id', userId);
+    }
     await fetchData();
     setActionLoading(null);
   }
@@ -154,6 +175,10 @@ export default function FullAdminDashboard() {
   async function handleReject(userId) {
     setActionLoading(userId);
     await supabase.from('profiles').update({ status: 'rejected' }).eq('id', userId);
+    const entityTables = ['referees', 'teams', 'match_makers', 'federations'];
+    for (const table of entityTables) {
+      await supabase.from(table).update({ status: 'rejected' }).eq('owner_id', userId);
+    }
     await fetchData();
     setActionLoading(null);
   }
@@ -349,6 +374,10 @@ export default function FullAdminDashboard() {
     if (user.is_fighter) badges.push({ label: 'Lutador', color: '#C41E3A' });
     if (user.is_coach) badges.push({ label: 'Treinador', color: '#D4AF37' });
     if (user.role === 'academy') badges.push({ label: 'Academia', color: '#3b82f6' });
+    if (user.role === 'referee') badges.push({ label: 'Árbitro', color: '#8b5cf6' });
+    if (user.role === 'team') badges.push({ label: 'Equipe', color: '#06b6d4' });
+    if (user.role === 'match_maker') badges.push({ label: 'Match Maker', color: '#f59e0b' });
+    if (user.role === 'federation') badges.push({ label: 'Federação', color: '#10b981' });
     if (badges.length === 0) {
       badges.push({ label: user.role, color: '#6b7280' });
     }
@@ -373,7 +402,11 @@ export default function FullAdminDashboard() {
     const matchesRole = roleFilter === 'all' ||
       (roleFilter === 'fighter' && u.is_fighter) ||
       (roleFilter === 'coach' && u.is_coach) ||
-      (roleFilter === 'academy' && u.role === 'academy');
+      (roleFilter === 'academy' && u.role === 'academy') ||
+      (roleFilter === 'referee' && u.role === 'referee') ||
+      (roleFilter === 'team' && u.role === 'team') ||
+      (roleFilter === 'match_maker' && u.role === 'match_maker') ||
+      (roleFilter === 'federation' && u.role === 'federation');
     return matchesSearch && matchesRole;
   });
 
@@ -393,6 +426,10 @@ export default function FullAdminDashboard() {
     { label: 'Lutadores', value: stats.activeFighters, color: '#C41E3A', icon: 'swords' },
     { label: 'Treinadores', value: stats.activeCoaches, color: '#D4AF37', icon: 'award' },
     { label: 'Academias', value: stats.activeAcademies, color: '#3b82f6', icon: 'building' },
+    { label: 'Árbitros', value: stats.activeReferees, color: '#8b5cf6', icon: 'shield' },
+    { label: 'Equipes', value: stats.activeTeams, color: '#06b6d4', icon: 'users' },
+    { label: 'Match Makers', value: stats.activeMatchMakers, color: '#f59e0b', icon: 'link' },
+    { label: 'Federações', value: stats.activeFederations, color: '#10b981', icon: 'trophy' },
     { label: 'Total', value: stats.total, color: '#22c55e', icon: 'users' },
     { label: 'Vínculos Pend.', value: stats.pendingBindings, color: '#f97316', icon: 'link' },
   ];
@@ -455,7 +492,7 @@ export default function FullAdminDashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
           {statCards.map((stat) => (
             <div
               key={stat.label}
@@ -569,7 +606,7 @@ export default function FullAdminDashboard() {
                 />
               </div>
               <div className="flex gap-2">
-                {['all', 'fighter', 'coach', 'academy'].map((role) => (
+                {['all', 'fighter', 'coach', 'academy', 'referee', 'team', 'match_maker', 'federation'].map((role) => (
                   <button
                     key={role}
                     onClick={() => setRoleFilter(role)}
@@ -579,7 +616,7 @@ export default function FullAdminDashboard() {
                         : 'bg-white/5 border-white/10 text-white/40 hover:text-white/60'
                     }`}
                   >
-                    {{ all: 'Todos', fighter: 'Lutadores', coach: 'Treinadores', academy: 'Academias' }[role]}
+                    {{ all: 'Todos', fighter: 'Lutadores', coach: 'Treinadores', academy: 'Academias', referee: 'Árbitros', team: 'Equipes', match_maker: 'Match Makers', federation: 'Federações' }[role]}
                   </button>
                 ))}
               </div>
@@ -1073,10 +1110,14 @@ export default function FullAdminDashboard() {
               </div>
               <div>
                 <label className="uppercase text-xs tracking-wider text-white/50 font-barlow-condensed font-semibold mb-1.5 block">Role</label>
-                <select value={editModal.role || 'fighter'} onChange={(e) => setEditModal({ ...editModal, role: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors">
-                  <option value="fighter" className="bg-[#1a1a2e]">Fighter</option>
-                  <option value="coach" className="bg-[#1a1a2e]">Coach</option>
-                  <option value="academy" className="bg-[#1a1a2e]">Academy</option>
+                <select value={editModal.role || 'fighter'} onChange={(e) => setEditModal({ ...editModal, role: e.target.value })} className="w-full bg-[#1a1a2e] border border-white/10 rounded-lg text-white font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors">
+                  <option value="fighter" className="bg-[#1a1a2e]">Lutador</option>
+                  <option value="coach" className="bg-[#1a1a2e]">Treinador</option>
+                  <option value="academy" className="bg-[#1a1a2e]">Academia</option>
+                  <option value="referee" className="bg-[#1a1a2e]">Árbitro</option>
+                  <option value="team" className="bg-[#1a1a2e]">Equipe</option>
+                  <option value="match_maker" className="bg-[#1a1a2e]">Match Maker</option>
+                  <option value="federation" className="bg-[#1a1a2e]">Federação</option>
                 </select>
               </div>
               <div className="flex gap-4">
