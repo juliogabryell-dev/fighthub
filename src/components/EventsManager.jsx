@@ -596,24 +596,35 @@ export default function EventsManager() {
 
               {/* Search Results */}
               {fighterResults.length > 0 && (
-                <div className="bg-[#0f0f1a] border border-white/10 rounded-lg mb-3 max-h-48 overflow-y-auto divide-y divide-white/5">
+                <div className="bg-[#0f0f1a] border border-white/10 rounded-lg mb-3 max-h-56 overflow-y-auto divide-y divide-white/5">
                   {fighterResults
                     .filter((f) => !eventFighters.some((ef) => ef.fighter?.id === f.id))
                     .map((f) => (
                       <button
                         key={f.id}
                         onClick={() => handleAddFighter(f.id)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/5 transition-colors text-left"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-[#C41E3A]/10 transition-colors text-left"
                       >
-                        <Avatar name={f.full_name} url={f.avatar_url} size={32} />
+                        <Avatar name={f.full_name} url={f.avatar_url} size={36} />
                         <div className="min-w-0 flex-1">
                           <p className="font-barlow-condensed text-sm text-white truncate">{f.full_name}</p>
-                          {f.handle && <p className="font-barlow text-xs text-white/30">@{f.handle}</p>}
+                          <p className="font-barlow text-xs text-white/30 truncate">
+                            {f.handle ? `@${f.handle}` : ''}{f.handle && f.city ? ' · ' : ''}{f.city ? [f.city, f.state].filter(Boolean).join(', ') : ''}
+                          </p>
                         </div>
-                        <Icon name="plus" size={14} className="text-[#C41E3A] flex-shrink-0" />
+                        <span className="flex items-center gap-1 px-2 py-1 rounded-md bg-[#C41E3A]/15 border border-[#C41E3A]/30 text-[#C41E3A] font-barlow-condensed text-[10px] uppercase tracking-wider flex-shrink-0">
+                          <Icon name="plus" size={10} />
+                          Vincular
+                        </span>
                       </button>
                     ))}
+                  {fighterResults.filter((f) => !eventFighters.some((ef) => ef.fighter?.id === f.id)).length === 0 && (
+                    <p className="text-center py-3 font-barlow text-xs text-white/30">Todos os resultados já estão vinculados</p>
+                  )}
                 </div>
+              )}
+              {fighterSearch.length >= 2 && fighterResults.length === 0 && !searchingFighters && (
+                <p className="font-barlow text-xs text-white/25 mb-3 text-center">Nenhum lutador encontrado para &quot;{fighterSearch}&quot;</p>
               )}
 
               {/* Linked Fighters */}

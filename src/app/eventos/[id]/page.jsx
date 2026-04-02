@@ -181,10 +181,11 @@ export default async function EventPage({ params }) {
                         <span className="font-bebas text-lg text-brand-red">{ef.fighter?.full_name?.charAt(0) || '?'}</span>
                       )}
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="font-barlow-condensed text-sm text-theme-text truncate group-hover:text-brand-red transition-colors">{ef.fighter?.full_name}</p>
                       {ef.fighter?.handle && <p className="font-barlow text-[10px] text-theme-text/30 truncate">@{ef.fighter.handle}</p>}
                     </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-theme-text/15 group-hover:text-brand-red/50 flex-shrink-0 transition-colors"><path d="M9 18l6-6-6-6"/></svg>
                   </Link>
                 ))}
               </div>

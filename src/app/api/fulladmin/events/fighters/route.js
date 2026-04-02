@@ -30,14 +30,15 @@ export async function GET(request) {
   const search = searchParams.get('search');
 
   try {
-    // Search fighters by name
+    // Search fighters by name or handle
     if (search) {
+      const term = search.replace(/^@/, '').trim();
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, handle, avatar_url')
+        .select('id, full_name, handle, avatar_url, city, state')
         .eq('is_fighter', true)
         .eq('status', 'active')
-        .ilike('full_name', `%${search}%`)
+        .or(`full_name.ilike.%${term}%,handle.ilike.%${term}%`)
         .order('full_name')
         .limit(10);
 

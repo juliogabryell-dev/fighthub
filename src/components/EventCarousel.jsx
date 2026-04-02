@@ -349,13 +349,21 @@ function EventModal({ event, eventIndex, totalEvents, formatDateFull, onClose, o
                   <Link
                     key={ef.id}
                     href={`/lutadores/${ef.fighter?.id}`}
-                    className="flex items-center gap-2.5 p-2.5 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] hover:border-[#C41E3A]/30 transition-all"
+                    onClick={onClose}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:bg-[#C41E3A]/10 hover:border-[#C41E3A]/30 transition-all group"
                   >
-                    <Avatar name={ef.fighter?.full_name} url={ef.fighter?.avatar_url} size={32} />
+                    <div className="w-10 h-10 rounded-full bg-[#C41E3A]/10 border border-[#C41E3A]/20 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {ef.fighter?.avatar_url ? (
+                        <img src={ef.fighter.avatar_url} alt={ef.fighter.full_name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="font-bebas text-lg text-[#C41E3A]">{ef.fighter?.full_name?.charAt(0) || '?'}</span>
+                      )}
+                    </div>
                     <div className="min-w-0">
-                      <p className="font-barlow-condensed text-sm text-white truncate">{ef.fighter?.full_name}</p>
+                      <p className="font-barlow-condensed text-sm text-white truncate group-hover:text-[#C41E3A] transition-colors">{ef.fighter?.full_name}</p>
                       {ef.fighter?.handle && <p className="font-barlow text-[10px] text-white/30 truncate">@{ef.fighter.handle}</p>}
                     </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/15 group-hover:text-[#C41E3A]/50 ml-auto flex-shrink-0 transition-colors"><path d="M9 18l6-6-6-6"/></svg>
                   </Link>
                 ))}
               </div>
