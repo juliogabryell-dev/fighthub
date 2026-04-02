@@ -628,7 +628,7 @@ export default function LutadoresPage() {
                 </div>
 
                 {/* Bottom - fight record (independent clicks) */}
-                <div className="mx-8 border-t border-theme-border/5" />
+                <div className="mx-3 border-t border-theme-border/5" />
                 <div className="px-5 pb-5 pt-3">
                   <FightRecordDisplay records={fightRecords} size="sm" />
                 </div>
