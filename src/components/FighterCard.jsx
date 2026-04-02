@@ -127,8 +127,11 @@ export default function FighterCard({ fighter }) {
         )}
       </Link>
 
+      {/* Divider with margin */}
+      <div className="mx-8 border-t border-theme-border/5" />
+
       {/* Bottom section - fight record (not clickable for profile) */}
-      <div className="px-5 pb-5 pt-3 border-t border-theme-border/5 mx-0">
+      <div className="px-5 pb-5 pt-3">
         <FightRecordDisplay records={fight_records} size="sm" />
       </div>
     </div>
