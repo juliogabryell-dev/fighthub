@@ -97,7 +97,19 @@ export default function BindingsManager() {
     if (!confirm('Excluir este vínculo permanentemente?')) return;
     setActionLoading(bindingId);
     const bt = BINDING_TYPES.find((b) => b.key === activeType);
-    await supabase.from(bt.table).delete().eq('id', bindingId);
+    try {
+      const res = await fetch('/api/fulladmin/update-binding', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table: bt.table, binding_id: bindingId }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        alert('Erro: ' + (data.error || 'Erro desconhecido'));
+      }
+    } catch {
+      alert('Erro ao excluir vínculo.');
+    }
     await fetchBindings();
     setActionLoading(null);
   }
