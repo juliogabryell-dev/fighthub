@@ -8,6 +8,7 @@ import InputField from '@/components/InputField';
 import Avatar from '@/components/Avatar';
 import Icon from '@/components/Icon';
 import Link from 'next/link';
+import FightRecordDisplay from '@/components/FightRecordDisplay';
 
 export default function PerfilPage() {
   const router = useRouter();
@@ -656,11 +657,13 @@ export default function PerfilPage() {
 
     for (const fighterId of fighters) {
       // Check existing record for this modality
+      const category = challenge.category || 'amador';
       const { data: existing } = await supabase
         .from('fight_records')
         .select('*')
         .eq('fighter_id', fighterId)
         .eq('modality', modality)
+        .eq('category', category)
         .single();
 
       if (existing) {
@@ -680,6 +683,7 @@ export default function PerfilPage() {
         const newRecord = {
           fighter_id: fighterId,
           modality,
+          category,
           wins: challenge.winner_id === fighterId ? 1 : 0,
           losses: challenge.winner_id !== null && challenge.winner_id !== fighterId ? 1 : 0,
           draws: challenge.winner_id === null ? 1 : 0,
@@ -1068,32 +1072,7 @@ export default function PerfilPage() {
               <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/40 mb-3">
                 Cartel
               </p>
-              <div className="flex gap-4">
-                <div className="flex-1 text-center p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                  <p className="font-bebas text-2xl text-green-400">
-                    {wins}
-                  </p>
-                  <p className="font-barlow-condensed text-xs uppercase tracking-wider text-green-400/60">
-                    V
-                  </p>
-                </div>
-                <div className="flex-1 text-center p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-                  <p className="font-bebas text-2xl text-red-400">
-                    {losses}
-                  </p>
-                  <p className="font-barlow-condensed text-xs uppercase tracking-wider text-red-400/60">
-                    D
-                  </p>
-                </div>
-                <div className="flex-1 text-center p-3 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/20">
-                  <p className="font-bebas text-2xl text-[#D4AF37]">
-                    {draws}
-                  </p>
-                  <p className="font-barlow-condensed text-xs uppercase tracking-wider text-[#D4AF37]/60">
-                    E
-                  </p>
-                </div>
-              </div>
+              <FightRecordDisplay records={fightRecords} size="md" />
             </div>
           )}
         </div>

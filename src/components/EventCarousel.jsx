@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import Avatar from '@/components/Avatar';
+import FightRecordDisplay from '@/components/FightRecordDisplay';
 
 export default function EventCarousel({ events }) {
   const [page, setPage] = useState(0);
@@ -483,27 +484,11 @@ function EventModal({ event, eventIndex, totalEvents, formatDateFull, onClose, o
               })()}
 
               {/* Fight Record */}
-              {viewingFighter.fight_records && viewingFighter.fight_records.length > 0 && (() => {
-                const wins = viewingFighter.fight_records.reduce((s, r) => s + (r.wins || 0), 0);
-                const losses = viewingFighter.fight_records.reduce((s, r) => s + (r.losses || 0), 0);
-                const draws = viewingFighter.fight_records.reduce((s, r) => s + (r.draws || 0), 0);
-                return (
-                  <div className="grid grid-cols-3 gap-3 mb-5">
-                    <div className="text-center p-3 bg-green-500/10 rounded-xl border border-green-500/20">
-                      <p className="font-bebas text-2xl text-green-500">{wins}</p>
-                      <p className="font-barlow-condensed text-[10px] text-white/40 uppercase tracking-widest">Vitórias</p>
-                    </div>
-                    <div className="text-center p-3 bg-[#C41E3A]/10 rounded-xl border border-[#C41E3A]/20">
-                      <p className="font-bebas text-2xl text-[#C41E3A]">{losses}</p>
-                      <p className="font-barlow-condensed text-[10px] text-white/40 uppercase tracking-widest">Derrotas</p>
-                    </div>
-                    <div className="text-center p-3 bg-[#D4AF37]/10 rounded-xl border border-[#D4AF37]/20">
-                      <p className="font-bebas text-2xl text-[#D4AF37]">{draws}</p>
-                      <p className="font-barlow-condensed text-[10px] text-white/40 uppercase tracking-widest">Empates</p>
-                    </div>
-                  </div>
-                );
-              })()}
+              {viewingFighter.fight_records && viewingFighter.fight_records.length > 0 && (
+                <div className="mb-5">
+                  <FightRecordDisplay records={viewingFighter.fight_records} size="md" />
+                </div>
+              )}
 
               {/* Martial Arts */}
               {viewingFighter.fighter_martial_arts && viewingFighter.fighter_martial_arts.length > 0 && (

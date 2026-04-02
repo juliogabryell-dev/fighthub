@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Avatar from './Avatar';
 import Icon from './Icon';
+import FightRecordDisplay from './FightRecordDisplay';
 
 function isPublic(fighter, field) {
   const pf = fighter.public_fields;
@@ -14,11 +15,6 @@ export default function FighterCard({ fighter }) {
   const hasSocials = (instagram && pub('instagram')) || (facebook && pub('facebook')) || (youtube && pub('youtube')) || (tiktok && pub('tiktok'));
   const martial_arts = fighter.fighter_martial_arts || [];
   const fight_records = fighter.fight_records || [];
-
-  // Somar wins/losses/draws de todos os registros de cartel
-  const wins = fight_records.reduce((sum, r) => sum + (r.wins || 0), 0);
-  const losses = fight_records.reduce((sum, r) => sum + (r.losses || 0), 0);
-  const draws = fight_records.reduce((sum, r) => sum + (r.draws || 0), 0);
 
   return (
     <Link href={`/lutadores/${id}`}>
@@ -130,25 +126,8 @@ export default function FighterCard({ fighter }) {
         )}
 
         {/* Record Stats */}
-        <div className="flex items-center gap-4 pt-3 border-t border-theme-border/5">
-          <div className="text-center flex-1">
-            <span className="block font-bebas text-xl text-green-500">{wins}</span>
-            <span className="text-[10px] uppercase tracking-wider text-theme-text/30 font-barlow-condensed">
-              Vitórias
-            </span>
-          </div>
-          <div className="text-center flex-1">
-            <span className="block font-bebas text-xl text-brand-red">{losses}</span>
-            <span className="text-[10px] uppercase tracking-wider text-theme-text/30 font-barlow-condensed">
-              Derrotas
-            </span>
-          </div>
-          <div className="text-center flex-1">
-            <span className="block font-bebas text-xl text-theme-text/50">{draws}</span>
-            <span className="text-[10px] uppercase tracking-wider text-theme-text/30 font-barlow-condensed">
-              Empates
-            </span>
-          </div>
+        <div className="pt-3 border-t border-theme-border/5">
+          <FightRecordDisplay records={fight_records} size="sm" />
         </div>
       </div>
     </Link>

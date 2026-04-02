@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Avatar from '@/components/Avatar';
 import Icon from '@/components/Icon';
+import FightRecordDisplay from '@/components/FightRecordDisplay';
 
 function isPublic(profile, field) {
   const pf = profile?.public_fields;
@@ -368,28 +369,9 @@ export default function LutadoresPage() {
             })()}
 
             {/* Record */}
-            {(() => {
-              const records = selectedFighter.fight_records || [];
-              const wins = records.reduce((sum, r) => sum + (r.wins || 0), 0);
-              const losses = records.reduce((sum, r) => sum + (r.losses || 0), 0);
-              const draws = records.reduce((sum, r) => sum + (r.draws || 0), 0);
-              return (
-                <div className="grid grid-cols-3 gap-3 mb-8">
-                  <div className="text-center p-4 bg-green-500/10 rounded-xl border border-green-500/20">
-                    <p className="font-bebas text-3xl text-green-500">{wins}</p>
-                    <p className="font-barlow-condensed text-xs text-theme-text/40 uppercase tracking-widest mt-1">Vitórias</p>
-                  </div>
-                  <div className="text-center p-4 bg-[#C41E3A]/10 rounded-xl border border-[#C41E3A]/20">
-                    <p className="font-bebas text-3xl text-[#C41E3A]">{losses}</p>
-                    <p className="font-barlow-condensed text-xs text-theme-text/40 uppercase tracking-widest mt-1">Derrotas</p>
-                  </div>
-                  <div className="text-center p-4 bg-[#D4AF37]/10 rounded-xl border border-[#D4AF37]/20">
-                    <p className="font-bebas text-3xl text-[#D4AF37]">{draws}</p>
-                    <p className="font-barlow-condensed text-xs text-theme-text/40 uppercase tracking-widest mt-1">Empates</p>
-                  </div>
-                </div>
-              );
-            })()}
+            <div className="mb-8">
+              <FightRecordDisplay records={selectedFighter.fight_records || []} size="md" />
+            </div>
 
             {/* Martial Arts with Coaches/Academies */}
             {selectedFighter.fighter_martial_arts && selectedFighter.fighter_martial_arts.length > 0 && (
@@ -600,9 +582,6 @@ export default function LutadoresPage() {
           {filtered.map((fighter) => {
             const martialArts = fighter.fighter_martial_arts || [];
             const fightRecords = fighter.fight_records || [];
-            const wins = fightRecords.reduce((sum, r) => sum + (r.wins || 0), 0);
-            const losses = fightRecords.reduce((sum, r) => sum + (r.losses || 0), 0);
-            const draws = fightRecords.reduce((sum, r) => sum + (r.draws || 0), 0);
 
             return (
               <div
@@ -644,19 +623,8 @@ export default function LutadoresPage() {
                 )}
 
                 {/* Record Stats */}
-                <div className="flex items-center gap-4 pt-3 border-t border-theme-border/5">
-                  <div className="text-center flex-1">
-                    <span className="block font-bebas text-xl text-green-500">{wins}</span>
-                    <span className="text-[10px] uppercase tracking-wider text-theme-text/30 font-barlow-condensed">Vitórias</span>
-                  </div>
-                  <div className="text-center flex-1">
-                    <span className="block font-bebas text-xl text-[#C41E3A]">{losses}</span>
-                    <span className="text-[10px] uppercase tracking-wider text-theme-text/30 font-barlow-condensed">Derrotas</span>
-                  </div>
-                  <div className="text-center flex-1">
-                    <span className="block font-bebas text-xl text-theme-text/50">{draws}</span>
-                    <span className="text-[10px] uppercase tracking-wider text-theme-text/30 font-barlow-condensed">Empates</span>
-                  </div>
+                <div className="pt-3 border-t border-theme-border/5">
+                  <FightRecordDisplay records={fightRecords} size="sm" />
                 </div>
               </div>
             );

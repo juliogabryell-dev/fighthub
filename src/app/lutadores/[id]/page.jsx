@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Icon from '@/components/Icon';
 import { createClient } from '@supabase/supabase-js';
 import ChallengeButton from './ChallengeButton';
+import FightRecordDisplay from '@/components/FightRecordDisplay';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,9 +73,6 @@ export default async function FighterProfile({ params }) {
   }
 
   const records = fighter.fight_records || [];
-  const wins = records.reduce((sum, r) => sum + (r.wins || 0), 0);
-  const losses = records.reduce((sum, r) => sum + (r.losses || 0), 0);
-  const draws = records.reduce((sum, r) => sum + (r.draws || 0), 0);
 
   return (
     <main className="min-h-screen px-6 py-12 max-w-4xl mx-auto">
@@ -263,25 +261,8 @@ export default async function FighterProfile({ params }) {
         {/* Content */}
         <div className="p-10">
           {/* Record Display */}
-          <div className="grid grid-cols-3 gap-4 mb-10">
-            <div className="text-center p-6 bg-[#22c55e]/10 rounded-xl border border-[#22c55e]/20">
-              <p className="font-bebas text-4xl text-[#22c55e]">{wins}</p>
-              <p className="font-barlow-condensed text-sm text-theme-text/40 uppercase tracking-widest mt-1">
-                Vitórias
-              </p>
-            </div>
-            <div className="text-center p-6 bg-brand-red/10 rounded-xl border border-brand-red/20">
-              <p className="font-bebas text-4xl text-brand-red">{losses}</p>
-              <p className="font-barlow-condensed text-sm text-theme-text/40 uppercase tracking-widest mt-1">
-                Derrotas
-              </p>
-            </div>
-            <div className="text-center p-6 bg-brand-gold/10 rounded-xl border border-brand-gold/20">
-              <p className="font-bebas text-4xl text-brand-gold">{draws}</p>
-              <p className="font-barlow-condensed text-sm text-theme-text/40 uppercase tracking-widest mt-1">
-                Empates
-              </p>
-            </div>
+          <div className="mb-10">
+            <FightRecordDisplay records={records} size="lg" />
           </div>
 
           {/* Martial Arts Section with Coaches/Academies per modality */}
