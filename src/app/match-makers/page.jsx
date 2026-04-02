@@ -99,7 +99,15 @@ export default function MatchMakersPage() {
         </div>
       ) : (
         <div className="text-center py-20">
-          <p className="font-barlow text-theme-text/40">Nenhum match maker encontrado.</p>
+          <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-theme-border/[0.06] p-12 max-w-md mx-auto">
+            <p className="font-bebas text-3xl text-theme-text/30 mb-2">🤝</p>
+            <p className="font-barlow-condensed text-xl text-theme-text/40 uppercase tracking-wider">
+              {term ? 'Nenhum match maker encontrado' : 'Nenhum match maker cadastrado ainda'}
+            </p>
+            <p className="font-barlow text-sm text-theme-text/25 mt-2">
+              {term ? 'Tente buscar por outro nome ou @handle.' : 'Os match makers aparecerão aqui conforme se cadastrarem na plataforma.'}
+            </p>
+          </div>
         </div>
       )}
     </main>

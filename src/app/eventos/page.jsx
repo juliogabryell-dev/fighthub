@@ -19,31 +19,18 @@ async function getEvents() {
 
   const now = new Date().toISOString();
 
-  const [{ data: upcoming }, { data: past }] = await Promise.all([
-    supabase
-      .from('events')
-      .select('*, event_images(id, image_url, display_order), event_fighters(id, fighter:fighter_id(id, full_name, handle, avatar_url))')
-      .eq('is_published', true)
-      .gte('event_date', now)
-      .order('event_date', { ascending: true })
-      .order('display_order', { ascending: true, referencedTable: 'event_images' }),
-    supabase
-      .from('events')
-      .select('*, event_images(id, image_url, display_order), event_fighters(id, fighter:fighter_id(id, full_name, handle, avatar_url))')
-      .eq('is_published', true)
-      .lt('event_date', now)
-      .order('event_date', { ascending: false })
-      .order('display_order', { ascending: true, referencedTable: 'event_images' })
-      .limit(12),
-  ]);
+  const { data: upcoming } = await supabase
+    .from('events')
+    .select('*, event_images(id, image_url, display_order), event_fighters(id, fighter:fighter_id(id, full_name, handle, avatar_url))')
+    .eq('is_published', true)
+    .gte('event_date', now)
+    .order('event_date', { ascending: true })
+    .order('display_order', { ascending: true, referencedTable: 'event_images' });
 
-  const sortImages = (events) =>
-    (events || []).map((e) => ({
-      ...e,
-      event_images: (e.event_images || []).sort((a, b) => a.display_order - b.display_order),
-    }));
-
-  return { upcoming: sortImages(upcoming), past: sortImages(past) };
+  return (upcoming || []).map((e) => ({
+    ...e,
+    event_images: (e.event_images || []).sort((a, b) => a.display_order - b.display_order),
+  }));
 }
 
 function formatDate(dateString) {
@@ -55,7 +42,7 @@ function formatDate(dateString) {
 }
 
 export default async function EventosPage() {
-  const { upcoming, past } = await getEvents();
+  const events = await getEvents();
 
   return (
     <main className="min-h-screen">
@@ -66,44 +53,23 @@ export default async function EventosPage() {
             EVEN<span className="text-brand-red">TOS</span>
           </h1>
           <p className="font-barlow text-theme-text/50 mt-3 text-lg max-w-2xl mx-auto">
-            Todos os eventos de luta cadastrados no FightLog
+            Próximos eventos de luta
           </p>
         </div>
 
-        {/* Upcoming Events */}
-        {upcoming.length > 0 && (
-          <section className="mb-16">
-            <h2 className="font-bebas text-2xl text-theme-text tracking-wider mb-6">
-              PRÓXIMOS <span className="text-brand-gold">EVENTOS</span>
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {upcoming.map((event) => (
-                <EventCard key={event.id} event={event} />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Past Events */}
-        {past.length > 0 && (
-          <section>
-            <h2 className="font-bebas text-2xl text-theme-text tracking-wider mb-6">
-              EVENTOS <span className="text-theme-text/40">PASSADOS</span>
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 opacity-70">
-              {past.map((event) => (
-                <EventCard key={event.id} event={event} />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {upcoming.length === 0 && past.length === 0 && (
+        {/* Events */}
+        {events.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {events.map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
+          </div>
+        ) : (
           <div className="text-center py-20">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="text-theme-text/15 mx-auto mb-4">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
             </svg>
-            <p className="font-barlow text-theme-text/40 text-lg">Nenhum evento cadastrado ainda.</p>
+            <p className="font-barlow text-theme-text/40 text-lg">Nenhum evento futuro no momento.</p>
           </div>
         )}
       </div>
