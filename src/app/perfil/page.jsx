@@ -2150,17 +2150,17 @@ export default function PerfilPage() {
                   <select
                     value={editForm.blood_type}
                     onChange={(e) => setEditForm({ ...editForm, blood_type: e.target.value })}
-                    className="w-full bg-[#1a1a2e] border border-theme-border/10 rounded-lg px-4 py-3 text-theme-text font-barlow text-sm focus:outline-none focus:border-[#C41E3A]/50 transition-colors"
+                    className="w-full bg-dark-card border border-theme-border/10 rounded-lg px-4 py-3 text-theme-text font-barlow text-sm focus:outline-none focus:border-[#C41E3A]/50 transition-colors"
                   >
-                    <option value="" className="bg-[#1a1a2e] text-white">Selecione</option>
-                    <option value="A+" className="bg-[#1a1a2e] text-white">A+</option>
-                    <option value="A-" className="bg-[#1a1a2e] text-white">A-</option>
-                    <option value="B+" className="bg-[#1a1a2e] text-white">B+</option>
-                    <option value="B-" className="bg-[#1a1a2e] text-white">B-</option>
-                    <option value="AB+" className="bg-[#1a1a2e] text-white">AB+</option>
-                    <option value="AB-" className="bg-[#1a1a2e] text-white">AB-</option>
-                    <option value="O+" className="bg-[#1a1a2e] text-white">O+</option>
-                    <option value="O-" className="bg-[#1a1a2e] text-white">O-</option>
+                    <option value="" className="bg-dark-card text-theme-text">Selecione</option>
+                    <option value="A+" className="bg-dark-card text-theme-text">A+</option>
+                    <option value="A-" className="bg-dark-card text-theme-text">A-</option>
+                    <option value="B+" className="bg-dark-card text-theme-text">B+</option>
+                    <option value="B-" className="bg-dark-card text-theme-text">B-</option>
+                    <option value="AB+" className="bg-dark-card text-theme-text">AB+</option>
+                    <option value="AB-" className="bg-dark-card text-theme-text">AB-</option>
+                    <option value="O+" className="bg-dark-card text-theme-text">O+</option>
+                    <option value="O-" className="bg-dark-card text-theme-text">O-</option>
                   </select>
                 </div>
               </div>

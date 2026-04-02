@@ -283,11 +283,11 @@ export default function RegisterPage() {
                 <InputField label="Nº Registro/Licença" type="text" value={licenseNumber} onChange={(e) => setLicenseNumber(e.target.value)} placeholder="Opcional" />
                 <div>
                   <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/50 mb-1.5 font-semibold">Nível</label>
-                  <select value={level} onChange={(e) => setLevel(e.target.value)} className="w-full bg-[#1a1a2e] border border-theme-border/10 rounded-lg px-4 py-3 text-theme-text font-barlow text-sm focus:outline-none focus:border-[#C41E3A]/50 transition-colors">
-                    <option value="" className="bg-[#1a1a2e] text-white">Selecione</option>
-                    <option value="regional" className="bg-[#1a1a2e] text-white">Regional</option>
-                    <option value="nacional" className="bg-[#1a1a2e] text-white">Nacional</option>
-                    <option value="internacional" className="bg-[#1a1a2e] text-white">Internacional</option>
+                  <select value={level} onChange={(e) => setLevel(e.target.value)} className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg px-4 py-3 text-theme-text font-barlow text-sm focus:outline-none focus:border-[#C41E3A]/50 transition-colors">
+                    <option value="" className="bg-dark-card text-theme-text">Selecione</option>
+                    <option value="regional" className="bg-dark-card text-theme-text">Regional</option>
+                    <option value="nacional" className="bg-dark-card text-theme-text">Nacional</option>
+                    <option value="internacional" className="bg-dark-card text-theme-text">Internacional</option>
                   </select>
                 </div>
               </div>
@@ -297,11 +297,11 @@ export default function RegisterPage() {
             {role === 'match_maker' && (
               <div>
                 <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/50 mb-1.5 font-semibold">Especialidade</label>
-                <select value={specialty} onChange={(e) => setSpecialty(e.target.value)} className="w-full bg-[#1a1a2e] border border-theme-border/10 rounded-lg px-4 py-3 text-theme-text font-barlow text-sm focus:outline-none focus:border-[#C41E3A]/50 transition-colors">
-                  <option value="" className="bg-[#1a1a2e] text-white">Selecione</option>
-                  <option value="amador" className="bg-[#1a1a2e] text-white">Amador</option>
-                  <option value="profissional" className="bg-[#1a1a2e] text-white">Profissional</option>
-                  <option value="internacional" className="bg-[#1a1a2e] text-white">Internacional</option>
+                <select value={specialty} onChange={(e) => setSpecialty(e.target.value)} className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg px-4 py-3 text-theme-text font-barlow text-sm focus:outline-none focus:border-[#C41E3A]/50 transition-colors">
+                  <option value="" className="bg-dark-card text-theme-text">Selecione</option>
+                  <option value="amador" className="bg-dark-card text-theme-text">Amador</option>
+                  <option value="profissional" className="bg-dark-card text-theme-text">Profissional</option>
+                  <option value="internacional" className="bg-dark-card text-theme-text">Internacional</option>
                 </select>
               </div>
             )}
