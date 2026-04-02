@@ -7,7 +7,6 @@ import Avatar from '@/components/Avatar';
 import Icon from '@/components/Icon';
 import EventsManager from '@/components/EventsManager';
 import VerifiedBadge from '@/components/VerifiedBadge';
-import BindingsManager from '@/components/BindingsManager';
 
 export default function FullAdminDashboard() {
   const router = useRouter();
@@ -728,7 +727,115 @@ export default function FullAdminDashboard() {
 
         {/* Tab: Pending Bindings */}
         {activeTab === 'bindings' && (
-          <BindingsManager />
+          <div className="space-y-6">
+            {/* Coach Bindings */}
+            <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+              <div className="p-5 border-b border-white/5 flex items-center gap-3">
+                <h2 className="font-bebas text-xl tracking-wider text-white">VÍNCULOS LUTADOR → TREINADOR</h2>
+                {pendingCoachBindings.length > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] font-barlow-condensed text-xs font-semibold border border-[#D4AF37]/30">
+                    {pendingCoachBindings.length}
+                  </span>
+                )}
+              </div>
+              {pendingCoachBindings.length > 0 ? (
+                <div className="divide-y divide-white/5">
+                  {pendingCoachBindings.map((binding) => (
+                    <div key={binding.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white/[0.02] transition-colors">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <Avatar name={binding.fighter?.full_name} size={32} />
+                          <div className="min-w-0">
+                            <p className="font-barlow-condensed text-white font-semibold text-sm truncate">{binding.fighter?.full_name || 'Lutador'}</p>
+                            <p className="font-barlow text-white/30 text-[10px]">Lutador</p>
+                          </div>
+                        </div>
+                        <span className="text-white/20 text-xs">→</span>
+                        <div className="flex items-center gap-2">
+                          <Avatar name={binding.coach?.full_name} size={32} />
+                          <div className="min-w-0">
+                            <p className="font-barlow-condensed text-white font-semibold text-sm truncate">{binding.coach?.full_name || 'Treinador'}</p>
+                            <p className="font-barlow text-white/30 text-[10px]">Treinador</p>
+                          </div>
+                        </div>
+                        {binding.martial_art?.art_name && (
+                          <span className="px-2 py-0.5 rounded-full bg-[#C41E3A]/10 text-[#C41E3A] font-barlow-condensed text-[10px] border border-[#C41E3A]/20">
+                            {binding.martial_art.art_name}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => handleBindingAction('fighter_coaches', binding.id, 'active')} disabled={actionLoading === binding.id} className="px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 hover:bg-green-500/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider disabled:opacity-50">
+                          {actionLoading === binding.id ? '...' : 'Aprovar'}
+                        </button>
+                        <button onClick={() => handleBindingAction('fighter_coaches', binding.id, 'rejected')} disabled={actionLoading === binding.id} className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider disabled:opacity-50">
+                          {actionLoading === binding.id ? '...' : 'Rejeitar'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-10 text-center">
+                  <p className="font-barlow text-white/40 text-sm">Nenhum vínculo de treinador pendente.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Academy Bindings */}
+            <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+              <div className="p-5 border-b border-white/5 flex items-center gap-3">
+                <h2 className="font-bebas text-xl tracking-wider text-white">VÍNCULOS LUTADOR → ACADEMIA</h2>
+                {pendingAcademyBindings.length > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-barlow-condensed text-xs font-semibold border border-blue-500/30">
+                    {pendingAcademyBindings.length}
+                  </span>
+                )}
+              </div>
+              {pendingAcademyBindings.length > 0 ? (
+                <div className="divide-y divide-white/5">
+                  {pendingAcademyBindings.map((binding) => (
+                    <div key={binding.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white/[0.02] transition-colors">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <Avatar name={binding.fighter?.full_name} size={32} />
+                          <div className="min-w-0">
+                            <p className="font-barlow-condensed text-white font-semibold text-sm truncate">{binding.fighter?.full_name || 'Lutador'}</p>
+                            <p className="font-barlow text-white/30 text-[10px]">Lutador</p>
+                          </div>
+                        </div>
+                        <span className="text-white/20 text-xs">→</span>
+                        <div className="flex items-center gap-2">
+                          <Avatar name={binding.academy?.full_name} size={32} />
+                          <div className="min-w-0">
+                            <p className="font-barlow-condensed text-white font-semibold text-sm truncate">{binding.academy?.full_name || 'Academia'}</p>
+                            <p className="font-barlow text-white/30 text-[10px]">Academia</p>
+                          </div>
+                        </div>
+                        {binding.martial_art?.art_name && (
+                          <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 font-barlow-condensed text-[10px] border border-blue-500/20">
+                            {binding.martial_art.art_name}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => handleBindingAction('fighter_academies', binding.id, 'active')} disabled={actionLoading === binding.id} className="px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 hover:bg-green-500/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider disabled:opacity-50">
+                          {actionLoading === binding.id ? '...' : 'Aprovar'}
+                        </button>
+                        <button onClick={() => handleBindingAction('fighter_academies', binding.id, 'rejected')} disabled={actionLoading === binding.id} className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider disabled:opacity-50">
+                          {actionLoading === binding.id ? '...' : 'Rejeitar'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-10 text-center">
+                  <p className="font-barlow text-white/40 text-sm">Nenhum vínculo de academia pendente.</p>
+                </div>
+              )}
+            </div>
+          </div>
         )}
 
         {/* Tab: Admins */}
