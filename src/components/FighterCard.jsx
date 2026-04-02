@@ -17,8 +17,9 @@ export default function FighterCard({ fighter }) {
   const fight_records = fighter.fight_records || [];
 
   return (
-    <Link href={`/lutadores/${id}`}>
-      <div className="card-hover bg-gradient-to-b from-dark-card to-dark-card2 rounded-xl border border-theme-border/5 p-5 transition-all duration-300 hover:border-brand-red/30 group">
+    <div className="card-hover bg-gradient-to-b from-dark-card to-dark-card2 rounded-xl border border-theme-border/5 transition-all duration-300 hover:border-brand-red/30 group overflow-hidden">
+      {/* Top section - clickable to open profile */}
+      <Link href={`/lutadores/${id}`} className="block p-5 pb-3">
         {/* Header: Avatar + Name + Status */}
         <div className="flex items-center gap-3 mb-4">
           <Avatar name={full_name} url={avatar_url} size={48} />
@@ -72,7 +73,7 @@ export default function FighterCard({ fighter }) {
 
         {/* Martial Arts Tags */}
         {martial_arts.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-4">
+          <div className="flex flex-wrap gap-1.5 mb-3">
             {martial_arts.map((art, i) => (
               <span
                 key={i}
@@ -91,7 +92,7 @@ export default function FighterCard({ fighter }) {
 
         {/* Contact & Social */}
         {((phone && pub('phone')) || hasSocials) && (
-          <div className="flex flex-wrap items-center gap-2 mb-4">
+          <div className="flex flex-wrap items-center gap-2">
             {phone && pub('phone') && (
               <span className="flex items-center gap-1 text-[10px] text-theme-text/35 font-barlow">
                 <Icon name="phone" size={11} />
@@ -124,12 +125,12 @@ export default function FighterCard({ fighter }) {
             )}
           </div>
         )}
+      </Link>
 
-        {/* Record Stats */}
-        <div className="pt-3 border-t border-theme-border/5">
-          <FightRecordDisplay records={fight_records} size="sm" />
-        </div>
+      {/* Bottom section - fight record (not clickable for profile) */}
+      <div className="px-5 pb-5 pt-3 border-t border-theme-border/5 mx-0">
+        <FightRecordDisplay records={fight_records} size="sm" />
       </div>
-    </Link>
+    </div>
   );
 }

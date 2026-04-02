@@ -586,44 +586,49 @@ export default function LutadoresPage() {
             return (
               <div
                 key={fighter.id}
-                onClick={() => openFighterModal(fighter)}
-                className="cursor-pointer card-hover bg-gradient-to-b from-dark-card to-dark-card2 rounded-xl border border-theme-border/5 p-5 transition-all duration-300 hover:border-[#C41E3A]/30 group"
+                className="card-hover bg-gradient-to-b from-dark-card to-dark-card2 rounded-xl border border-theme-border/5 transition-all duration-300 hover:border-[#C41E3A]/30 group overflow-hidden"
               >
-                <div className="flex items-center gap-3 mb-4">
-                  <Avatar name={fighter.full_name} url={fighter.avatar_url} size={48} />
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bebas text-xl text-theme-text tracking-wide truncate group-hover:text-[#C41E3A] transition-colors">
-                      {fighter.full_name}
-                    </h3>
-                    {fighter.handle && (
-                      <p className="text-xs text-theme-text/40 font-barlow truncate -mt-0.5 mb-0.5">@{fighter.handle}</p>
-                    )}
-                    {fighter.city && (
-                      <p className="text-xs text-theme-text/35 font-barlow truncate -mt-0.5 mb-0.5">{fighter.city}</p>
-                    )}
-                    <div className="flex items-center gap-1.5">
-                      <span className={`w-2 h-2 rounded-full ${fighter.status === 'active' ? 'bg-green-500' : 'bg-theme-text/30'}`} />
-                      <span className="text-xs text-theme-text/40 font-barlow-condensed uppercase tracking-wider">
-                        {fighter.status === 'active' ? 'Ativo' : fighter.status || 'Inativo'}
-                      </span>
+                {/* Top - clickable to open modal */}
+                <div
+                  onClick={() => openFighterModal(fighter)}
+                  className="cursor-pointer p-5 pb-3"
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <Avatar name={fighter.full_name} url={fighter.avatar_url} size={48} />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bebas text-xl text-theme-text tracking-wide truncate group-hover:text-[#C41E3A] transition-colors">
+                        {fighter.full_name}
+                      </h3>
+                      {fighter.handle && (
+                        <p className="text-xs text-theme-text/40 font-barlow truncate -mt-0.5 mb-0.5">@{fighter.handle}</p>
+                      )}
+                      {fighter.city && (
+                        <p className="text-xs text-theme-text/35 font-barlow truncate -mt-0.5 mb-0.5">{fighter.city}</p>
+                      )}
+                      <div className="flex items-center gap-1.5">
+                        <span className={`w-2 h-2 rounded-full ${fighter.status === 'active' ? 'bg-green-500' : 'bg-theme-text/30'}`} />
+                        <span className="text-xs text-theme-text/40 font-barlow-condensed uppercase tracking-wider">
+                          {fighter.status === 'active' ? 'Ativo' : fighter.status || 'Inativo'}
+                        </span>
+                      </div>
                     </div>
                   </div>
+
+                  {/* Martial Arts Tags */}
+                  {martialArts.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {martialArts.map((art, i) => (
+                        <span key={i} className="text-xs bg-theme-text/5 border border-theme-border/10 rounded-full px-2.5 py-0.5 text-theme-text/60 font-barlow-condensed">
+                          {art.art_name}
+                          {art.level && <span className="text-[#D4AF37] ml-1">{art.level}</span>}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                {/* Martial Arts Tags */}
-                {martialArts.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mb-4">
-                    {martialArts.map((art, i) => (
-                      <span key={i} className="text-xs bg-theme-text/5 border border-theme-border/10 rounded-full px-2.5 py-0.5 text-theme-text/60 font-barlow-condensed">
-                        {art.art_name}
-                        {art.level && <span className="text-[#D4AF37] ml-1">{art.level}</span>}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* Record Stats */}
-                <div className="pt-3 border-t border-theme-border/5">
+                {/* Bottom - fight record (independent clicks) */}
+                <div className="px-5 pb-5 pt-3 border-t border-theme-border/5">
                   <FightRecordDisplay records={fightRecords} size="sm" />
                 </div>
               </div>

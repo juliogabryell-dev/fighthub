@@ -82,7 +82,7 @@ export default function FightRecordDisplay({ records = [], size = 'md' }) {
         </div>
         <div className={`text-center ${s.pad} bg-theme-text/5 rounded-xl border border-theme-border/10`}>
           <p className={`font-bebas ${s.num} text-theme-text/40`}>{current.no_contest}</p>
-          <p className={`font-barlow-condensed ${s.label} text-theme-text/30 uppercase tracking-widest mt-1`}>NC</p>
+          <p className={`font-barlow-condensed ${s.label} text-theme-text/30 uppercase tracking-widest mt-1`}>No Contest</p>
         </div>
       </div>
     </div>
