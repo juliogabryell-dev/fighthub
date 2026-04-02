@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import Avatar from '@/components/Avatar';
 import Icon from '@/components/Icon';
 import FightRecordDisplay from '@/components/FightRecordDisplay';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 function isPublic(profile, field) {
   const pf = profile?.public_fields;
@@ -299,7 +300,7 @@ export default function LutadoresPage() {
               )}
             </div>
             <div className="text-center sm:text-left">
-              <h2 className="font-bebas text-3xl text-theme-text tracking-wider">{selectedFighter.full_name}</h2>
+              <h2 className="font-bebas text-3xl text-theme-text tracking-wider flex items-center gap-2">{selectedFighter.full_name} {(selectedFighter.fighter_verified || selectedFighter.coach_verified || selectedFighter.verified) && <VerifiedBadge size={20} />}</h2>
               {selectedFighter.handle && (
                 <p className="font-barlow text-sm text-theme-text/50">@{selectedFighter.handle}</p>
               )}
@@ -596,8 +597,9 @@ export default function LutadoresPage() {
                   <div className="flex items-center gap-3 mb-4">
                     <Avatar name={fighter.full_name} url={fighter.avatar_url} size={48} />
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bebas text-xl text-theme-text tracking-wide truncate group-hover:text-[#C41E3A] transition-colors">
+                      <h3 className="font-bebas text-xl text-theme-text tracking-wide truncate group-hover:text-[#C41E3A] transition-colors flex items-center gap-1.5">
                         {fighter.full_name}
+                        {(fighter.fighter_verified || fighter.coach_verified || fighter.verified) && <VerifiedBadge size={16} />}
                       </h3>
                       {fighter.handle && (
                         <p className="text-xs text-theme-text/40 font-barlow truncate -mt-0.5 mb-0.5">@{fighter.handle}</p>

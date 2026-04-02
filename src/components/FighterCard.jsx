@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Avatar from './Avatar';
 import Icon from './Icon';
 import FightRecordDisplay from './FightRecordDisplay';
+import VerifiedBadge from './VerifiedBadge';
 
 function isPublic(fighter, field) {
   const pf = fighter.public_fields;
@@ -24,8 +25,9 @@ export default function FighterCard({ fighter }) {
         <div className="flex items-center gap-3 mb-4">
           <Avatar name={full_name} url={avatar_url} size={48} />
           <div className="flex-1 min-w-0">
-            <h3 className="font-bebas text-xl text-theme-text tracking-wide truncate group-hover:text-brand-red transition-colors">
+            <h3 className="font-bebas text-xl text-theme-text tracking-wide truncate group-hover:text-brand-red transition-colors flex items-center gap-1.5">
               {full_name}
+              {(fighter.fighter_verified || fighter.coach_verified || fighter.verified) && <VerifiedBadge size={16} />}
             </h3>
             {fighter.handle && (
               <p className="text-xs text-theme-text/40 font-barlow truncate -mt-0.5 mb-0.5">

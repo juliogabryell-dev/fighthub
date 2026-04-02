@@ -9,6 +9,7 @@ import Avatar from '@/components/Avatar';
 import Icon from '@/components/Icon';
 import Link from 'next/link';
 import FightRecordDisplay from '@/components/FightRecordDisplay';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 export default function PerfilPage() {
   const router = useRouter();
@@ -975,8 +976,9 @@ export default function PerfilPage() {
                 className="border-2 border-theme-border/20"
               />
               <div>
-                <h2 className="font-bebas text-3xl tracking-wide text-theme-text">
+                <h2 className="font-bebas text-3xl tracking-wide text-theme-text flex items-center gap-2">
                   {profile?.full_name}
+                  {(profile?.verified || profile?.fighter_verified || profile?.coach_verified) && <VerifiedBadge size={20} />}
                 </h2>
                 {profile?.handle && (
                   <p className="font-barlow text-sm text-theme-text/50 -mt-0.5">
@@ -993,6 +995,78 @@ export default function PerfilPage() {
                   {isDualRole ? 'Lutador & Treinador' : isFighter ? 'Lutador' : isCoach ? 'Treinador' : 'Academia'}
                 </p>
                 <div className="mt-2">{getStatusBadge(profile?.status)}</div>
+
+                {/* Verification Requests */}
+                {profile?.status === 'active' && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {isFighter && !profile.fighter_verified && (
+                      <button
+                        onClick={async () => {
+                          if (profile.fighter_verification_requested) return;
+                          await supabase.from('profiles').update({ fighter_verification_requested: true }).eq('id', user.id);
+                          fetchUserAndProfile();
+                        }}
+                        disabled={profile.fighter_verification_requested}
+                        className={`text-xs font-barlow-condensed uppercase tracking-wider px-3 py-1.5 rounded-lg border transition-all ${
+                          profile.fighter_verification_requested
+                            ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37] cursor-default'
+                            : 'bg-[#1D9BF0]/10 border-[#1D9BF0]/30 text-[#1D9BF0] hover:bg-[#1D9BF0]/20'
+                        }`}
+                      >
+                        {profile.fighter_verification_requested ? 'Verificação Solicitada (Lutador)' : 'Solicitar Verificação (Lutador)'}
+                      </button>
+                    )}
+                    {isFighter && profile.fighter_verified && (
+                      <span className="text-xs font-barlow-condensed uppercase tracking-wider px-3 py-1.5 rounded-lg bg-[#1D9BF0]/10 border border-[#1D9BF0]/30 text-[#1D9BF0] flex items-center gap-1">
+                        <VerifiedBadge size={12} /> Lutador Verificado
+                      </span>
+                    )}
+                    {isCoach && !profile.coach_verified && (
+                      <button
+                        onClick={async () => {
+                          if (profile.coach_verification_requested) return;
+                          await supabase.from('profiles').update({ coach_verification_requested: true }).eq('id', user.id);
+                          fetchUserAndProfile();
+                        }}
+                        disabled={profile.coach_verification_requested}
+                        className={`text-xs font-barlow-condensed uppercase tracking-wider px-3 py-1.5 rounded-lg border transition-all ${
+                          profile.coach_verification_requested
+                            ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37] cursor-default'
+                            : 'bg-[#1D9BF0]/10 border-[#1D9BF0]/30 text-[#1D9BF0] hover:bg-[#1D9BF0]/20'
+                        }`}
+                      >
+                        {profile.coach_verification_requested ? 'Verificação Solicitada (Treinador)' : 'Solicitar Verificação (Treinador)'}
+                      </button>
+                    )}
+                    {isCoach && profile.coach_verified && (
+                      <span className="text-xs font-barlow-condensed uppercase tracking-wider px-3 py-1.5 rounded-lg bg-[#1D9BF0]/10 border border-[#1D9BF0]/30 text-[#1D9BF0] flex items-center gap-1">
+                        <VerifiedBadge size={12} /> Treinador Verificado
+                      </span>
+                    )}
+                    {isAcademy && !profile.verified && (
+                      <button
+                        onClick={async () => {
+                          if (profile.verification_requested) return;
+                          await supabase.from('profiles').update({ verification_requested: true }).eq('id', user.id);
+                          fetchUserAndProfile();
+                        }}
+                        disabled={profile.verification_requested}
+                        className={`text-xs font-barlow-condensed uppercase tracking-wider px-3 py-1.5 rounded-lg border transition-all ${
+                          profile.verification_requested
+                            ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37] cursor-default'
+                            : 'bg-[#1D9BF0]/10 border-[#1D9BF0]/30 text-[#1D9BF0] hover:bg-[#1D9BF0]/20'
+                        }`}
+                      >
+                        {profile.verification_requested ? 'Verificação Solicitada' : 'Solicitar Verificação'}
+                      </button>
+                    )}
+                    {isAcademy && profile.verified && (
+                      <span className="text-xs font-barlow-condensed uppercase tracking-wider px-3 py-1.5 rounded-lg bg-[#1D9BF0]/10 border border-[#1D9BF0]/30 text-[#1D9BF0] flex items-center gap-1">
+                        <VerifiedBadge size={12} /> Verificado
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

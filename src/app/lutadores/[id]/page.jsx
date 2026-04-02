@@ -4,6 +4,7 @@ import Icon from '@/components/Icon';
 import { createClient } from '@supabase/supabase-js';
 import ChallengeButton from './ChallengeButton';
 import FightRecordDisplay from '@/components/FightRecordDisplay';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -106,8 +107,9 @@ export default async function FighterProfile({ params }) {
             </div>
 
             <div className="text-center sm:text-left">
-              <h1 className="font-bebas text-4xl text-theme-text tracking-wider">
+              <h1 className="font-bebas text-4xl text-theme-text tracking-wider flex items-center gap-2">
                 {fighter.full_name}
+                {(fighter.fighter_verified || fighter.coach_verified || fighter.verified) && <VerifiedBadge size={22} />}
               </h1>
               {fighter.handle && (
                 <p className="font-barlow text-sm text-theme-text/50 mt-0.5">

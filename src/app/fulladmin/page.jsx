@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import Avatar from '@/components/Avatar';
 import Icon from '@/components/Icon';
 import EventsManager from '@/components/EventsManager';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 export default function FullAdminDashboard() {
   const router = useRouter();
@@ -39,6 +40,9 @@ export default function FullAdminDashboard() {
   const [adminUsers, setAdminUsers] = useState([]);
   const [createAdminModal, setCreateAdminModal] = useState(null);
   const [resetAdminPwModal, setResetAdminPwModal] = useState(null);
+
+  // Verification
+  const [pendingVerifications, setPendingVerifications] = useState([]);
 
   // UI states
   const [actionLoading, setActionLoading] = useState(null);
@@ -147,6 +151,7 @@ export default function FullAdminDashboard() {
     if (admin) {
       fetchData().then(() => setLastRefresh(new Date()));
       fetchAdmins();
+      fetchVerifications();
     }
   }, [admin, fetchData]);
 
@@ -274,6 +279,27 @@ export default function FullAdminDashboard() {
       const data = await res.json();
       if (res.ok) setAdminUsers(data.admins || []);
     } catch { /* ignore */ }
+  }
+
+  async function fetchVerifications() {
+    try {
+      const res = await fetch('/api/fulladmin/verification');
+      const data = await res.json();
+      if (res.ok) setPendingVerifications(data.pending || []);
+    } catch { /* ignore */ }
+  }
+
+  async function handleVerification(item, action) {
+    setActionLoading(item.id + item.type);
+    try {
+      await fetch('/api/fulladmin/verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: item.id, table: item.table, field: item.field, requestField: item.requestField, action }),
+      });
+      await fetchVerifications();
+    } catch { /* ignore */ }
+    setActionLoading(null);
   }
 
   async function handleCreateAdmin() {
@@ -439,6 +465,7 @@ export default function FullAdminDashboard() {
     { id: 'users', label: 'Todos Usuários', count: stats.total },
     { id: 'bindings', label: 'Vínculos', count: stats.pendingBindings },
     { id: 'admins', label: 'Admins', count: adminUsers.length },
+    { id: 'verification', label: 'Verificações', count: pendingVerifications.length },
     { id: 'events', label: 'Eventos' },
   ];
 
@@ -553,7 +580,7 @@ export default function FullAdminDashboard() {
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <Avatar name={user.full_name} size={40} />
                       <div className="flex-1 min-w-0">
-                        <p className="font-barlow-condensed text-white font-semibold truncate">{user.full_name}</p>
+                        <p className="font-barlow-condensed text-white font-semibold truncate flex items-center gap-1.5">{user.full_name} {(user.verified || user.fighter_verified || user.coach_verified) && <VerifiedBadge size={14} />}</p>
                         <div className="flex items-center gap-2 flex-wrap">
                           {user.handle && (
                             <span className="font-barlow text-white/30 text-xs">@{user.handle}</span>
@@ -641,7 +668,7 @@ export default function FullAdminDashboard() {
                           <div className="flex items-center gap-3">
                             <Avatar name={user.full_name} url={user.avatar_url} size={36} />
                             <div className="min-w-0">
-                              <p className="font-barlow-condensed text-white font-semibold truncate text-sm">{user.full_name}</p>
+                              <p className="font-barlow-condensed text-white font-semibold truncate text-sm flex items-center gap-1.5">{user.full_name} {(user.verified || user.fighter_verified || user.coach_verified) && <VerifiedBadge size={13} />}</p>
                               {user.handle && <p className="font-barlow text-white/30 text-xs">@{user.handle}</p>}
                             </div>
                           </div>
@@ -872,6 +899,57 @@ export default function FullAdminDashboard() {
         )}
 
         {/* Tab: Events */}
+        {/* Tab: Verification */}
+        {activeTab === 'verification' && (
+          <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+            <div className="p-5 border-b border-white/5">
+              <h2 className="font-bebas text-xl tracking-wider text-white">SOLICITAÇÕES DE VERIFICAÇÃO</h2>
+            </div>
+            {pendingVerifications.length > 0 ? (
+              <div className="divide-y divide-white/5">
+                {pendingVerifications.map((item) => (
+                  <div key={item.id + item.type} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white/[0.02] transition-colors">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <Avatar name={item.name} url={item.avatar_url} size={40} />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-barlow-condensed text-white font-semibold truncate">{item.name}</p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {item.handle && <span className="font-barlow text-white/30 text-xs">@{item.handle}</span>}
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border bg-[#1D9BF0]/10 border-[#1D9BF0]/30 text-[#1D9BF0]">
+                            {item.label}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 sm:ml-4">
+                      <button
+                        onClick={() => handleVerification(item, 'approve')}
+                        disabled={actionLoading === item.id + item.type}
+                        className="px-3 py-1.5 rounded-lg bg-[#1D9BF0]/10 border border-[#1D9BF0]/30 text-[#1D9BF0] hover:bg-[#1D9BF0]/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider disabled:opacity-50 flex items-center gap-1.5"
+                      >
+                        <VerifiedBadge size={12} />
+                        {actionLoading === item.id + item.type ? '...' : 'Verificar'}
+                      </button>
+                      <button
+                        onClick={() => handleVerification(item, 'reject')}
+                        disabled={actionLoading === item.id + item.type}
+                        className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider disabled:opacity-50"
+                      >
+                        {actionLoading === item.id + item.type ? '...' : 'Rejeitar'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-12 text-center">
+                <VerifiedBadge size={32} className="mx-auto mb-2 opacity-30" />
+                <p className="font-barlow text-white/40 text-sm">Nenhuma solicitação de verificação pendente.</p>
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === 'events' && (
           <EventsManager />
         )}
