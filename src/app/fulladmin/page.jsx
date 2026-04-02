@@ -595,14 +595,13 @@ export default function FullAdminDashboard() {
           <div className="space-y-4">
             {/* Search & Filter */}
             <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex-1 relative">
-                <Icon name="search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+              <div className="flex-1">
                 <input
                   type="text"
                   placeholder="Buscar por nome ou @handle..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm pl-10 pr-4 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-white/25"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-4 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-white/25"
                 />
               </div>
               <div className="flex gap-2">

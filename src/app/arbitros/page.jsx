@@ -50,11 +50,10 @@ export default function ArbitrosPage() {
         <p className="font-barlow text-theme-text/50 mt-2">Árbitros e juízes cadastrados na plataforma</p>
       </div>
 
-      <div className="max-w-md mx-auto mb-10 relative">
-        <Icon name="search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-theme-text/30" />
+      <div className="max-w-md mx-auto mb-10">
         <input
-          type="text" placeholder="Buscar árbitro..." value={search} onChange={(e) => setSearch(e.target.value)}
-          className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg text-theme-text font-barlow text-sm pl-10 pr-4 py-3 focus:border-brand-red/50 outline-none transition-colors placeholder:text-theme-text/25"
+          type="text" placeholder="Buscar por nome, registro ou @handle..." value={search} onChange={(e) => setSearch(e.target.value)}
+          className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg text-theme-text font-barlow text-sm px-4 py-3 focus:border-brand-red/50 outline-none transition-colors placeholder:text-theme-text/25"
         />
       </div>
 
