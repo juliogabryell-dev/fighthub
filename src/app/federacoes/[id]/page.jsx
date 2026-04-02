@@ -43,6 +43,7 @@ export default async function FederacaoDetailPage({ params }) {
             </div>
             <div className="text-center sm:text-left">
               <h1 className="font-bebas text-3xl text-theme-text tracking-wider">{item.official_name}</h1>
+              {item.owner?.handle && <p className="font-barlow text-sm text-theme-text/50">@{item.owner.handle}</p>}
               {item.abbreviation && <p className="font-barlow-condensed text-brand-gold uppercase tracking-wider text-sm">{item.abbreviation}</p>}
               {item.city && (
                 <p className="font-barlow text-sm text-theme-text/40 mt-1 flex items-center gap-1">

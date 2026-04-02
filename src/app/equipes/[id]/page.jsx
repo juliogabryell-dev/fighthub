@@ -34,7 +34,8 @@ export default async function EquipeDetailPage({ params }) {
             </div>
             <div className="text-center sm:text-left">
               <h1 className="font-bebas text-3xl text-theme-text tracking-wider">{item.name}</h1>
-              {item.trade_name && <p className="font-barlow text-sm text-theme-text/50">{item.trade_name}</p>}
+              {item.owner?.handle && <p className="font-barlow text-sm text-theme-text/50">@{item.owner.handle}</p>}
+              {item.trade_name && <p className="font-barlow text-sm text-theme-text/40">{item.trade_name}</p>}
               {item.city && <p className="font-barlow text-sm text-theme-text/40 mt-1 flex items-center gap-1"><Icon name="map-pin" size={14} /> {[item.city, item.state, item.country].filter(Boolean).join(', ')}</p>}
               {item.founding_date && <p className="font-barlow text-xs text-theme-text/30 mt-1">Fundada em {new Date(item.founding_date).toLocaleDateString('pt-BR')}</p>}
             </div>

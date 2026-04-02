@@ -30,7 +30,8 @@ export default function FederacoesPage() {
     ? items.filter((f) =>
         f.official_name?.toLowerCase().includes(term) ||
         f.abbreviation?.toLowerCase().includes(term) ||
-        f.city?.toLowerCase().includes(term))
+        f.city?.toLowerCase().includes(term) ||
+        f.owner?.handle?.toLowerCase().includes(term.replace(/^@/, '')))
     : items;
 
   return (
@@ -71,6 +72,9 @@ export default function FederacoesPage() {
                     <h3 className="font-bebas text-xl text-theme-text tracking-wide truncate group-hover:text-brand-red transition-colors">
                       {item.official_name}
                     </h3>
+                    {item.owner?.handle && (
+                      <p className="text-xs text-theme-text/40 font-barlow truncate">@{item.owner.handle}</p>
+                    )}
                     {item.abbreviation && (
                       <p className="text-xs text-brand-gold font-barlow-condensed uppercase tracking-wider">{item.abbreviation}</p>
                     )}

@@ -29,7 +29,8 @@ export default function MatchMakersPage() {
   const filtered = term
     ? items.filter((m) =>
         m.owner?.full_name?.toLowerCase().includes(term) ||
-        m.owner?.city?.toLowerCase().includes(term))
+        m.owner?.city?.toLowerCase().includes(term) ||
+        m.owner?.handle?.toLowerCase().includes(term.replace(/^@/, '')))
     : items;
 
   const SPEC_LABELS = { amador: 'Amador', profissional: 'Profissional', internacional: 'Internacional' };

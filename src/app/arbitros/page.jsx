@@ -30,7 +30,8 @@ export default function ArbitrosPage() {
     ? items.filter((r) =>
         r.owner?.full_name?.toLowerCase().includes(term) ||
         r.license_number?.toLowerCase().includes(term) ||
-        r.city?.toLowerCase().includes(term))
+        r.city?.toLowerCase().includes(term) ||
+        r.owner?.handle?.toLowerCase().includes(term.replace(/^@/, '')))
     : items;
 
   const LEVEL_LABELS = { regional: 'Regional', nacional: 'Nacional', internacional: 'Internacional' };

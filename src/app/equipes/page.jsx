@@ -30,7 +30,8 @@ export default function EquipesPage() {
     ? items.filter((t) =>
         t.name?.toLowerCase().includes(term) ||
         t.trade_name?.toLowerCase().includes(term) ||
-        t.city?.toLowerCase().includes(term))
+        t.city?.toLowerCase().includes(term) ||
+        t.owner?.handle?.toLowerCase().includes(term.replace(/^@/, '')))
     : items;
 
   return (
@@ -66,7 +67,8 @@ export default function EquipesPage() {
                   <Avatar name={item.name} url={item.logo_url} size={48} />
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bebas text-xl text-theme-text tracking-wide truncate group-hover:text-brand-red transition-colors">{item.name}</h3>
-                    {item.trade_name && <p className="text-xs text-theme-text/40 font-barlow truncate">{item.trade_name}</p>}
+                    {item.owner?.handle && <p className="text-xs text-theme-text/40 font-barlow truncate">@{item.owner.handle}</p>}
+                    {item.trade_name && <p className="text-xs text-theme-text/35 font-barlow truncate">{item.trade_name}</p>}
                   </div>
                 </div>
                 {item.city && (
