@@ -373,18 +373,10 @@ export default function LutadoresPage() {
             })()}
 
             {/* Record - Total */}
-            <div className="mb-4">
+            <div className="mb-8">
               <h3 className="font-barlow-condensed text-[#D4AF37] uppercase tracking-widest text-sm font-semibold mb-3">CARTEL GERAL</h3>
               <FightRecordDisplay records={selectedFighter.fight_records || []} size="md" />
             </div>
-
-            {/* Record - By Modality */}
-            {selectedFighter.fight_records && selectedFighter.fight_records.length > 0 && (
-              <div className="mb-8">
-                <h3 className="font-barlow-condensed text-[#D4AF37] uppercase tracking-widest text-sm font-semibold mb-3">CARTEL POR MODALIDADE</h3>
-                <FightRecordByModality records={selectedFighter.fight_records} modalities={selectedFighter.fighter_martial_arts || []} />
-              </div>
-            )}
 
             {/* Martial Arts with Coaches/Academies */}
             {selectedFighter.fighter_martial_arts && selectedFighter.fighter_martial_arts.length > 0 && (
@@ -416,6 +408,36 @@ export default function LutadoresPage() {
                             })()}
                           </div>
                         </div>
+
+                        {/* Fight record for this modality */}
+                        {(() => {
+                          const modRecords = (selectedFighter.fight_records || []).filter(r => r.modality === fma.art_name);
+                          if (modRecords.length === 0 || !modRecords.some(r => (r.wins||0)+(r.losses||0)+(r.draws||0)+(r.no_contest||0) > 0)) return null;
+                          const cats = [
+                            { key: 'profissional', label: 'PRO' },
+                            { key: 'semi_profissional', label: 'SEMI' },
+                            { key: 'amador', label: 'AMA' },
+                          ];
+                          return (
+                            <div className="mt-3 pt-3 border-t border-theme-border/[0.06]">
+                              <div className="flex flex-wrap gap-x-5 gap-y-1">
+                                {cats.map(({ key, label }) => {
+                                  const rec = modRecords.find(r => (r.category || 'amador') === key);
+                                  if (!rec || ((rec.wins||0)+(rec.losses||0)+(rec.draws||0)+(rec.no_contest||0)) === 0) return null;
+                                  return (
+                                    <span key={key} className="font-barlow text-[11px] text-theme-text/30">
+                                      <span className="font-barlow-condensed text-theme-text/50 uppercase tracking-wider">{label}:</span>{' '}
+                                      <span className="text-green-400/70">{rec.wins||0}V</span>{' '}
+                                      <span className="text-[#C41E3A]/70">{rec.losses||0}D</span>{' '}
+                                      <span className="text-[#D4AF37]/70">{rec.draws||0}E</span>{' '}
+                                      <span className="text-theme-text/25">{rec.no_contest||0}NC</span>
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })()}
 
                         {/* Coaches - clickable to slide */}
                         {activeCoaches.length > 0 && (

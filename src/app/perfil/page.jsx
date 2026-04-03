@@ -1577,6 +1577,31 @@ export default function PerfilPage() {
                       </p>
                     )}
 
+                    {/* Fight record summary for this modality */}
+                    {(() => {
+                      const artRecords = fightRecords.filter(r => r.modality === art.art_name);
+                      if (artRecords.length === 0) return null;
+                      const categories = ['profissional', 'semi_profissional', 'amador'];
+                      return (
+                        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+                          {categories.map(cat => {
+                            const rec = artRecords.find(r => (r.category || 'amador') === cat);
+                            if (!rec || ((rec.wins || 0) + (rec.losses || 0) + (rec.draws || 0) + (rec.no_contest || 0)) === 0) return null;
+                            const label = { profissional: 'PRO', semi_profissional: 'SEMI', amador: 'AMA' }[cat];
+                            return (
+                              <span key={cat} className="font-barlow text-[11px] text-theme-text/30">
+                                <span className="font-barlow-condensed text-theme-text/50 uppercase tracking-wider">{label}:</span>{' '}
+                                <span className="text-green-400/70">{rec.wins || 0}V</span>{' '}
+                                <span className="text-[#C41E3A]/70">{rec.losses || 0}D</span>{' '}
+                                <span className="text-[#D4AF37]/70">{rec.draws || 0}E</span>{' '}
+                                <span className="text-theme-text/25">{rec.no_contest || 0}NC</span>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
+
                     {/* Coaches for this modality */}
                     <div className="mt-3 pt-3 border-t border-theme-border/5">
                       <p className="font-barlow-condensed text-xs uppercase tracking-widest text-[#D4AF37]/60 mb-2">
