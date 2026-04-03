@@ -146,67 +146,68 @@ function EventCard({ event, formatDate, onOpen }) {
   const mainImage = event.event_images?.[0];
 
   return (
-    <div>
-      {/* Card - clickable to open modal */}
-      <button onClick={() => onOpen(event.id)} className="block w-full text-left">
-        <div className="group relative bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-theme-border/10 overflow-hidden hover:border-brand-red/30 transition-all duration-300 cursor-pointer">
-          <div className="aspect-[16/10] overflow-hidden bg-theme-text/5 relative">
-            {mainImage ? (
-              <img
-                src={mainImage.image_url}
-                alt={event.title}
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="text-theme-text/10">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" />
-                </svg>
-              </div>
-            )}
-          </div>
-          <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm rounded-lg px-3 py-1.5 border border-white/10">
-            <span className="font-barlow-condensed text-xs text-brand-gold uppercase tracking-wider font-semibold">
-              {formatDate(event.event_date)}
-            </span>
-          </div>
-        </div>
-      </button>
-
-      {/* Links */}
-      {(event.payment_link || event.external_link) && (
-        <div className="flex gap-2 mt-2 px-1">
-          {event.payment_link && (
-            <a href={event.payment_link} target="_blank" rel="noopener noreferrer" className="bg-green-500/90 rounded-lg px-3 py-1.5 border border-green-400/20 font-barlow-condensed text-xs text-white uppercase tracking-wider font-semibold hover:bg-green-500 transition-colors">
-              Inscreva-se
-            </a>
+    <button onClick={() => onOpen(event.id)} className="block w-full text-left h-full">
+      <div className="card-hover bg-gradient-to-b from-dark-card to-dark-card2 rounded-xl border border-theme-border/5 overflow-hidden transition-all duration-300 hover:border-brand-red/30 group h-full">
+        {/* Image Area */}
+        <div className="relative h-44 overflow-hidden">
+          {mainImage ? (
+            <img
+              src={mainImage.image_url}
+              alt={event.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-dark-card2 to-dark-bg flex items-center justify-center">
+              <span className="text-5xl opacity-30">🥊</span>
+            </div>
           )}
-          {event.external_link && (
-            <a href={event.external_link} target="_blank" rel="noopener noreferrer" className="bg-theme-text/5 rounded-lg px-3 py-1.5 border border-theme-border/10 font-barlow-condensed text-xs text-theme-text/60 uppercase tracking-wider font-semibold hover:bg-theme-text/10 transition-colors">
-              Saiba Mais
-            </a>
+          {/* Date Tag */}
+          <span className="absolute top-3 left-3 bg-brand-red/90 text-white text-[10px] font-barlow-condensed uppercase tracking-wider px-2.5 py-1 rounded-full font-semibold backdrop-blur-sm">
+            {formatDate(event.event_date)}
+          </span>
+          {/* Links */}
+          {(event.payment_link || event.external_link) && (
+            <div className="absolute bottom-3 left-3 flex gap-1.5">
+              {event.payment_link && (
+                <span className="bg-green-500/90 backdrop-blur-sm text-white text-[9px] font-barlow-condensed uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold">
+                  Inscreva-se
+                </span>
+              )}
+              {event.external_link && (
+                <span className="bg-white/20 backdrop-blur-sm text-white text-[9px] font-barlow-condensed uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold">
+                  Saiba Mais
+                </span>
+              )}
+            </div>
           )}
         </div>
-      )}
 
-      {/* Title + Venue + Description */}
-      <button onClick={() => onOpen(event.id)} className="block mt-3 px-1 text-left group w-full">
-        <h3 className="font-bebas text-xl text-theme-text tracking-wider leading-tight group-hover:text-brand-red transition-colors">
-          {event.title}
-        </h3>
-        {(event.venue_name || event.venue_city) && (
-          <p className="font-barlow text-xs text-theme-text/40 mt-1 flex items-center gap-1">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-theme-text/30 flex-shrink-0">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
-            </svg>
-            {[event.venue_name, event.venue_city].filter(Boolean).join(' - ')}
-          </p>
-        )}
-        <p className="font-barlow text-sm text-theme-text/50 mt-1 line-clamp-2">
-          {event.description_short}
-        </p>
-      </button>
-    </div>
+        {/* Content */}
+        <div className="p-4">
+          {/* Venue */}
+          {(event.venue_name || event.venue_city) && (
+            <p className="text-[11px] text-theme-text/30 font-barlow-condensed uppercase tracking-wider mb-1.5 flex items-center gap-1 truncate">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-theme-text/25 flex-shrink-0">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
+              </svg>
+              {[event.venue_name, event.venue_city].filter(Boolean).join(' - ')}
+            </p>
+          )}
+
+          {/* Title */}
+          <h3 className="font-bebas text-lg text-theme-text tracking-wide leading-tight mb-2 group-hover:text-brand-red transition-colors line-clamp-2">
+            {event.title}
+          </h3>
+
+          {/* Description */}
+          {event.description_short && (
+            <p className="text-xs text-theme-text/40 font-barlow leading-relaxed line-clamp-3">
+              {event.description_short}
+            </p>
+          )}
+        </div>
+      </div>
+    </button>
   );
 }
 
