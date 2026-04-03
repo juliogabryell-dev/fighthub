@@ -4,6 +4,7 @@ import Icon from '@/components/Icon';
 import { createClient } from '@supabase/supabase-js';
 import ChallengeButton from './ChallengeButton';
 import FightRecordDisplay from '@/components/FightRecordDisplay';
+import FightRecordByModality from '@/components/FightRecordByModality';
 import VerifiedBadge from '@/components/VerifiedBadge';
 
 export const dynamic = 'force-dynamic';
@@ -280,10 +281,19 @@ export default async function FighterProfile({ params }) {
 
         {/* Content */}
         <div className="p-10">
-          {/* Record Display */}
-          <div className="mb-10">
+          {/* Record Display - Total */}
+          <div className="mb-6">
+            <h3 className="font-barlow-condensed text-brand-gold uppercase tracking-widest text-sm font-semibold mb-3">CARTEL GERAL</h3>
             <FightRecordDisplay records={records} size="lg" />
           </div>
+
+          {/* Record Display - By Modality */}
+          {records.length > 0 && (
+            <div className="mb-10">
+              <h3 className="font-barlow-condensed text-brand-gold uppercase tracking-widest text-sm font-semibold mb-3">CARTEL POR MODALIDADE</h3>
+              <FightRecordByModality records={records} modalities={fighter.fighter_martial_arts || []} />
+            </div>
+          )}
 
           {/* Martial Arts Section with Coaches/Academies per modality */}
           {fighter.fighter_martial_arts && fighter.fighter_martial_arts.length > 0 && (

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import Avatar from '@/components/Avatar';
 import Icon from '@/components/Icon';
 import FightRecordDisplay from '@/components/FightRecordDisplay';
+import FightRecordByModality from '@/components/FightRecordByModality';
 import VerifiedBadge from '@/components/VerifiedBadge';
 
 function isPublic(profile, field) {
@@ -371,10 +372,19 @@ export default function LutadoresPage() {
               ) : null;
             })()}
 
-            {/* Record */}
-            <div className="mb-8">
+            {/* Record - Total */}
+            <div className="mb-4">
+              <h3 className="font-barlow-condensed text-[#D4AF37] uppercase tracking-widest text-sm font-semibold mb-3">CARTEL GERAL</h3>
               <FightRecordDisplay records={selectedFighter.fight_records || []} size="md" />
             </div>
+
+            {/* Record - By Modality */}
+            {selectedFighter.fight_records && selectedFighter.fight_records.length > 0 && (
+              <div className="mb-8">
+                <h3 className="font-barlow-condensed text-[#D4AF37] uppercase tracking-widest text-sm font-semibold mb-3">CARTEL POR MODALIDADE</h3>
+                <FightRecordByModality records={selectedFighter.fight_records} modalities={selectedFighter.fighter_martial_arts || []} />
+              </div>
+            )}
 
             {/* Martial Arts with Coaches/Academies */}
             {selectedFighter.fighter_martial_arts && selectedFighter.fighter_martial_arts.length > 0 && (

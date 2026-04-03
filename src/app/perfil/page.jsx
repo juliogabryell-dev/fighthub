@@ -93,6 +93,11 @@ export default function PerfilPage() {
     level: '',
     started_at: '',
     description: '',
+    records: {
+      profissional: { wins: 0, losses: 0, draws: 0, no_contest: 0 },
+      semi_profissional: { wins: 0, losses: 0, draws: 0, no_contest: 0 },
+      amador: { wins: 0, losses: 0, draws: 0, no_contest: 0 },
+    },
   });
 
   // Videos (Fighter)
@@ -268,19 +273,41 @@ export default function PerfilPage() {
   }
 
   // ===== Martial Arts =====
+  const emptyRecords = {
+    profissional: { wins: 0, losses: 0, draws: 0, no_contest: 0 },
+    semi_profissional: { wins: 0, losses: 0, draws: 0, no_contest: 0 },
+    amador: { wins: 0, losses: 0, draws: 0, no_contest: 0 },
+  };
+
   function openAddArt() {
     setEditingArtId(null);
-    setArtForm({ art_name: '', level: '', started_at: '', description: '' });
+    setArtForm({ art_name: '', level: '', started_at: '', description: '', records: { ...emptyRecords } });
     setShowArtModal(true);
   }
 
-  function openEditArt(art) {
+  async function openEditArt(art) {
     setEditingArtId(art.id);
+    // Load fight records for this modality
+    const { data: records } = await supabase
+      .from('fight_records')
+      .select('*')
+      .eq('fighter_id', user.id)
+      .eq('modality', art.art_name);
+
+    const loaded = { ...emptyRecords };
+    for (const r of (records || [])) {
+      const cat = r.category || 'amador';
+      if (loaded[cat]) {
+        loaded[cat] = { wins: r.wins || 0, losses: r.losses || 0, draws: r.draws || 0, no_contest: r.no_contest || 0 };
+      }
+    }
+
     setArtForm({
       art_name: art.art_name || '',
       level: art.level || '',
       started_at: art.started_at || '',
       description: art.description || '',
+      records: loaded,
     });
     setShowArtModal(true);
   }
@@ -307,6 +334,40 @@ export default function PerfilPage() {
     }
 
     if (!error) {
+      // Save fight records for each category
+      const categories = ['profissional', 'semi_profissional', 'amador'];
+      for (const cat of categories) {
+        const rec = artForm.records[cat];
+        const { data: existing } = await supabase
+          .from('fight_records')
+          .select('id')
+          .eq('fighter_id', user.id)
+          .eq('modality', artForm.art_name)
+          .eq('category', cat)
+          .single();
+
+        const hasData = (rec.wins || 0) + (rec.losses || 0) + (rec.draws || 0) + (rec.no_contest || 0) > 0;
+
+        if (existing) {
+          await supabase.from('fight_records').update({
+            wins: parseInt(rec.wins) || 0,
+            losses: parseInt(rec.losses) || 0,
+            draws: parseInt(rec.draws) || 0,
+            no_contest: parseInt(rec.no_contest) || 0,
+          }).eq('id', existing.id);
+        } else if (hasData) {
+          await supabase.from('fight_records').insert({
+            fighter_id: user.id,
+            modality: artForm.art_name,
+            category: cat,
+            wins: parseInt(rec.wins) || 0,
+            losses: parseInt(rec.losses) || 0,
+            draws: parseInt(rec.draws) || 0,
+            no_contest: parseInt(rec.no_contest) || 0,
+          });
+        }
+      }
+
       setShowArtModal(false);
       fetchUserAndProfile();
     }
@@ -2212,7 +2273,7 @@ export default function PerfilPage() {
 
       {/* Add/Edit Martial Art Modal (Fighter) */}
       {showArtModal && (
-        <Modal onClose={() => setShowArtModal(false)} title={editingArtId ? 'Editar Modalidade' : 'Adicionar Modalidade'}>
+        <Modal onClose={() => setShowArtModal(false)} title={editingArtId ? 'Editar Modalidade' : 'Adicionar Modalidade'} maxWidth="max-w-2xl">
           <form onSubmit={handleSaveMartialArt} className="space-y-4">
             <InputField
               label="Nome da Modalidade"
@@ -2222,36 +2283,72 @@ export default function PerfilPage() {
               placeholder="Ex: Muay Thai, Jiu-Jitsu, Boxe"
               required
             />
-            <InputField
-              label="Nivel"
-              type="text"
-              value={artForm.level}
-              onChange={(e) => setArtForm({ ...artForm, level: e.target.value })}
-              placeholder="Ex: Iniciante, Intermediario, Avancado"
-              required
-            />
-            <InputField
-              label="Data de Inicio"
-              type="date"
-              value={artForm.started_at}
-              onChange={(e) =>
-                setArtForm({ ...artForm, started_at: e.target.value })
-              }
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <InputField
+                label="Nivel"
+                type="text"
+                value={artForm.level}
+                onChange={(e) => setArtForm({ ...artForm, level: e.target.value })}
+                placeholder="Ex: Iniciante, Intermediario"
+                required
+              />
+              <InputField
+                label="Data de Inicio"
+                type="date"
+                value={artForm.started_at}
+                onChange={(e) => setArtForm({ ...artForm, started_at: e.target.value })}
+              />
+            </div>
             <div>
-              <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/50 mb-2">
-                Descricao
-              </label>
+              <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/50 mb-2">Descricao</label>
               <textarea
                 value={artForm.description}
-                onChange={(e) =>
-                  setArtForm({ ...artForm, description: e.target.value })
-                }
-                rows={3}
+                onChange={(e) => setArtForm({ ...artForm, description: e.target.value })}
+                rows={2}
                 placeholder="Conte um pouco sobre sua experiência..."
                 className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg px-4 py-3 text-theme-text font-barlow text-sm placeholder:text-theme-text/20 focus:outline-none focus:border-[#C41E3A]/50 transition-colors resize-none"
               />
             </div>
+
+            {/* Fight Records per category */}
+            <div className="border-t border-theme-border/10 pt-4">
+              <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/40 mb-3 font-semibold">Cartel</p>
+              {[
+                { key: 'profissional', label: 'Profissional' },
+                { key: 'semi_profissional', label: 'Semi Profissional' },
+                { key: 'amador', label: 'Amador' },
+              ].map(({ key, label }) => (
+                <div key={key} className="mb-3">
+                  <p className="font-barlow-condensed text-[11px] uppercase tracking-wider text-theme-text/50 mb-1.5">{label}</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      { field: 'wins', label: 'V', color: 'text-green-400 border-green-500/20' },
+                      { field: 'losses', label: 'D', color: 'text-[#C41E3A] border-[#C41E3A]/20' },
+                      { field: 'draws', label: 'E', color: 'text-[#D4AF37] border-[#D4AF37]/20' },
+                      { field: 'no_contest', label: 'NC', color: 'text-theme-text/40 border-theme-border/10' },
+                    ].map(({ field, label: fl, color }) => (
+                      <div key={field} className="relative">
+                        <label className={`absolute top-1 left-2 text-[9px] font-barlow-condensed uppercase tracking-wider ${color.split(' ')[0]}`}>{fl}</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={artForm.records[key][field]}
+                          onChange={(e) => setArtForm({
+                            ...artForm,
+                            records: {
+                              ...artForm.records,
+                              [key]: { ...artForm.records[key], [field]: e.target.value },
+                            },
+                          })}
+                          className={`w-full bg-theme-text/5 border ${color.split(' ')[1]} rounded-lg px-3 pt-5 pb-2 text-theme-text font-bebas text-lg text-center focus:outline-none focus:border-[#C41E3A]/50 transition-colors`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
             <button
               type="submit"
               className="w-full py-3 rounded-lg bg-gradient-to-r from-[#C41E3A] to-[#a01830] text-white font-barlow-condensed uppercase tracking-widest text-sm font-semibold hover:from-[#d42a46] hover:to-[#b82040] transition-all"
