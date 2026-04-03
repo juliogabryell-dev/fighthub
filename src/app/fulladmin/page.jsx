@@ -982,21 +982,47 @@ export default function FullAdminDashboard() {
             </div>
             <div className="space-y-2">
               {[
-                ['Data de Nascimento', formatDate(selectedUser.birth_date)],
-                ['CPF', selectedUser.cpf || 'Não informado'],
-                ['RG', selectedUser.rg || 'Não informado'],
-                ['CPF/CNPJ', selectedUser.cpf_cnpj || 'Não informado'],
-                ['Telefone', selectedUser.phone || 'Não informado'],
-                ['Cidade', selectedUser.city || 'Não informado'],
-                ['Estado', selectedUser.state || 'Não informado'],
                 ['Status', selectedUser.status],
                 ['Cadastrado em', formatDate(selectedUser.created_at)],
-              ].map(([label, value]) => (
+                ['Data de Nascimento', formatDate(selectedUser.birth_date)],
+                ['CPF', selectedUser.cpf],
+                ['RG', selectedUser.rg],
+                ['CPF/CNPJ', selectedUser.cpf_cnpj],
+                ['Telefone', selectedUser.phone],
+                ['WhatsApp', selectedUser.whatsapp],
+                ['Cidade', selectedUser.city],
+                ['Estado', selectedUser.state],
+                ['Altura', selectedUser.height_cm ? `${selectedUser.height_cm} cm` : null],
+                ['Peso', selectedUser.weight_kg ? `${selectedUser.weight_kg} kg` : null],
+                ['Tipo Sanguíneo', selectedUser.blood_type],
+                ['Instagram', selectedUser.instagram],
+                ['Facebook', selectedUser.facebook],
+                ['YouTube', selectedUser.youtube],
+                ['TikTok', selectedUser.tiktok],
+              ].filter(([, value]) => value).map(([label, value]) => (
                 <div key={label} className="flex justify-between items-center py-2 border-b border-white/5">
                   <span className="font-barlow text-white/40 text-sm">{label}</span>
-                  <span className={`font-barlow text-sm ${label === 'Status' ? getStatusColor(value).split(' ')[0] : 'text-white'}`}>{value}</span>
+                  <span className={`font-barlow text-sm text-right max-w-[60%] truncate ${label === 'Status' ? getStatusColor(value).split(' ')[0] : 'text-white'}`}>{value}</span>
                 </div>
               ))}
+              {/* Verification Status */}
+              <div className="pt-2 flex flex-wrap gap-2">
+                {selectedUser.fighter_verified && (
+                  <span className="text-[10px] font-barlow-condensed uppercase tracking-wider px-2 py-1 rounded-full bg-[#1D9BF0]/10 border border-[#1D9BF0]/30 text-[#1D9BF0] flex items-center gap-1">
+                    <VerifiedBadge size={10} /> Lutador Verificado
+                  </span>
+                )}
+                {selectedUser.coach_verified && (
+                  <span className="text-[10px] font-barlow-condensed uppercase tracking-wider px-2 py-1 rounded-full bg-[#1D9BF0]/10 border border-[#1D9BF0]/30 text-[#1D9BF0] flex items-center gap-1">
+                    <VerifiedBadge size={10} /> Treinador Verificado
+                  </span>
+                )}
+                {selectedUser.verified && (
+                  <span className="text-[10px] font-barlow-condensed uppercase tracking-wider px-2 py-1 rounded-full bg-[#1D9BF0]/10 border border-[#1D9BF0]/30 text-[#1D9BF0] flex items-center gap-1">
+                    <VerifiedBadge size={10} /> Verificado
+                  </span>
+                )}
+              </div>
               {selectedUser.bio && (
                 <div className="pt-2">
                   <span className="font-barlow text-white/40 text-sm">Bio</span>
