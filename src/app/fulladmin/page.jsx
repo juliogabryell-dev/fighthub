@@ -44,6 +44,7 @@ export default function FullAdminDashboard() {
 
   // Verification
   const [pendingVerifications, setPendingVerifications] = useState([]);
+  const [pendingProfileChanges, setPendingProfileChanges] = useState([]);
 
   // UI states
   const [actionLoading, setActionLoading] = useState(null);
@@ -153,6 +154,7 @@ export default function FullAdminDashboard() {
       fetchData().then(() => setLastRefresh(new Date()));
       fetchAdmins();
       fetchVerifications();
+      fetchPendingChanges();
     }
   }, [admin, fetchData]);
 
@@ -288,6 +290,28 @@ export default function FullAdminDashboard() {
       const data = await res.json();
       if (res.ok) setPendingVerifications(data.pending || []);
     } catch { /* ignore */ }
+  }
+
+  async function fetchPendingChanges() {
+    try {
+      const res = await fetch('/api/fulladmin/pending-changes');
+      const data = await res.json();
+      if (res.ok) setPendingProfileChanges(data.changes || []);
+    } catch { /* ignore */ }
+  }
+
+  async function handlePendingChange(changeId, action) {
+    setActionLoading('pc-' + changeId);
+    try {
+      await fetch('/api/fulladmin/pending-changes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: changeId, action }),
+      });
+      await fetchPendingChanges();
+      await fetchData();
+    } catch { /* ignore */ }
+    setActionLoading(null);
   }
 
   async function handleVerification(item, action) {
@@ -467,6 +491,7 @@ export default function FullAdminDashboard() {
     { id: 'bindings', label: 'Vínculos', count: stats.pendingBindings },
     { id: 'admins', label: 'Admins', count: adminUsers.length },
     { id: 'verification', label: 'Verificações', count: pendingVerifications.length },
+    { id: 'profile_changes', label: 'Alt. Perfil', count: pendingProfileChanges.length },
     { id: 'events', label: 'Eventos' },
   ];
 
@@ -838,6 +863,100 @@ export default function FullAdminDashboard() {
               <div className="p-12 text-center">
                 <VerifiedBadge size={32} className="mx-auto mb-2 opacity-30" />
                 <p className="font-barlow text-white/40 text-sm">Nenhuma solicitação de verificação pendente.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab: Pending Profile Changes */}
+        {activeTab === 'profile_changes' && (
+          <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+            <div className="p-5 border-b border-white/5">
+              <h2 className="font-bebas text-xl tracking-wider text-white">ALTERAÇÕES DE PERFIL VERIFICADO</h2>
+            </div>
+            {pendingProfileChanges.length > 0 ? (
+              <div className="divide-y divide-white/5">
+                {pendingProfileChanges.map((change) => {
+                  const TYPE_LABELS = { profile: 'Perfil', martial_art: 'Modalidade', fight_record: 'Cartel', video: 'Vídeo', experience: 'Experiência' };
+                  const ACTION_LABELS = { create: 'Novo', update: 'Edição', delete: 'Exclusão' };
+                  const ACTION_COLORS = { create: 'bg-green-500/10 border-green-500/30 text-green-400', update: 'bg-blue-500/10 border-blue-500/30 text-blue-400', delete: 'bg-red-500/10 border-red-500/30 text-red-400' };
+                  return (
+                    <div key={change.id} className="p-4 hover:bg-white/[0.02] transition-colors">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <Avatar name={change.user?.full_name} url={change.user?.avatar_url} size={40} />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-barlow-condensed text-white font-semibold truncate flex items-center gap-1.5">
+                              {change.user?.full_name}
+                              <VerifiedBadge size={14} />
+                            </p>
+                            <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                              {change.user?.handle && <span className="font-barlow text-white/30 text-xs">@{change.user.handle}</span>}
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37]">
+                                {TYPE_LABELS[change.change_type] || change.change_type}
+                              </span>
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border ${ACTION_COLORS[change.action] || ''}`}>
+                                {ACTION_LABELS[change.action] || change.action}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handlePendingChange(change.id, 'approve')}
+                            disabled={actionLoading === 'pc-' + change.id}
+                            className="px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 hover:bg-green-500/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider disabled:opacity-50"
+                          >
+                            {actionLoading === 'pc-' + change.id ? '...' : 'Aprovar'}
+                          </button>
+                          <button
+                            onClick={() => handlePendingChange(change.id, 'reject')}
+                            disabled={actionLoading === 'pc-' + change.id}
+                            className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider disabled:opacity-50"
+                          >
+                            {actionLoading === 'pc-' + change.id ? '...' : 'Rejeitar'}
+                          </button>
+                        </div>
+                      </div>
+                      {/* Show payload summary */}
+                      <div className="mt-3 p-3 bg-white/[0.02] rounded-lg border border-white/5">
+                        <p className="font-barlow-condensed text-[10px] uppercase tracking-widest text-white/30 mb-2">Dados propostos</p>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                          {change.change_type === 'profile' && Object.entries(change.payload || {}).map(([key, val]) => {
+                            if (!val || key === 'public_fields') return null;
+                            return (
+                              <div key={key} className="flex justify-between text-xs py-0.5">
+                                <span className="text-white/30 font-barlow">{key.replace(/_/g, ' ')}</span>
+                                <span className="text-white/60 font-barlow truncate ml-2 max-w-[60%] text-right">{String(val)}</span>
+                              </div>
+                            );
+                          })}
+                          {change.change_type === 'martial_art' && change.payload?.martial_art && (
+                            <>
+                              <div className="col-span-2 text-xs text-white/60 font-barlow-condensed">
+                                {change.payload.martial_art.art_name} - {change.payload.martial_art.level}
+                              </div>
+                              {change.payload.records && Object.entries(change.payload.records).map(([cat, rec]) => {
+                                const total = (parseInt(rec?.wins)||0)+(parseInt(rec?.losses)||0)+(parseInt(rec?.draws)||0)+(parseInt(rec?.no_contest)||0);
+                                if (total === 0) return null;
+                                return (
+                                  <span key={cat} className="text-[11px] text-white/40 font-barlow col-span-1">
+                                    {cat === 'profissional' ? 'PRO' : cat === 'semi_profissional' ? 'SEMI' : 'AMA'}: {rec.wins}V {rec.losses}D {rec.draws}E {rec.no_contest}NC
+                                  </span>
+                                );
+                              })}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="p-12 text-center">
+                <Icon name="check" size={32} className="text-white/15 mx-auto mb-2" />
+                <p className="font-barlow text-white/40 text-sm">Nenhuma alteração pendente de aprovação.</p>
               </div>
             )}
           </div>

@@ -10,6 +10,7 @@ import Icon from '@/components/Icon';
 import Link from 'next/link';
 import FightRecordDisplay from '@/components/FightRecordDisplay';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import { isProfileVerified } from '@/lib/isProfileVerified';
 
 export default function PerfilPage() {
   const router = useRouter();
@@ -55,6 +56,8 @@ export default function PerfilPage() {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [saving, setSaving] = useState(false);
   const [initialEditForm, setInitialEditForm] = useState(null);
+  const [pendingChanges, setPendingChanges] = useState([]);
+  const [pendingToast, setPendingToast] = useState(null);
   const fileInputRef = useRef(null);
 
   function hasUnsavedChanges() {
@@ -182,6 +185,15 @@ export default function PerfilPage() {
       .single();
 
     setProfile(profileData);
+
+    // Fetch pending changes for verified profiles
+    const { data: pending } = await supabase
+      .from('pending_profile_changes')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+    setPendingChanges(pending || []);
 
     if (profileData?.is_fighter) {
       const { data: arts } = await supabase
@@ -321,6 +333,22 @@ export default function PerfilPage() {
       description: artForm.description,
     };
 
+    if (isProfileVerified(profile)) {
+      // Verified: save as pending change
+      await supabase.from('pending_profile_changes').insert({
+        user_id: user.id,
+        change_type: 'martial_art',
+        action: editingArtId ? 'update' : 'create',
+        target_id: editingArtId || null,
+        payload: { martial_art: payload, records: artForm.records },
+      });
+      setPendingToast('Modalidade enviada para aprovação do administrador.');
+      setTimeout(() => setPendingToast(null), 5000);
+      setShowArtModal(false);
+      fetchUserAndProfile();
+      return;
+    }
+
     let error;
     if (editingArtId) {
       ({ error } = await supabase
@@ -375,6 +403,15 @@ export default function PerfilPage() {
 
   async function handleDeleteMartialArt(artId) {
     if (!confirm('Tem certeza que deseja excluir esta modalidade?')) return;
+    if (isProfileVerified(profile)) {
+      await supabase.from('pending_profile_changes').insert({
+        user_id: user.id, change_type: 'martial_art', action: 'delete', target_id: artId, payload: {},
+      });
+      setPendingToast('Exclusão enviada para aprovação do administrador.');
+      setTimeout(() => setPendingToast(null), 5000);
+      fetchUserAndProfile();
+      return;
+    }
     const { error } = await supabase
       .from('fighter_martial_arts')
       .delete()
@@ -693,21 +730,52 @@ export default function PerfilPage() {
         updateData.birth_date = editForm.birth_date || null;
       }
 
-      const { error } = await supabase
-        .from('profiles')
-        .update(updateData)
-        .eq('id', user.id);
+      if (isProfileVerified(profile)) {
+        // Verified: save as pending change (except avatar which saves directly)
+        const pendingData = { ...updateData };
+        delete pendingData.avatar_url; // avatar excluded from pending
+        delete pendingData.public_fields; // visibility settings save directly
 
-      if (error) {
-        if (error.code === '23505' && error.message?.includes('handle')) {
-          alert('Este @ já está em uso. Escolha outro.');
+        const { error: pendingError } = await supabase.from('pending_profile_changes').insert({
+          user_id: user.id,
+          change_type: 'profile',
+          action: 'update',
+          target_id: user.id,
+          payload: pendingData,
+        });
+
+        if (!pendingError) {
+          // Avatar and public_fields save directly
+          const directUpdate = { public_fields: publicFields };
+          if (avatarFile && avatar_url) directUpdate.avatar_url = avatar_url;
+          await supabase.from('profiles').update(directUpdate).eq('id', user.id);
+
+          setPendingToast('Suas alterações foram enviadas para aprovação do administrador.');
+          setTimeout(() => setPendingToast(null), 5000);
+          setInitialEditForm(null);
+          setShowEditProfile(false);
+          fetchUserAndProfile();
         } else {
-          alert('Erro ao salvar perfil: ' + error.message);
+          alert('Erro ao enviar alterações: ' + pendingError.message);
         }
       } else {
-        setInitialEditForm(null);
-        setShowEditProfile(false);
-        fetchUserAndProfile();
+        // Non-verified: save directly
+        const { error } = await supabase
+          .from('profiles')
+          .update(updateData)
+          .eq('id', user.id);
+
+        if (error) {
+          if (error.code === '23505' && error.message?.includes('handle')) {
+            alert('Este @ já está em uso. Escolha outro.');
+          } else {
+            alert('Erro ao salvar perfil: ' + error.message);
+          }
+        } else {
+          setInitialEditForm(null);
+          setShowEditProfile(false);
+          fetchUserAndProfile();
+        }
       }
     } catch (err) {
       alert('Erro inesperado: ' + err.message);
@@ -1056,6 +1124,15 @@ export default function PerfilPage() {
               EDITAR <span className="text-brand-red">PERFIL</span>
             </h1>
 
+            {isProfileVerified(profile) && (
+              <div className="mb-6 p-3 rounded-lg bg-[#1D9BF0]/10 border border-[#1D9BF0]/30 flex items-start gap-2">
+                <VerifiedBadge size={16} className="mt-0.5 flex-shrink-0" />
+                <p className="font-barlow text-sm text-[#1D9BF0]">
+                  Seu perfil é verificado. As alterações (exceto avatar) só terão efeito após aprovação do administrador.
+                </p>
+              </div>
+            )}
+
             <form onSubmit={(e) => { handleEditProfile(e); }} className="space-y-5">
               {/* Avatar Upload */}
               <div className="flex flex-col items-center gap-3">
@@ -1261,6 +1338,29 @@ export default function PerfilPage() {
             </button>
           </div>
         </div>
+
+        {/* Pending Changes Banner */}
+        {pendingChanges.length > 0 && (
+          <div className="mb-4 p-4 rounded-xl bg-[#D4AF37]/10 border border-[#D4AF37]/30">
+            <div className="flex items-center gap-2 mb-1">
+              <Icon name="clock" size={16} className="text-[#D4AF37]" />
+              <span className="font-barlow-condensed text-sm uppercase tracking-wider text-[#D4AF37] font-semibold">
+                {pendingChanges.length} alteração(ões) aguardando aprovação
+              </span>
+            </div>
+            <p className="font-barlow text-xs text-theme-text/40">
+              Como seu perfil é verificado, as alterações serão revisadas por um administrador antes de ficarem visíveis.
+            </p>
+          </div>
+        )}
+
+        {/* Toast notification */}
+        {pendingToast && (
+          <div className="mb-4 p-3 rounded-lg bg-[#1D9BF0]/10 border border-[#1D9BF0]/30 flex items-center gap-2">
+            <VerifiedBadge size={16} />
+            <p className="font-barlow text-sm text-[#1D9BF0]">{pendingToast}</p>
+          </div>
+        )}
 
         {/* Handle Banner */}
         {!profile?.handle && (
