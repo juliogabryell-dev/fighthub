@@ -25,7 +25,7 @@ const barlowCondensed = Barlow_Condensed({
 });
 
 export const metadata = {
-  title: 'FightLog - Portal de Modalidades',
+  title: 'Fight LOG - O Portal da Luta',
   description:
     'Plataforma completa para lutadores e treinadores. Cadastre seu perfil, registre seu cartel e conecte-se com a comunidade.',
 };

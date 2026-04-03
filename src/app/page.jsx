@@ -59,7 +59,7 @@ export default async function HomePage() {
           <FadeInOnScroll>
             {/* Subtitle */}
             <p className="font-barlow-condensed text-sm text-brand-gold tracking-[6px] uppercase font-semibold mb-6">
-              O Portal Definitivo de Modalidades
+              O Portal da Luta
             </p>
 
             {/* Main Title */}

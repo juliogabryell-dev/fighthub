@@ -124,7 +124,7 @@ export default function Navbar() {
                 <span className="text-brand-red">LOG</span>
               </span>
               <span className="text-[9px] text-brand-gold font-barlow-condensed uppercase tracking-[0.2em] -mt-0.5">
-                Portal de Modalidades
+                O Portal da Luta
               </span>
             </div>
           </Link>
