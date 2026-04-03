@@ -54,7 +54,34 @@ export default function PerfilPage() {
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [initialEditForm, setInitialEditForm] = useState(null);
   const fileInputRef = useRef(null);
+
+  function hasUnsavedChanges() {
+    if (!showEditProfile || !initialEditForm) return false;
+    if (avatarFile) return true;
+    return JSON.stringify(editForm) !== JSON.stringify(initialEditForm);
+  }
+
+  function confirmLeaveEdit() {
+    if (hasUnsavedChanges()) {
+      return confirm('Você tem alterações não salvas. Deseja realmente sair sem salvar?');
+    }
+    return true;
+  }
+
+  // Warn on browser back/close
+  useEffect(() => {
+    if (!showEditProfile) return;
+    function handleBeforeUnload(e) {
+      if (hasUnsavedChanges()) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  });
 
   // Fighter-specific
   const [martialArts, setMartialArts] = useState([]);
@@ -510,12 +537,37 @@ export default function PerfilPage() {
       father_name: profile?.father_name || '',
       mother_name: profile?.mother_name || '',
     });
+    const formData = { ...editForm };
+    // Need to set it after the setEditForm above has the values
     setPublicFields({ ...defaultPublicFields, ...(profile?.public_fields || {}) });
     setHandleAvailable(null);
     setCheckingHandle(false);
     setAvatarFile(null);
     setAvatarPreview(profile?.avatar_url || null);
     setShowEditProfile(true);
+    // Store initial state after a tick so editForm is populated
+    setTimeout(() => {
+      setInitialEditForm({
+        full_name: profile?.full_name || '',
+        handle: profile?.handle || '',
+        birth_date: profile?.birth_date || '',
+        cpf_cnpj: profile?.cpf_cnpj || '',
+        phone: profile?.phone || '',
+        whatsapp: profile?.whatsapp || '',
+        city: profile?.city || '',
+        state: profile?.state || '',
+        bio: profile?.bio || '',
+        height_cm: profile?.height_cm || '',
+        weight_kg: profile?.weight_kg || '',
+        blood_type: profile?.blood_type || '',
+        instagram: profile?.instagram || '',
+        facebook: profile?.facebook || '',
+        youtube: profile?.youtube || '',
+        tiktok: profile?.tiktok || '',
+        father_name: profile?.father_name || '',
+        mother_name: profile?.mother_name || '',
+      });
+    }, 0);
   }
 
   function handleFileSelect(e) {
@@ -592,6 +644,7 @@ export default function PerfilPage() {
           alert('Erro ao salvar perfil: ' + error.message);
         }
       } else {
+        setInitialEditForm(null);
         setShowEditProfile(false);
         fetchUserAndProfile();
       }
@@ -918,6 +971,206 @@ export default function PerfilPage() {
 
   const receivedChallenges = challenges.filter(c => c.challenged_id === user?.id);
   const sentChallenges = challenges.filter(c => c.challenger_id === user?.id);
+
+  // ===== EDIT PROFILE PAGE =====
+  if (showEditProfile) {
+    return (
+      <div className="min-h-screen bg-dark-bg px-4 py-10">
+        <div className="max-w-2xl mx-auto">
+          {/* Back button */}
+          <button
+            onClick={() => {
+              if (confirmLeaveEdit()) {
+                setShowEditProfile(false);
+              }
+            }}
+            className="flex items-center gap-2 text-theme-text/40 hover:text-brand-red transition-colors font-barlow-condensed text-sm uppercase tracking-wider mb-6"
+          >
+            <Icon name="chevronLeft" size={16} />
+            Voltar ao Perfil
+          </button>
+
+          <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-theme-border/10 p-8 shadow-2xl">
+            <h1 className="font-bebas text-3xl tracking-wider text-theme-text mb-6">
+              EDITAR <span className="text-brand-red">PERFIL</span>
+            </h1>
+
+            <form onSubmit={(e) => { handleEditProfile(e); }} className="space-y-5">
+              {/* Avatar Upload */}
+              <div className="flex flex-col items-center gap-3">
+                <div
+                  className="relative group cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Avatar name={editForm.full_name} url={avatarPreview} size={96} className="border-2 border-theme-border/20 group-hover:border-brand-red/40 transition-colors" />
+                  <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Icon name="camera" size={24} className="text-white" />
+                  </div>
+                </div>
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
+                <p className="font-barlow text-theme-text/30 text-xs">Clique para alterar a foto</p>
+              </div>
+
+              {/* Name */}
+              <InputField
+                label={isAcademy ? 'Nome da Academia' : 'Nome Completo'}
+                type="text"
+                value={editForm.full_name}
+                onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
+                required
+              />
+
+              {/* Handle */}
+              <div>
+                <InputField
+                  label="@ Identificador"
+                  type="text"
+                  value={editForm.handle}
+                  onChange={(e) => {
+                    const sanitized = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+                    setEditForm({ ...editForm, handle: sanitized });
+                  }}
+                  maxLength={30}
+                  placeholder="seu_identificador"
+                />
+                {handleAvailable === true && <p className="text-green-400 text-xs mt-1 font-barlow">Disponível</p>}
+                {handleAvailable === false && <p className="text-red-400 text-xs mt-1 font-barlow">Já em uso</p>}
+              </div>
+
+              {/* CPF/CNPJ or Birth Date */}
+              {isAcademy ? (
+                <InputField
+                  label="CPF/CNPJ"
+                  type="text"
+                  value={editForm.cpf_cnpj}
+                  onChange={(e) => setEditForm({ ...editForm, cpf_cnpj: e.target.value })}
+                  placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                />
+              ) : (
+                <InputField
+                  label="Data de Nascimento"
+                  type="date"
+                  value={editForm.birth_date}
+                  onChange={(e) => setEditForm({ ...editForm, birth_date: e.target.value })}
+                />
+              )}
+
+              {/* Bio */}
+              <div>
+                <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/50 mb-1.5 font-semibold">
+                  {isAcademy ? 'Descricao da Academia' : 'Bio'}
+                </label>
+                <textarea
+                  value={editForm.bio}
+                  onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                  rows={3}
+                  placeholder="Conte um pouco sobre voce..."
+                  className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg px-4 py-3 text-theme-text font-barlow text-sm placeholder:text-theme-text/20 focus:outline-none focus:border-[#C41E3A]/50 transition-colors resize-none"
+                />
+              </div>
+
+              {/* Fighter parent names */}
+              {profile?.is_fighter && (
+                <div className="grid grid-cols-2 gap-4">
+                  <InputField label="Nome do Pai (opcional)" type="text" value={editForm.father_name} onChange={(e) => setEditForm({ ...editForm, father_name: e.target.value })} placeholder="Nome completo do pai" />
+                  <InputField label="Nome da Mãe (opcional)" type="text" value={editForm.mother_name} onChange={(e) => setEditForm({ ...editForm, mother_name: e.target.value })} placeholder="Nome completo da mãe" />
+                </div>
+              )}
+
+              {/* Fighter physical info */}
+              {profile?.is_fighter && (
+                <div className="grid grid-cols-3 gap-4">
+                  <InputField label="Altura (cm)" type="number" value={editForm.height_cm} onChange={(e) => setEditForm({ ...editForm, height_cm: e.target.value })} placeholder="175" />
+                  <InputField label="Peso (kg)" type="number" value={editForm.weight_kg} onChange={(e) => setEditForm({ ...editForm, weight_kg: e.target.value })} placeholder="70.5" />
+                  <div>
+                    <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/50 mb-1.5 font-semibold">Tipo Sanguíneo</label>
+                    <select value={editForm.blood_type} onChange={(e) => setEditForm({ ...editForm, blood_type: e.target.value })} className="w-full bg-dark-card border border-theme-border/10 rounded-lg px-4 py-3 text-theme-text font-barlow text-sm focus:outline-none focus:border-[#C41E3A]/50 transition-colors">
+                      {['', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((v) => (
+                        <option key={v} value={v} className="bg-dark-card text-theme-text">{v || 'Selecione'}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {/* Phone & WhatsApp */}
+              <div className="grid grid-cols-2 gap-4">
+                <InputField label="Telefone" type="tel" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} placeholder="(11) 99999-9999" />
+                <InputField label="WhatsApp" type="tel" value={editForm.whatsapp} onChange={(e) => setEditForm({ ...editForm, whatsapp: e.target.value })} placeholder="(11) 99999-9999" />
+              </div>
+
+              {/* City & State */}
+              <div className="grid grid-cols-2 gap-4">
+                <InputField label="Cidade" type="text" value={editForm.city} onChange={(e) => setEditForm({ ...editForm, city: e.target.value })} placeholder="Sua cidade" />
+                <InputField label="Estado" type="text" value={editForm.state} onChange={(e) => setEditForm({ ...editForm, state: e.target.value })} placeholder="Ex: SP, RJ, MG" />
+              </div>
+
+              {/* Social */}
+              <div className="border-t border-theme-border/10 pt-4">
+                <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/40 mb-3 font-semibold">Redes Sociais</p>
+                <div className="space-y-3">
+                  <InputField label="Instagram" type="text" value={editForm.instagram} onChange={(e) => setEditForm({ ...editForm, instagram: e.target.value })} placeholder="@seu_usuario" />
+                  <InputField label="Facebook" type="text" value={editForm.facebook} onChange={(e) => setEditForm({ ...editForm, facebook: e.target.value })} placeholder="seu.perfil ou URL" />
+                  <InputField label="YouTube" type="text" value={editForm.youtube} onChange={(e) => setEditForm({ ...editForm, youtube: e.target.value })} placeholder="@seu_canal ou URL" />
+                  <InputField label="TikTok" type="text" value={editForm.tiktok} onChange={(e) => setEditForm({ ...editForm, tiktok: e.target.value })} placeholder="@seu_usuario" />
+                </div>
+              </div>
+
+              {/* Visibility Settings */}
+              <div className="border-t border-theme-border/10 pt-4">
+                <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/40 mb-1 font-semibold">Visibilidade Pública</p>
+                <p className="font-barlow text-xs text-theme-text/30 mb-4">Escolha quais informações ficam visíveis no seu perfil público</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { key: 'bio', label: 'Bio' },
+                    { key: 'birth_date', label: 'Data de Nascimento' },
+                    { key: 'phone', label: 'Telefone' },
+                    { key: 'whatsapp', label: 'WhatsApp' },
+                    { key: 'city', label: 'Cidade' },
+                    { key: 'state', label: 'Estado' },
+                    ...(profile?.is_fighter ? [
+                      { key: 'height_cm', label: 'Altura' },
+                      { key: 'weight_kg', label: 'Peso' },
+                      { key: 'blood_type', label: 'Tipo Sanguíneo' },
+                      { key: 'father_name', label: 'Nome do Pai' },
+                      { key: 'mother_name', label: 'Nome da Mãe' },
+                    ] : []),
+                    { key: 'instagram', label: 'Instagram' },
+                    { key: 'facebook', label: 'Facebook' },
+                    { key: 'youtube', label: 'YouTube' },
+                    { key: 'tiktok', label: 'TikTok' },
+                  ].map(({ key, label }) => (
+                    <label key={key} className="flex items-center gap-2 cursor-pointer py-1.5 px-2 rounded-lg hover:bg-theme-text/5 transition-colors">
+                      <input type="checkbox" checked={publicFields[key] !== false} onChange={(e) => setPublicFields({ ...publicFields, [key]: e.target.checked })} className="w-4 h-4 rounded border-theme-border/20 bg-theme-text/5 text-[#C41E3A] focus:ring-[#C41E3A]" />
+                      <span className="font-barlow text-sm text-theme-text/60">{label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => { if (confirmLeaveEdit()) setShowEditProfile(false); }}
+                  className="flex-1 py-3 rounded-lg bg-theme-text/5 border border-theme-border/10 text-theme-text/60 hover:text-theme-text hover:border-theme-border/20 transition-all font-barlow-condensed uppercase tracking-widest text-sm font-semibold"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="flex-1 py-3 rounded-lg bg-gradient-to-r from-[#C41E3A] to-[#a01830] text-white font-barlow-condensed uppercase tracking-widest text-sm font-semibold hover:from-[#d42a46] hover:to-[#b82040] transition-all disabled:opacity-50"
+                >
+                  {saving ? 'SALVANDO...' : 'SALVAR'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-dark-bg px-4 py-10">
@@ -2074,8 +2327,8 @@ export default function PerfilPage() {
         </Modal>
       )}
 
-      {/* Edit Profile Modal */}
-      {showEditProfile && (
+      {/* Old Edit Profile Modal - removed, now uses inline page */}
+      {false && (
         <Modal onClose={() => setShowEditProfile(false)} title="Editar Perfil" maxWidth="max-w-2xl">
           <form onSubmit={handleEditProfile} className="space-y-5">
             {/* Avatar Upload */}
