@@ -414,29 +414,17 @@ export default function LutadoresPage() {
                           const modRecords = (selectedFighter.fight_records || []).filter(r => r.modality === fma.art_name);
                           if (modRecords.length === 0 || !modRecords.some(r => (r.wins||0)+(r.losses||0)+(r.draws||0)+(r.no_contest||0) > 0)) return null;
                           const cats = [
-                            { key: 'profissional', label: 'PRO' },
-                            { key: 'semi_profissional', label: 'SEMI' },
-                            { key: 'amador', label: 'AMA' },
+                            { key: 'profissional', label: 'Pro' },
+                            { key: 'semi_profissional', label: 'Semi' },
+                            { key: 'amador', label: 'Ama' },
                           ];
-                          return (
-                            <div className="mt-3 pt-3 border-t border-theme-border/[0.06]">
-                              <div className="flex flex-wrap gap-x-5 gap-y-1">
-                                {cats.map(({ key, label }) => {
-                                  const rec = modRecords.find(r => (r.category || 'amador') === key);
-                                  if (!rec || ((rec.wins||0)+(rec.losses||0)+(rec.draws||0)+(rec.no_contest||0)) === 0) return null;
-                                  return (
-                                    <span key={key} className="font-barlow text-[11px] text-theme-text/30">
-                                      <span className="font-barlow-condensed text-theme-text/50 uppercase tracking-wider">{label}:</span>{' '}
-                                      <span className="text-green-400/70">{rec.wins||0}V</span>{' '}
-                                      <span className="text-[#C41E3A]/70">{rec.losses||0}D</span>{' '}
-                                      <span className="text-[#D4AF37]/70">{rec.draws||0}E</span>{' '}
-                                      <span className="text-theme-text/25">{rec.no_contest||0}NC</span>
-                                    </span>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          );
+                          // Find default category (highest with data)
+                          const defaultCat = cats.find(c => {
+                            const r = modRecords.find(rec => (rec.category || 'amador') === c.key);
+                            return r && ((r.wins||0)+(r.losses||0)+(r.draws||0)+(r.no_contest||0)) > 0;
+                          })?.key || 'amador';
+
+                          return <ModalityRecord modRecords={modRecords} cats={cats} defaultCat={defaultCat} />;
                         })()}
 
                         {/* Coaches - clickable to slide */}
@@ -714,5 +702,56 @@ export default function LutadoresPage() {
         </div>
       )}
     </main>
+  );
+}
+
+function ModalityRecord({ modRecords, cats, defaultCat }) {
+  const [activeCat, setActiveCat] = useState(defaultCat);
+  const rec = modRecords.find(r => (r.category || 'amador') === activeCat) || {};
+
+  return (
+    <div className="mt-3 pt-3 border-t border-theme-border/[0.06]">
+      {/* Category tabs */}
+      <div className="flex gap-1 mb-2">
+        {cats.map(({ key, label }) => {
+          const r = modRecords.find(rec => (rec.category || 'amador') === key);
+          const hasData = r && ((r.wins||0)+(r.losses||0)+(r.draws||0)+(r.no_contest||0)) > 0;
+          return (
+            <button
+              key={key}
+              onClick={(e) => { e.stopPropagation(); setActiveCat(key); }}
+              className={`px-2 py-0.5 rounded text-[9px] font-barlow-condensed uppercase tracking-wider border transition-all ${
+                activeCat === key
+                  ? 'bg-[#C41E3A]/15 border-[#C41E3A]/30 text-[#C41E3A]'
+                  : hasData
+                    ? 'bg-theme-text/5 border-theme-border/10 text-theme-text/40 hover:text-theme-text/60'
+                    : 'bg-transparent border-theme-border/5 text-theme-text/15'
+              }`}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+      {/* Stats */}
+      <div className="grid grid-cols-4 gap-1.5">
+        <div className="text-center p-1.5 bg-green-500/10 rounded-lg border border-green-500/20">
+          <p className="font-bebas text-base text-green-500">{rec.wins || 0}</p>
+          <p className="font-barlow-condensed text-[8px] text-theme-text/40 uppercase tracking-widest">V</p>
+        </div>
+        <div className="text-center p-1.5 bg-[#C41E3A]/10 rounded-lg border border-[#C41E3A]/20">
+          <p className="font-bebas text-base text-[#C41E3A]">{rec.losses || 0}</p>
+          <p className="font-barlow-condensed text-[8px] text-theme-text/40 uppercase tracking-widest">D</p>
+        </div>
+        <div className="text-center p-1.5 bg-[#D4AF37]/10 rounded-lg border border-[#D4AF37]/20">
+          <p className="font-bebas text-base text-[#D4AF37]">{rec.draws || 0}</p>
+          <p className="font-barlow-condensed text-[8px] text-theme-text/40 uppercase tracking-widest">E</p>
+        </div>
+        <div className="text-center p-1.5 bg-theme-text/5 rounded-lg border border-theme-border/10">
+          <p className="font-bebas text-base text-theme-text/40">{rec.no_contest || 0}</p>
+          <p className="font-barlow-condensed text-[8px] text-theme-text/30 uppercase tracking-widest">NC</p>
+        </div>
+      </div>
+    </div>
   );
 }
