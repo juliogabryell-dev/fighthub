@@ -39,6 +39,8 @@ export default function RegisterPage() {
   const [licenseNumber, setLicenseNumber] = useState('');
   const [level, setLevel] = useState('');
   const [specialty, setSpecialty] = useState('');
+  const [fatherName, setFatherName] = useState('');
+  const [motherName, setMotherName] = useState('');
   const [foundingDate, setFoundingDate] = useState('');
 
   const isOrg = ['academy', 'team', 'federation'].includes(role);
@@ -100,6 +102,10 @@ export default function RegisterPage() {
           profileData.birth_date = birthDate || null;
           profileData.cpf = cpf || null;
           profileData.rg = rg || null;
+          if (role === 'fighter') {
+            profileData.father_name = fatherName || null;
+            profileData.mother_name = motherName || null;
+          }
         } else {
           profileData.birth_date = null;
           profileData.cpf_cnpj = cpfCnpj || null;
@@ -271,6 +277,12 @@ export default function RegisterPage() {
                   />
                   <InputField label="RG (opcional)" type="text" value={rg} onChange={(e) => setRg(e.target.value)} placeholder="00.000.000-0" />
                 </div>
+                {role === 'fighter' && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <InputField label="Nome do Pai (opcional)" type="text" value={fatherName} onChange={(e) => setFatherName(e.target.value)} placeholder="Nome completo do pai" />
+                    <InputField label="Nome da Mãe (opcional)" type="text" value={motherName} onChange={(e) => setMotherName(e.target.value)} placeholder="Nome completo da mãe" />
+                  </div>
+                )}
                 {(role === 'referee' || role === 'match_maker') && (
                   <InputField label="Nacionalidade" type="text" value={nationality} onChange={(e) => setNationality(e.target.value)} placeholder="Brasileiro(a)" />
                 )}

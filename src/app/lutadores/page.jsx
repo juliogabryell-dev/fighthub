@@ -341,6 +341,8 @@ export default function LutadoresPage() {
                 f.height_cm && isPublic(f, 'height_cm') && { label: 'Altura', value: `${f.height_cm} cm`, icon: 'user' },
                 f.weight_kg && isPublic(f, 'weight_kg') && { label: 'Peso', value: `${f.weight_kg} kg`, icon: 'user' },
                 f.blood_type && isPublic(f, 'blood_type') && { label: 'Tipo Sanguíneo', value: f.blood_type, icon: 'shield', accent: true },
+                f.father_name && isPublic(f, 'father_name') && { label: 'Nome do Pai', value: f.father_name, icon: 'user' },
+                f.mother_name && isPublic(f, 'mother_name') && { label: 'Nome da Mãe', value: f.mother_name, icon: 'user' },
                 (f.city && isPublic(f, 'city') || f.state && isPublic(f, 'state')) && { label: 'Local', value: [f.city && isPublic(f, 'city') ? f.city : null, f.state && isPublic(f, 'state') ? f.state : null].filter(Boolean).join(', '), icon: 'map-pin' },
                 f.phone && isPublic(f, 'phone') && { label: 'Telefone', value: f.phone, icon: 'phone' },
                 f.whatsapp && isPublic(f, 'whatsapp') && { label: 'WhatsApp', value: f.whatsapp, icon: 'phone', href: `https://wa.me/${f.whatsapp.replace(/\D/g, '')}`, green: true },

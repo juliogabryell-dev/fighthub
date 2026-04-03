@@ -995,6 +995,8 @@ export default function FullAdminDashboard() {
                 ['Altura', selectedUser.height_cm ? `${selectedUser.height_cm} cm` : null],
                 ['Peso', selectedUser.weight_kg ? `${selectedUser.weight_kg} kg` : null],
                 ['Tipo Sanguíneo', selectedUser.blood_type],
+                ['Nome do Pai', selectedUser.father_name],
+                ['Nome da Mãe', selectedUser.mother_name],
                 ['Instagram', selectedUser.instagram],
                 ['Facebook', selectedUser.facebook],
                 ['YouTube', selectedUser.youtube],

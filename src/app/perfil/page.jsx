@@ -38,11 +38,14 @@ export default function PerfilPage() {
     facebook: '',
     youtube: '',
     tiktok: '',
+    father_name: '',
+    mother_name: '',
   });
   const defaultPublicFields = {
     bio: true, birth_date: true, phone: false, whatsapp: false,
     city: true, state: true, height_cm: true, weight_kg: true,
-    blood_type: true, instagram: true, facebook: true, youtube: true, tiktok: true,
+    blood_type: true, father_name: false, mother_name: false,
+    instagram: true, facebook: true, youtube: true, tiktok: true,
   };
   const [publicFields, setPublicFields] = useState(defaultPublicFields);
   const [handleAvailable, setHandleAvailable] = useState(null);
@@ -504,6 +507,8 @@ export default function PerfilPage() {
       facebook: profile?.facebook || '',
       youtube: profile?.youtube || '',
       tiktok: profile?.tiktok || '',
+      father_name: profile?.father_name || '',
+      mother_name: profile?.mother_name || '',
     });
     setPublicFields({ ...defaultPublicFields, ...(profile?.public_fields || {}) });
     setHandleAvailable(null);
@@ -564,6 +569,8 @@ export default function PerfilPage() {
         facebook: editForm.facebook || null,
         youtube: editForm.youtube || null,
         tiktok: editForm.tiktok || null,
+        father_name: editForm.father_name || null,
+        mother_name: editForm.mother_name || null,
         public_fields: publicFields,
       };
 
@@ -2200,6 +2207,26 @@ export default function PerfilPage() {
               />
             </div>
 
+            {/* Fighter parent names */}
+            {profile?.is_fighter && (
+              <div className="grid grid-cols-2 gap-4">
+                <InputField
+                  label="Nome do Pai (opcional)"
+                  type="text"
+                  value={editForm.father_name}
+                  onChange={(e) => setEditForm({ ...editForm, father_name: e.target.value })}
+                  placeholder="Nome completo do pai"
+                />
+                <InputField
+                  label="Nome da Mãe (opcional)"
+                  type="text"
+                  value={editForm.mother_name}
+                  onChange={(e) => setEditForm({ ...editForm, mother_name: e.target.value })}
+                  placeholder="Nome completo da mãe"
+                />
+              </div>
+            )}
+
             {/* Fighter physical info */}
             {profile?.is_fighter && (
               <div className="grid grid-cols-3 gap-4">
@@ -2331,6 +2358,8 @@ export default function PerfilPage() {
                     { key: 'height_cm', label: 'Altura' },
                     { key: 'weight_kg', label: 'Peso' },
                     { key: 'blood_type', label: 'Tipo Sanguíneo' },
+                    { key: 'father_name', label: 'Nome do Pai' },
+                    { key: 'mother_name', label: 'Nome da Mãe' },
                   ] : []),
                   { key: 'instagram', label: 'Instagram' },
                   { key: 'facebook', label: 'Facebook' },

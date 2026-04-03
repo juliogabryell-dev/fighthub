@@ -164,6 +164,24 @@ export default async function FighterProfile({ params }) {
               </div>
             )}
 
+            {/* Parent names */}
+            {((fighter.father_name && isPublic(fighter, 'father_name')) || (fighter.mother_name && isPublic(fighter, 'mother_name'))) && (
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-4">
+                {fighter.father_name && isPublic(fighter, 'father_name') && (
+                  <div className="flex items-center gap-2 text-theme-text/50">
+                    <Icon name="user" size={14} />
+                    <span className="font-barlow text-sm">Pai: {fighter.father_name}</span>
+                  </div>
+                )}
+                {fighter.mother_name && isPublic(fighter, 'mother_name') && (
+                  <div className="flex items-center gap-2 text-theme-text/50">
+                    <Icon name="user" size={14} />
+                    <span className="font-barlow text-sm">Mãe: {fighter.mother_name}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
               {(fighter.city && isPublic(fighter, 'city') || fighter.state && isPublic(fighter, 'state')) && (
                 <div className="flex items-center gap-2 text-theme-text/50">
