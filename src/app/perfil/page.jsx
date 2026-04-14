@@ -138,6 +138,7 @@ export default function PerfilPage() {
   // Coach/Academy per modality (Fighter)
   const [myCoaches, setMyCoaches] = useState([]);
   const [myAcademies, setMyAcademies] = useState([]);
+  const [myStudents, setMyStudents] = useState([]); // Fighters linked to this coach
   const [showCoachModalForArt, setShowCoachModalForArt] = useState(null);
   const [showAcademyModalForArt, setShowAcademyModalForArt] = useState(null);
   const [availableCoaches, setAvailableCoaches] = useState([]);
@@ -250,10 +251,18 @@ export default function PerfilPage() {
       // Fetch binding requests (pending)
       const { data: pendingReqs } = await supabase
         .from('fighter_coaches')
-        .select('*, fighter:fighter_id(id, full_name, avatar_url), martial_art:martial_art_id(id, art_name)')
+        .select('*, fighter:fighter_id(id, full_name, avatar_url, handle), martial_art:martial_art_id(id, art_name)')
         .eq('coach_id', currentUser.id)
         .eq('status', 'pending');
       setBindingRequests(pendingReqs || []);
+
+      // Fetch active students (fighters linked to this coach)
+      const { data: students } = await supabase
+        .from('fighter_coaches')
+        .select('*, fighter:fighter_id(id, full_name, handle, avatar_url), martial_art:martial_art_id(id, art_name)')
+        .eq('coach_id', currentUser.id)
+        .eq('status', 'active');
+      setMyStudents(students || []);
 
       // Fetch active bindings
       const { data: activeReqs } = await supabase
@@ -335,38 +344,44 @@ export default function PerfilPage() {
 
     if (isProfileVerified(profile)) {
       // Verified: save as pending change
-      await supabase.from('pending_profile_changes').insert({
+      const { error: pendingErr } = await supabase.from('pending_profile_changes').insert({
         user_id: user.id,
         change_type: 'martial_art',
         action: editingArtId ? 'update' : 'create',
         target_id: editingArtId || null,
         payload: { martial_art: payload, records: artForm.records },
       });
-      setPendingToast('Modalidade enviada para aprovação do administrador.');
-      setTimeout(() => setPendingToast(null), 5000);
+      if (pendingErr) {
+        alert('Erro ao enviar para aprovação: ' + pendingErr.message);
+      } else {
+        setPendingToast('Modalidade enviada para aprovação do administrador.');
+        setTimeout(() => setPendingToast(null), 5000);
+      }
       setShowArtModal(false);
       fetchUserAndProfile();
       return;
     }
 
     let error, newArtData;
+    const insertPayload = { ...payload, fighter_id: user.id };
     if (editingArtId) {
-      ({ error } = await supabase
+      const result = await supabase
         .from('fighter_martial_arts')
         .update(payload)
-        .eq('id', editingArtId));
+        .eq('id', editingArtId);
+      error = result.error;
     } else {
-      const { data, error: insertErr } = await supabase
+      const result = await supabase
         .from('fighter_martial_arts')
-        .insert({ ...payload, fighter_id: user.id })
+        .insert(insertPayload)
         .select()
         .single();
-      error = insertErr;
-      newArtData = data;
+      error = result.error;
+      newArtData = result.data;
     }
 
     if (error) {
-      alert('Erro ao salvar modalidade: ' + error.message);
+      alert('Erro ao salvar modalidade: ' + error.message + ' | Code: ' + error.code + ' | Details: ' + (error.details || ''));
     } else {
       // Save fight records for each category
       const categories = ['profissional', 'semi_profissional', 'amador'];
@@ -2257,6 +2272,39 @@ export default function PerfilPage() {
             </div>
             <h2 className="font-bebas text-2xl tracking-wider text-[#D4AF37]/80">PERFIL DE TREINADOR</h2>
             <div className="flex-1 h-px bg-[#D4AF37]/10" />
+          </div>
+        )}
+
+        {/* Coach: Linked Fighters */}
+        {isCoach && myStudents.length > 0 && (
+          <div className="mb-8">
+            <h3 className="font-bebas text-xl tracking-wider text-theme-text/80 mb-4">
+              LUTADORES VINCULADOS
+              <span className="font-barlow text-sm text-theme-text/30 ml-2 normal-case tracking-normal">({myStudents.length})</span>
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {myStudents.map((link) => (
+                <Link
+                  key={link.id}
+                  href={`/lutadores/${link.fighter?.id}`}
+                  className="flex items-center gap-3 p-3 bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl border border-theme-border/10 hover:border-[#D4AF37]/30 transition-all group"
+                >
+                  <Avatar name={link.fighter?.full_name} url={link.fighter?.avatar_url} size={36} />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-barlow-condensed text-sm text-theme-text truncate group-hover:text-[#D4AF37] transition-colors">{link.fighter?.full_name}</p>
+                    <div className="flex items-center gap-2">
+                      {link.fighter?.handle && <span className="font-barlow text-[10px] text-theme-text/30">@{link.fighter.handle}</span>}
+                      {link.martial_art?.art_name && (
+                        <span className="text-[10px] bg-[#C41E3A]/10 border border-[#C41E3A]/20 rounded-full px-1.5 py-0.5 text-[#C41E3A]/60 font-barlow-condensed">
+                          {link.martial_art.art_name}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-theme-text/15 group-hover:text-[#D4AF37]/50 flex-shrink-0"><path d="M9 18l6-6-6-6"/></svg>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
 
