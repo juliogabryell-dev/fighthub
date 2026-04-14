@@ -328,9 +328,9 @@ export default function PerfilPage() {
     e.preventDefault();
     const payload = {
       art_name: artForm.art_name,
-      level: artForm.level,
+      level: artForm.level || null,
       started_at: artForm.started_at || null,
-      description: artForm.description,
+      description: artForm.description || null,
     };
 
     if (isProfileVerified(profile)) {
@@ -2429,12 +2429,11 @@ export default function PerfilPage() {
             />
             <div className="grid grid-cols-2 gap-4">
               <InputField
-                label="Nivel"
+                label="Nivel (opcional)"
                 type="text"
                 value={artForm.level}
                 onChange={(e) => setArtForm({ ...artForm, level: e.target.value })}
                 placeholder="Ex: Iniciante, Intermediario"
-                required
               />
               <InputField
                 label="Data de Inicio"
