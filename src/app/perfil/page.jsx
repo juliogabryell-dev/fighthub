@@ -349,19 +349,25 @@ export default function PerfilPage() {
       return;
     }
 
-    let error;
+    let error, newArtData;
     if (editingArtId) {
       ({ error } = await supabase
         .from('fighter_martial_arts')
         .update(payload)
         .eq('id', editingArtId));
     } else {
-      ({ error } = await supabase
+      const { data, error: insertErr } = await supabase
         .from('fighter_martial_arts')
-        .insert({ ...payload, fighter_id: user.id }));
+        .insert({ ...payload, fighter_id: user.id })
+        .select()
+        .single();
+      error = insertErr;
+      newArtData = data;
     }
 
-    if (!error) {
+    if (error) {
+      alert('Erro ao salvar modalidade: ' + error.message);
+    } else {
       // Save fight records for each category
       const categories = ['profissional', 'semi_profissional', 'amador'];
       for (const cat of categories) {
@@ -1629,6 +1635,17 @@ export default function PerfilPage() {
           </div>
         )}
 
+        {/* Fighter Section */}
+        {isFighter && isDualRole && (
+          <div className="mb-4 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-[#C41E3A]/20 flex items-center justify-center">
+              <Icon name="swords" size={14} className="text-[#C41E3A]" />
+            </div>
+            <h2 className="font-bebas text-2xl tracking-wider text-[#C41E3A]/80">PERFIL DE LUTADOR</h2>
+            <div className="flex-1 h-px bg-[#C41E3A]/10" />
+          </div>
+        )}
+
         {/* Fighter: Martial Arts List with Coaches/Academies per modality */}
         {isFighter && martialArts.length > 0 && (
           <div className="mb-8">
@@ -1677,29 +1694,20 @@ export default function PerfilPage() {
                       </p>
                     )}
 
-                    {/* Fight record summary for this modality */}
+                    {/* Fight record for this modality */}
                     {(() => {
-                      const artRecords = fightRecords.filter(r => r.modality === art.art_name);
-                      if (artRecords.length === 0) return null;
-                      const categories = ['profissional', 'semi_profissional', 'amador'];
-                      return (
-                        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
-                          {categories.map(cat => {
-                            const rec = artRecords.find(r => (r.category || 'amador') === cat);
-                            if (!rec || ((rec.wins || 0) + (rec.losses || 0) + (rec.draws || 0) + (rec.no_contest || 0)) === 0) return null;
-                            const label = { profissional: 'PRO', semi_profissional: 'SEMI', amador: 'AMA' }[cat];
-                            return (
-                              <span key={cat} className="font-barlow text-[11px] text-theme-text/30">
-                                <span className="font-barlow-condensed text-theme-text/50 uppercase tracking-wider">{label}:</span>{' '}
-                                <span className="text-green-400/70">{rec.wins || 0}V</span>{' '}
-                                <span className="text-[#C41E3A]/70">{rec.losses || 0}D</span>{' '}
-                                <span className="text-[#D4AF37]/70">{rec.draws || 0}E</span>{' '}
-                                <span className="text-theme-text/25">{rec.no_contest || 0}NC</span>
-                              </span>
-                            );
-                          })}
-                        </div>
-                      );
+                      const modRecords = fightRecords.filter(r => r.modality === art.art_name);
+                      if (modRecords.length === 0 || !modRecords.some(r => (r.wins||0)+(r.losses||0)+(r.draws||0)+(r.no_contest||0) > 0)) return null;
+                      const cats = [
+                        { key: 'profissional', label: 'Pro' },
+                        { key: 'semi_profissional', label: 'Semi' },
+                        { key: 'amador', label: 'Ama' },
+                      ];
+                      const defaultCat = cats.find(c => {
+                        const r = modRecords.find(rec => (rec.category || 'amador') === c.key);
+                        return r && ((r.wins||0)+(r.losses||0)+(r.draws||0)+(r.no_contest||0)) > 0;
+                      })?.key || 'amador';
+                      return <ProfileModalityRecord modRecords={modRecords} cats={cats} defaultCat={defaultCat} />;
                     })()}
 
                     {/* Coaches for this modality */}
@@ -2238,6 +2246,17 @@ export default function PerfilPage() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Coach Section */}
+        {isCoach && isDualRole && (
+          <div className="mb-4 mt-8 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-[#D4AF37]/20 flex items-center justify-center">
+              <Icon name="award" size={14} className="text-[#D4AF37]" />
+            </div>
+            <h2 className="font-bebas text-2xl tracking-wider text-[#D4AF37]/80">PERFIL DE TREINADOR</h2>
+            <div className="flex-1 h-px bg-[#D4AF37]/10" />
           </div>
         )}
 
@@ -3120,6 +3139,56 @@ export default function PerfilPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function ProfileModalityRecord({ modRecords, cats, defaultCat }) {
+  const [activeCat, setActiveCat] = useState(defaultCat);
+  const rec = modRecords.find(r => (r.category || 'amador') === activeCat) || {};
+
+  return (
+    <div className="mt-3 pt-3 border-t border-theme-border/5">
+      <div className="flex gap-1 mb-2">
+        {cats.map(({ key, label }) => {
+          const r = modRecords.find(rec => (rec.category || 'amador') === key);
+          const hasData = r && ((r.wins||0)+(r.losses||0)+(r.draws||0)+(r.no_contest||0)) > 0;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setActiveCat(key)}
+              className={`px-2 py-0.5 rounded text-[9px] font-barlow-condensed uppercase tracking-wider border transition-all ${
+                activeCat === key
+                  ? 'bg-[#C41E3A]/15 border-[#C41E3A]/30 text-[#C41E3A]'
+                  : hasData
+                    ? 'bg-theme-text/5 border-theme-border/10 text-theme-text/40 hover:text-theme-text/60'
+                    : 'bg-transparent border-theme-border/5 text-theme-text/15'
+              }`}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+      <div className="grid grid-cols-4 gap-1.5">
+        <div className="text-center p-1.5 bg-green-500/10 rounded-lg border border-green-500/20">
+          <p className="font-bebas text-base text-green-500">{rec.wins || 0}</p>
+          <p className="font-barlow-condensed text-[8px] text-theme-text/40 uppercase tracking-widest">V</p>
+        </div>
+        <div className="text-center p-1.5 bg-[#C41E3A]/10 rounded-lg border border-[#C41E3A]/20">
+          <p className="font-bebas text-base text-[#C41E3A]">{rec.losses || 0}</p>
+          <p className="font-barlow-condensed text-[8px] text-theme-text/40 uppercase tracking-widest">D</p>
+        </div>
+        <div className="text-center p-1.5 bg-[#D4AF37]/10 rounded-lg border border-[#D4AF37]/20">
+          <p className="font-bebas text-base text-[#D4AF37]">{rec.draws || 0}</p>
+          <p className="font-barlow-condensed text-[8px] text-theme-text/40 uppercase tracking-widest">E</p>
+        </div>
+        <div className="text-center p-1.5 bg-theme-text/5 rounded-lg border border-theme-border/10">
+          <p className="font-bebas text-base text-theme-text/40">{rec.no_contest || 0}</p>
+          <p className="font-barlow-condensed text-[8px] text-theme-text/30 uppercase tracking-widest">NC</p>
+        </div>
+      </div>
     </div>
   );
 }
