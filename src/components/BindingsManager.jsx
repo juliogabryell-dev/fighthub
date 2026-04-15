@@ -22,6 +22,8 @@ export default function BindingsManager() {
   const [bindings, setBindings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   const fetchBindings = useCallback(async () => {
     setLoading(true);
@@ -175,6 +177,37 @@ export default function BindingsManager() {
         ))}
       </div>
 
+      {/* Search & Filter */}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <input
+          type="text"
+          placeholder="Buscar por nome ou @handle..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="flex-1 bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-4 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors placeholder:text-white/25"
+        />
+        <div className="flex gap-1.5">
+          {[
+            { key: 'all', label: 'Todos' },
+            { key: 'pending', label: 'Pendentes', color: '#D4AF37' },
+            { key: 'active', label: 'Ativos', color: '#22c55e' },
+            { key: 'rejected', label: 'Rejeitados', color: '#ef4444' },
+          ].map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setStatusFilter(f.key)}
+              className={`px-3 py-2 rounded-lg font-barlow-condensed text-[10px] uppercase tracking-wider border transition-all ${
+                statusFilter === f.key
+                  ? 'bg-[#C41E3A]/20 border-[#C41E3A]/40 text-[#C41E3A]'
+                  : 'bg-white/5 border-white/10 text-white/40 hover:text-white/60'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Bindings list */}
       <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
         <div className="p-5 border-b border-white/5 flex items-center gap-3">
@@ -191,9 +224,19 @@ export default function BindingsManager() {
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
           </div>
-        ) : bindings.length > 0 ? (
+        ) : (() => {
+          const term = searchQuery.toLowerCase().replace(/^@/, '');
+          const filtered = bindings.filter((b) => {
+            const { fromName, toName } = getBindingNames(b);
+            const matchesSearch = !term ||
+              fromName.toLowerCase().includes(term) ||
+              toName.toLowerCase().includes(term);
+            const matchesStatus = statusFilter === 'all' || b.status === statusFilter;
+            return matchesSearch && matchesStatus;
+          });
+          return filtered.length > 0 ? (
           <div className="divide-y divide-white/5">
-            {bindings.map((b) => {
+            {filtered.map((b) => {
               const { fromName, toName, fromAvatar, toAvatar, extra, fromLabel, toLabel } = getBindingNames(b);
               return (
                 <div key={b.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white/[0.02] transition-colors">
@@ -252,9 +295,12 @@ export default function BindingsManager() {
           </div>
         ) : (
           <div className="p-10 text-center">
-            <p className="font-barlow text-white/40 text-sm">Nenhum vínculo encontrado para este tipo.</p>
+            <p className="font-barlow text-white/40 text-sm">
+              {term || statusFilter !== 'all' ? 'Nenhum vínculo encontrado com os filtros aplicados.' : 'Nenhum vínculo encontrado para este tipo.'}
+            </p>
           </div>
-        )}
+        );
+        })()}
       </div>
     </div>
   );
