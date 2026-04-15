@@ -2266,7 +2266,7 @@ export default function PerfilPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <Link
-                          href={`/lutadores/${fighter.id}`}
+                          href={`/lutadores/${fighter.id}?from=/perfil`}
                           className="font-barlow-condensed text-theme-text font-semibold hover:text-[#D4AF37] transition-colors"
                         >
                           {fighter.full_name}

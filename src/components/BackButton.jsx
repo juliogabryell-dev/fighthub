@@ -1,18 +1,20 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Icon from './Icon';
 
 export default function BackButton({ fallbackHref = '/', label = 'Voltar' }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const from = searchParams.get('from');
 
   return (
     <button
       onClick={() => {
-        if (window.history.length > 1) {
-          router.back();
+        if (from) {
+          router.push(from);
         } else {
-          router.push(fallbackHref);
+          router.back();
         }
       }}
       className="inline-flex items-center gap-2 text-brand-red font-barlow-condensed uppercase tracking-wider text-sm mb-8 hover:text-brand-red/80 transition-colors"
