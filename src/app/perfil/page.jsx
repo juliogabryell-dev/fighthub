@@ -2206,7 +2206,7 @@ export default function PerfilPage() {
                       <Avatar name={req.fighter?.full_name} url={req.fighter?.avatar_url} size={40} />
                       <div>
                         <Link
-                          href={`/lutadores/${req.fighter?.id}`}
+                          href={`/lutadores/${req.fighter?.id}?from=/perfil`}
                           className="font-barlow-condensed text-theme-text font-semibold hover:text-[#D4AF37] transition-colors"
                         >
                           {req.fighter?.full_name || 'Lutador'}
@@ -2389,7 +2389,7 @@ export default function PerfilPage() {
                       <Avatar name={req.fighter?.full_name} url={req.fighter?.avatar_url} size={40} />
                       <div>
                         <Link
-                          href={`/lutadores/${req.fighter?.id}`}
+                          href={`/lutadores/${req.fighter?.id}?from=/perfil`}
                           className="font-barlow-condensed text-theme-text font-semibold hover:text-blue-400 transition-colors"
                         >
                           {req.fighter?.full_name || 'Lutador'}
@@ -2435,7 +2435,7 @@ export default function PerfilPage() {
                   <Avatar name={bind.fighter?.full_name} url={bind.fighter?.avatar_url} size={40} />
                   <div className="min-w-0">
                     <Link
-                      href={`/lutadores/${bind.fighter?.id}`}
+                      href={`/lutadores/${bind.fighter?.id}?from=/perfil`}
                       className="font-barlow-condensed text-theme-text font-semibold hover:text-blue-400 transition-colors"
                     >
                       {bind.fighter?.full_name || 'Lutador'}
