@@ -74,13 +74,7 @@ export default async function FighterProfile({ params }) {
   return (
     <main className="min-h-screen px-6 py-12 max-w-4xl mx-auto">
       {/* Back Button */}
-      <Link
-        href="/lutadores"
-        className="inline-flex items-center gap-2 text-brand-red font-barlow-condensed uppercase tracking-wider text-sm mb-8 hover:text-brand-red/80 transition-colors"
-      >
-        <Icon name="chevronLeft" size={16} />
-        Voltar
-      </Link>
+      <BackButton fallbackHref="/lutadores" />
 
       {/* Profile Card */}
       <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-theme-border/[0.06] overflow-hidden">
