@@ -2231,39 +2231,6 @@ export default function PerfilPage() {
           </div>
         )}
 
-        {/* Coach: Active Bindings */}
-        {isCoach && activeBindings.length > 0 && (
-          <div className="mb-8">
-            <h3 className="font-bebas text-xl tracking-wider text-theme-text/80 mb-4">
-              LUTADORES VINCULADOS
-            </h3>
-            <div className="space-y-3">
-              {activeBindings.map((bind) => (
-                <div
-                  key={bind.id}
-                  className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-4 border border-theme-border/10 flex items-center gap-3"
-                >
-                  <Avatar name={bind.fighter?.full_name} url={bind.fighter?.avatar_url} size={40} />
-                  <div className="min-w-0">
-                    <Link
-                      href={`/lutadores/${bind.fighter?.id}`}
-                      className="font-barlow-condensed text-theme-text font-semibold hover:text-[#D4AF37] transition-colors"
-                    >
-                      {bind.fighter?.full_name || 'Lutador'}
-                    </Link>
-                    <p className="font-barlow text-theme-text/40 text-xs">
-                      {bind.martial_art?.art_name || 'Modalidade'}
-                    </p>
-                  </div>
-                  <span className="ml-auto">
-                    {getStatusBadge('active')}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Coach Section */}
         {isCoach && isDualRole && (
           <div className="mb-4 mt-8 flex items-center gap-3">
@@ -2280,30 +2247,48 @@ export default function PerfilPage() {
           <div className="mb-8">
             <h3 className="font-bebas text-xl tracking-wider text-theme-text/80 mb-4">
               LUTADORES VINCULADOS
-              <span className="font-barlow text-sm text-theme-text/30 ml-2 normal-case tracking-normal">({myStudents.length})</span>
+              <span className="font-barlow text-sm text-theme-text/30 ml-2 normal-case tracking-normal">
+                ({[...new Set(myStudents.map(s => s.fighter?.id))].length})
+              </span>
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {myStudents.map((link) => (
-                <Link
-                  key={link.id}
-                  href={`/lutadores/${link.fighter?.id}`}
-                  className="flex items-center gap-3 p-3 bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl border border-theme-border/10 hover:border-[#D4AF37]/30 transition-all group"
-                >
-                  <Avatar name={link.fighter?.full_name} url={link.fighter?.avatar_url} size={36} />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-barlow-condensed text-sm text-theme-text truncate group-hover:text-[#D4AF37] transition-colors">{link.fighter?.full_name}</p>
-                    <div className="flex items-center gap-2">
-                      {link.fighter?.handle && <span className="font-barlow text-[10px] text-theme-text/30">@{link.fighter.handle}</span>}
-                      {link.martial_art?.art_name && (
-                        <span className="text-[10px] bg-[#C41E3A]/10 border border-[#C41E3A]/20 rounded-full px-1.5 py-0.5 text-[#C41E3A]/60 font-barlow-condensed">
-                          {link.martial_art.art_name}
-                        </span>
-                      )}
+            <div className="space-y-3">
+              {/* Group by fighter */}
+              {[...new Set(myStudents.map(s => s.fighter?.id))].map(fighterId => {
+                const links = myStudents.filter(s => s.fighter?.id === fighterId);
+                const fighter = links[0]?.fighter;
+                if (!fighter) return null;
+                return (
+                  <div
+                    key={fighterId}
+                    className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-4 border border-theme-border/10 flex items-center gap-3"
+                  >
+                    <Avatar name={fighter.full_name} url={fighter.avatar_url} size={40} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/lutadores/${fighter.id}`}
+                          className="font-barlow-condensed text-theme-text font-semibold hover:text-[#D4AF37] transition-colors"
+                        >
+                          {fighter.full_name}
+                        </Link>
+                        {fighter.handle && (
+                          <span className="font-barlow text-xs text-theme-text/30">@{fighter.handle}</span>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        {links.map((link) => (
+                          <span key={link.id} className="text-[10px] bg-[#C41E3A]/10 border border-[#C41E3A]/20 rounded-full px-2 py-0.5 text-[#C41E3A]/60 font-barlow-condensed">
+                            {link.martial_art?.art_name || 'Modalidade'}
+                          </span>
+                        ))}
+                      </div>
                     </div>
+                    <span className="ml-auto shrink-0">
+                      {getStatusBadge('active')}
+                    </span>
                   </div>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-theme-text/15 group-hover:text-[#D4AF37]/50 flex-shrink-0"><path d="M9 18l6-6-6-6"/></svg>
-                </Link>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
