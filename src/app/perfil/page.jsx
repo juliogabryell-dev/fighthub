@@ -1371,16 +1371,45 @@ export default function PerfilPage() {
 
         {/* Pending Changes Banner */}
         {pendingChanges.length > 0 && (
-          <div className="mb-4 p-4 rounded-xl bg-[#D4AF37]/10 border border-[#D4AF37]/30">
-            <div className="flex items-center gap-2 mb-1">
-              <Icon name="clock" size={16} className="text-[#D4AF37]" />
-              <span className="font-barlow-condensed text-sm uppercase tracking-wider text-[#D4AF37] font-semibold">
-                {pendingChanges.length} alteração(ões) aguardando aprovação
-              </span>
+          <div className="mb-4 rounded-xl bg-[#D4AF37]/10 border border-[#D4AF37]/30 overflow-hidden">
+            <div className="p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Icon name="clock" size={16} className="text-[#D4AF37]" />
+                <span className="font-barlow-condensed text-sm uppercase tracking-wider text-[#D4AF37] font-semibold">
+                  {pendingChanges.length} alteração(ões) aguardando aprovação
+                </span>
+              </div>
+              <p className="font-barlow text-xs text-theme-text/40">
+                Como seu perfil é verificado, as alterações serão revisadas por um administrador antes de ficarem visíveis.
+              </p>
             </div>
-            <p className="font-barlow text-xs text-theme-text/40">
-              Como seu perfil é verificado, as alterações serão revisadas por um administrador antes de ficarem visíveis.
-            </p>
+            <div className="border-t border-[#D4AF37]/15 divide-y divide-[#D4AF37]/10">
+              {pendingChanges.map((change) => {
+                const TYPE_LABELS = { profile: 'Edição de Perfil', martial_art: 'Modalidade', fight_record: 'Cartel', video: 'Vídeo', experience: 'Experiência' };
+                const ACTION_LABELS = { create: 'Adição', update: 'Edição', delete: 'Exclusão' };
+                let summary = '';
+                if (change.change_type === 'profile') {
+                  const keys = Object.keys(change.payload || {}).filter(k => k !== 'public_fields');
+                  summary = keys.slice(0, 3).map(k => k.replace(/_/g, ' ')).join(', ') + (keys.length > 3 ? '...' : '');
+                } else if (change.change_type === 'martial_art' && change.payload?.martial_art) {
+                  summary = change.payload.martial_art.art_name || '';
+                }
+                return (
+                  <div key={change.id} className="px-4 py-2.5 flex items-center gap-3">
+                    <Icon name="clock" size={12} className="text-[#D4AF37]/50 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <span className="font-barlow text-xs text-[#D4AF37]/80">
+                        {ACTION_LABELS[change.action] || change.action} — {TYPE_LABELS[change.change_type] || change.change_type}
+                      </span>
+                      {summary && <span className="font-barlow text-xs text-theme-text/30 ml-2">{summary}</span>}
+                    </div>
+                    <span className="font-barlow text-[10px] text-theme-text/25 shrink-0">
+                      {new Date(change.created_at).toLocaleDateString('pt-BR')}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
@@ -1904,6 +1933,58 @@ export default function PerfilPage() {
                 );
               })}
             </div>
+
+            {/* Pending martial arts (awaiting approval) */}
+            {pendingChanges
+              .filter(c => c.change_type === 'martial_art' && c.action === 'create')
+              .map((change) => (
+                <div key={change.id} className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-4 border border-[#D4AF37]/20 opacity-70">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-barlow-condensed text-theme-text font-semibold">
+                          {change.payload?.martial_art?.art_name || 'Nova Modalidade'}
+                        </p>
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-barlow-condensed uppercase tracking-wider bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#D4AF37]">
+                          Aguardando Aprovação
+                        </span>
+                      </div>
+                      <p className="font-barlow text-theme-text/40 text-sm">
+                        {change.payload?.martial_art?.level || ''}
+                        {change.payload?.martial_art?.started_at && ` · Desde ${change.payload.martial_art.started_at}`}
+                      </p>
+                    </div>
+                    <Icon name="clock" size={16} className="text-[#D4AF37]/50 mt-1" />
+                  </div>
+                  {/* Show pending records summary */}
+                  {change.payload?.records && (() => {
+                    const cats = [
+                      { key: 'profissional', label: 'PRO' },
+                      { key: 'semi_profissional', label: 'SEMI' },
+                      { key: 'amador', label: 'AMA' },
+                    ];
+                    const hasAny = cats.some(c => {
+                      const r = change.payload.records[c.key];
+                      return r && ((parseInt(r.wins)||0)+(parseInt(r.losses)||0)+(parseInt(r.draws)||0)+(parseInt(r.no_contest)||0)) > 0;
+                    });
+                    if (!hasAny) return null;
+                    return (
+                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                        {cats.map(({ key, label }) => {
+                          const r = change.payload.records[key];
+                          if (!r || ((parseInt(r.wins)||0)+(parseInt(r.losses)||0)+(parseInt(r.draws)||0)+(parseInt(r.no_contest)||0)) === 0) return null;
+                          return (
+                            <span key={key} className="font-barlow text-[11px] text-theme-text/25">
+                              <span className="font-barlow-condensed text-theme-text/40 uppercase tracking-wider">{label}:</span>{' '}
+                              {r.wins||0}V {r.losses||0}D {r.draws||0}E {r.no_contest||0}NC
+                            </span>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
+              ))}
           </div>
         )}
 

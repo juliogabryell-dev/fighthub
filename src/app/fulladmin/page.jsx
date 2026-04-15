@@ -45,6 +45,7 @@ export default function FullAdminDashboard() {
   // Verification
   const [pendingVerifications, setPendingVerifications] = useState([]);
   const [pendingProfileChanges, setPendingProfileChanges] = useState([]);
+  const [changeDetailModal, setChangeDetailModal] = useState(null);
 
   // UI states
   const [actionLoading, setActionLoading] = useState(null);
@@ -878,8 +879,23 @@ export default function FullAdminDashboard() {
               <div className="divide-y divide-white/5">
                 {pendingProfileChanges.map((change) => {
                   const TYPE_LABELS = { profile: 'Perfil', martial_art: 'Modalidade', fight_record: 'Cartel', video: 'Vídeo', experience: 'Experiência' };
-                  const ACTION_LABELS = { create: 'Novo', update: 'Edição', delete: 'Exclusão' };
+                  const ACTION_LABELS = { create: 'Adição', update: 'Edição', delete: 'Exclusão' };
                   const ACTION_COLORS = { create: 'bg-green-500/10 border-green-500/30 text-green-400', update: 'bg-blue-500/10 border-blue-500/30 text-blue-400', delete: 'bg-red-500/10 border-red-500/30 text-red-400' };
+
+                  // Build summary
+                  let summary = '';
+                  if (change.change_type === 'profile') {
+                    const keys = Object.keys(change.payload || {}).filter(k => k !== 'public_fields' && change.payload[k]);
+                    summary = `Editou ${keys.length} campo(s): ${keys.slice(0, 4).map(k => k.replace(/_/g, ' ')).join(', ')}${keys.length > 4 ? '...' : ''}`;
+                  } else if (change.change_type === 'martial_art') {
+                    const artName = change.payload?.martial_art?.art_name || '';
+                    if (change.action === 'create') summary = `Adicionou modalidade: ${artName}`;
+                    else if (change.action === 'update') summary = `Editou modalidade: ${artName}`;
+                    else if (change.action === 'delete') summary = 'Solicitou exclusão de modalidade';
+                  } else if (change.change_type === 'video') {
+                    summary = change.action === 'delete' ? 'Solicitou exclusão de vídeo' : `${change.action === 'create' ? 'Adicionou' : 'Editou'} vídeo`;
+                  }
+
                   return (
                     <div key={change.id} className="p-4 hover:bg-white/[0.02] transition-colors">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -899,9 +915,17 @@ export default function FullAdminDashboard() {
                                 {ACTION_LABELS[change.action] || change.action}
                               </span>
                             </div>
+                            {/* Summary line */}
+                            <p className="font-barlow text-white/40 text-xs mt-1">{summary}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setChangeDetailModal(change)}
+                            className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider"
+                          >
+                            Detalhes
+                          </button>
                           <button
                             onClick={() => handlePendingChange(change.id, 'approve')}
                             disabled={actionLoading === 'pc-' + change.id}
@@ -918,37 +942,6 @@ export default function FullAdminDashboard() {
                           </button>
                         </div>
                       </div>
-                      {/* Show payload summary */}
-                      <div className="mt-3 p-3 bg-white/[0.02] rounded-lg border border-white/5">
-                        <p className="font-barlow-condensed text-[10px] uppercase tracking-widest text-white/30 mb-2">Dados propostos</p>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                          {change.change_type === 'profile' && Object.entries(change.payload || {}).map(([key, val]) => {
-                            if (!val || key === 'public_fields') return null;
-                            return (
-                              <div key={key} className="flex justify-between text-xs py-0.5">
-                                <span className="text-white/30 font-barlow">{key.replace(/_/g, ' ')}</span>
-                                <span className="text-white/60 font-barlow truncate ml-2 max-w-[60%] text-right">{String(val)}</span>
-                              </div>
-                            );
-                          })}
-                          {change.change_type === 'martial_art' && change.payload?.martial_art && (
-                            <>
-                              <div className="col-span-2 text-xs text-white/60 font-barlow-condensed">
-                                {change.payload.martial_art.art_name} - {change.payload.martial_art.level}
-                              </div>
-                              {change.payload.records && Object.entries(change.payload.records).map(([cat, rec]) => {
-                                const total = (parseInt(rec?.wins)||0)+(parseInt(rec?.losses)||0)+(parseInt(rec?.draws)||0)+(parseInt(rec?.no_contest)||0);
-                                if (total === 0) return null;
-                                return (
-                                  <span key={cat} className="text-[11px] text-white/40 font-barlow col-span-1">
-                                    {cat === 'profissional' ? 'PRO' : cat === 'semi_profissional' ? 'SEMI' : 'AMA'}: {rec.wins}V {rec.losses}D {rec.draws}E {rec.no_contest}NC
-                                  </span>
-                                );
-                              })}
-                            </>
-                          )}
-                        </div>
-                      </div>
                     </div>
                   );
                 })}
@@ -959,6 +952,131 @@ export default function FullAdminDashboard() {
                 <p className="font-barlow text-white/40 text-sm">Nenhuma alteração pendente de aprovação.</p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Change Detail Modal */}
+        {changeDetailModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4" onClick={() => setChangeDetailModal(null)}>
+            <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="p-5 border-b border-white/5 flex items-center justify-between">
+                <h3 className="font-bebas text-lg tracking-wider text-white">DETALHES DA ALTERAÇÃO</h3>
+                <button onClick={() => setChangeDetailModal(null)} className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 transition-all">✕</button>
+              </div>
+              <div className="p-5">
+                {/* User info */}
+                <div className="flex items-center gap-3 mb-4">
+                  <Avatar name={changeDetailModal.user?.full_name} url={changeDetailModal.user?.avatar_url} size={40} />
+                  <div>
+                    <p className="font-barlow-condensed text-white font-semibold flex items-center gap-1.5">{changeDetailModal.user?.full_name} <VerifiedBadge size={14} /></p>
+                    {changeDetailModal.user?.handle && <p className="font-barlow text-white/30 text-xs">@{changeDetailModal.user.handle}</p>}
+                  </div>
+                </div>
+
+                {/* Meta */}
+                <div className="flex gap-2 mb-4">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37]">
+                    {{ profile: 'Perfil', martial_art: 'Modalidade', fight_record: 'Cartel', video: 'Vídeo', experience: 'Experiência' }[changeDetailModal.change_type]}
+                  </span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border ${{ create: 'bg-green-500/10 border-green-500/30 text-green-400', update: 'bg-blue-500/10 border-blue-500/30 text-blue-400', delete: 'bg-red-500/10 border-red-500/30 text-red-400' }[changeDetailModal.action]}`}>
+                    {{ create: 'Adição', update: 'Edição', delete: 'Exclusão' }[changeDetailModal.action]}
+                  </span>
+                  <span className="font-barlow text-white/25 text-xs">{new Date(changeDetailModal.created_at).toLocaleString('pt-BR')}</span>
+                </div>
+
+                {/* Payload details */}
+                <div className="space-y-3">
+                  {changeDetailModal.change_type === 'profile' && (
+                    <div className="space-y-2">
+                      <p className="font-barlow-condensed text-xs uppercase tracking-widest text-white/40 font-semibold">Campos alterados</p>
+                      {Object.entries(changeDetailModal.payload || {}).filter(([k, v]) => v && k !== 'public_fields').map(([key, val]) => (
+                        <div key={key} className="flex justify-between items-center py-2 border-b border-white/5">
+                          <span className="font-barlow text-white/40 text-sm capitalize">{key.replace(/_/g, ' ')}</span>
+                          <span className="font-barlow text-white text-sm text-right max-w-[60%] truncate">{String(val)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {changeDetailModal.change_type === 'martial_art' && changeDetailModal.payload?.martial_art && (
+                    <div className="space-y-3">
+                      <p className="font-barlow-condensed text-xs uppercase tracking-widest text-white/40 font-semibold">Modalidade</p>
+                      <div className="p-3 bg-white/[0.03] rounded-lg border border-white/5">
+                        <p className="font-barlow-condensed text-white font-semibold">{changeDetailModal.payload.martial_art.art_name}</p>
+                        <p className="font-barlow text-white/40 text-sm">
+                          {changeDetailModal.payload.martial_art.level && `Nível: ${changeDetailModal.payload.martial_art.level}`}
+                          {changeDetailModal.payload.martial_art.started_at && ` · Desde ${changeDetailModal.payload.martial_art.started_at}`}
+                        </p>
+                        {changeDetailModal.payload.martial_art.description && (
+                          <p className="font-barlow text-white/30 text-xs mt-1">{changeDetailModal.payload.martial_art.description}</p>
+                        )}
+                      </div>
+
+                      {changeDetailModal.payload.records && (
+                        <>
+                          <p className="font-barlow-condensed text-xs uppercase tracking-widest text-white/40 font-semibold">Cartel</p>
+                          {[
+                            { key: 'profissional', label: 'Profissional' },
+                            { key: 'semi_profissional', label: 'Semi Profissional' },
+                            { key: 'amador', label: 'Amador' },
+                          ].map(({ key, label }) => {
+                            const rec = changeDetailModal.payload.records[key];
+                            if (!rec) return null;
+                            const total = (parseInt(rec.wins)||0)+(parseInt(rec.losses)||0)+(parseInt(rec.draws)||0)+(parseInt(rec.no_contest)||0);
+                            if (total === 0) return null;
+                            return (
+                              <div key={key} className="p-3 bg-white/[0.03] rounded-lg border border-white/5">
+                                <p className="font-barlow-condensed text-white/60 text-xs uppercase tracking-wider mb-2">{label}</p>
+                                <div className="grid grid-cols-4 gap-2">
+                                  <div className="text-center p-1.5 bg-green-500/10 rounded border border-green-500/20">
+                                    <p className="font-bebas text-lg text-green-500">{rec.wins||0}</p>
+                                    <p className="text-[8px] text-white/40 font-barlow-condensed uppercase">V</p>
+                                  </div>
+                                  <div className="text-center p-1.5 bg-[#C41E3A]/10 rounded border border-[#C41E3A]/20">
+                                    <p className="font-bebas text-lg text-[#C41E3A]">{rec.losses||0}</p>
+                                    <p className="text-[8px] text-white/40 font-barlow-condensed uppercase">D</p>
+                                  </div>
+                                  <div className="text-center p-1.5 bg-[#D4AF37]/10 rounded border border-[#D4AF37]/20">
+                                    <p className="font-bebas text-lg text-[#D4AF37]">{rec.draws||0}</p>
+                                    <p className="text-[8px] text-white/40 font-barlow-condensed uppercase">E</p>
+                                  </div>
+                                  <div className="text-center p-1.5 bg-white/5 rounded border border-white/10">
+                                    <p className="font-bebas text-lg text-white/40">{rec.no_contest||0}</p>
+                                    <p className="text-[8px] text-white/30 font-barlow-condensed uppercase">NC</p>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {changeDetailModal.change_type === 'martial_art' && changeDetailModal.action === 'delete' && (
+                    <div className="p-3 bg-red-500/10 rounded-lg border border-red-500/20">
+                      <p className="font-barlow text-red-400 text-sm">Solicitou a exclusão desta modalidade e seus registros de cartel.</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3 mt-6 pt-4 border-t border-white/5">
+                  <button
+                    onClick={() => { handlePendingChange(changeDetailModal.id, 'approve'); setChangeDetailModal(null); }}
+                    className="flex-1 py-2.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 hover:bg-green-500/20 transition-all font-barlow-condensed text-sm uppercase tracking-wider"
+                  >
+                    Aprovar
+                  </button>
+                  <button
+                    onClick={() => { handlePendingChange(changeDetailModal.id, 'reject'); setChangeDetailModal(null); }}
+                    className="flex-1 py-2.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all font-barlow-condensed text-sm uppercase tracking-wider"
+                  >
+                    Rejeitar
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
