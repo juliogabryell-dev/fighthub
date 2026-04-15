@@ -928,12 +928,15 @@ export default function PerfilPage() {
   }
 
   // ===== Coach Management per Modality (Fighter) =====
+  const [coachSearchQuery, setCoachSearchQuery] = useState('');
+
   async function openCoachModalForArt(artId) {
     setShowCoachModalForArt(artId);
+    setCoachSearchQuery('');
     setLoadingCoaches(true);
     const { data: coaches } = await supabase
       .from('profiles')
-      .select('id, full_name, avatar_url')
+      .select('id, full_name, handle, avatar_url')
       .eq('is_coach', true)
       .eq('status', 'active');
     setAvailableCoaches(coaches || []);
@@ -966,12 +969,15 @@ export default function PerfilPage() {
   }
 
   // ===== Academy Management per Modality (Fighter) =====
+  const [academySearchQuery, setAcademySearchQuery] = useState('');
+
   async function openAcademyModalForArt(artId) {
     setShowAcademyModalForArt(artId);
+    setAcademySearchQuery('');
     setLoadingAcademiesForBinding(true);
     const { data: academies } = await supabase
       .from('profiles')
-      .select('id, full_name, avatar_url')
+      .select('id, full_name, handle, avatar_url')
       .eq('role', 'academy')
       .eq('status', 'active');
     setAvailableAcademiesForBinding(academies || []);
@@ -1760,7 +1766,7 @@ export default function PerfilPage() {
                       {artCoaches.length < 3 && (
                         <button
                           onClick={() => openCoachModalForArt(art.id)}
-                          className="mt-2 flex items-center gap-1.5 text-xs font-barlow-condensed uppercase tracking-wider text-[#D4AF37]/70 hover:text-[#D4AF37] transition-colors"
+                          className="mt-2 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/20 text-[#D4AF37] text-xs font-barlow-condensed uppercase tracking-wider hover:bg-[#D4AF37]/20 hover:border-[#D4AF37]/30 transition-all"
                         >
                           <Icon name="plus" size={12} />
                           Adicionar Treinador
@@ -1803,7 +1809,7 @@ export default function PerfilPage() {
                       {artAcademies.length < 2 && (
                         <button
                           onClick={() => openAcademyModalForArt(art.id)}
-                          className="mt-2 flex items-center gap-1.5 text-xs font-barlow-condensed uppercase tracking-wider text-blue-400/70 hover:text-blue-400 transition-colors"
+                          className="mt-2 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-barlow-condensed uppercase tracking-wider hover:bg-blue-500/20 hover:border-blue-500/30 transition-all"
                         >
                           <Icon name="plus" size={12} />
                           Adicionar Academia
@@ -3010,41 +3016,61 @@ export default function PerfilPage() {
         <Modal onClose={() => setShowCoachModalForArt(null)} title={`Adicionar Treinador — ${martialArts.find(a => a.id === showCoachModalForArt)?.art_name || 'Modalidade'}`}>
           {loadingCoaches ? (
             <div className="flex justify-center py-8">
-              <svg className="animate-spin h-8 w-8 text-[#D4AF37]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin h-8 w-8 text-[#D4AF37]" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
             </div>
-          ) : availableCoaches.length > 0 ? (
-            <div className="space-y-3 max-h-[60vh] overflow-y-auto">
-              {availableCoaches.map((coach) => {
-                const existing = myCoaches.find(mc => mc.coach_id === coach.id && mc.martial_art_id === showCoachModalForArt);
-                return (
-                  <div key={coach.id} className="flex items-center justify-between p-3 rounded-lg bg-theme-text/5 border border-theme-border/10">
-                    <div className="flex items-center gap-3">
-                      <Avatar name={coach.full_name} url={coach.avatar_url} size={36} />
-                      <p className="font-barlow-condensed text-theme-text font-semibold text-sm">{coach.full_name}</p>
-                    </div>
-                    {existing ? (
-                      <span className="text-xs font-barlow-condensed text-theme-text/40 uppercase tracking-wider">
-                        {existing.status === 'active' ? 'Vinculado' : existing.status === 'pending' ? 'Pendente' : 'Rejeitado'}
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => handleRequestCoachForArt(coach.id, showCoachModalForArt)}
-                        className="px-3 py-1.5 rounded-lg bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-barlow-condensed uppercase tracking-wider hover:bg-[#D4AF37]/30 transition-all"
-                      >
-                        Solicitar
-                      </button>
-                    )}
+          ) : (
+            <>
+              <input
+                type="text"
+                placeholder="Buscar por nome ou @handle..."
+                value={coachSearchQuery}
+                onChange={(e) => setCoachSearchQuery(e.target.value)}
+                className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg text-theme-text font-barlow text-sm px-4 py-2.5 mb-3 focus:border-[#D4AF37]/50 outline-none transition-colors placeholder:text-theme-text/25"
+              />
+              {(() => {
+                const term = coachSearchQuery.toLowerCase().replace(/^@/, '');
+                const filtered = availableCoaches.filter(c =>
+                  !term || c.full_name?.toLowerCase().includes(term) || c.handle?.toLowerCase().includes(term)
+                );
+                return filtered.length > 0 ? (
+                  <div className="space-y-2 max-h-[55vh] overflow-y-auto">
+                    {filtered.map((coach) => {
+                      const existing = myCoaches.find(mc => mc.coach_id === coach.id && mc.martial_art_id === showCoachModalForArt);
+                      return (
+                        <div key={coach.id} className="flex items-center justify-between p-3 rounded-lg bg-theme-text/5 border border-theme-border/10">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <Avatar name={coach.full_name} url={coach.avatar_url} size={36} />
+                            <div className="min-w-0">
+                              <p className="font-barlow-condensed text-theme-text font-semibold text-sm truncate">{coach.full_name}</p>
+                              {coach.handle && <p className="font-barlow text-theme-text/30 text-xs">@{coach.handle}</p>}
+                            </div>
+                          </div>
+                          {existing ? (
+                            <span className="text-xs font-barlow-condensed text-theme-text/40 uppercase tracking-wider shrink-0">
+                              {existing.status === 'active' ? 'Vinculado' : existing.status === 'pending' ? 'Pendente' : 'Rejeitado'}
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => handleRequestCoachForArt(coach.id, showCoachModalForArt)}
+                              className="px-3 py-1.5 rounded-lg bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-barlow-condensed uppercase tracking-wider hover:bg-[#D4AF37]/30 transition-all shrink-0"
+                            >
+                              Solicitar
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="font-barlow text-theme-text/30 text-sm">{coachSearchQuery ? 'Nenhum treinador encontrado.' : 'Nenhum treinador disponível.'}</p>
                   </div>
                 );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="font-barlow text-theme-text/30">Nenhum treinador disponivel na plataforma.</p>
-            </div>
+              })()}
+            </>
           )}
         </Modal>
       )}
@@ -3054,41 +3080,61 @@ export default function PerfilPage() {
         <Modal onClose={() => setShowAcademyModalForArt(null)} title={`Adicionar Academia — ${martialArts.find(a => a.id === showAcademyModalForArt)?.art_name || 'Modalidade'}`}>
           {loadingAcademiesForBinding ? (
             <div className="flex justify-center py-8">
-              <svg className="animate-spin h-8 w-8 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin h-8 w-8 text-blue-400" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
             </div>
-          ) : availableAcademiesForBinding.length > 0 ? (
-            <div className="space-y-3 max-h-[60vh] overflow-y-auto">
-              {availableAcademiesForBinding.map((academy) => {
-                const existing = myAcademies.find(ma => ma.academy_id === academy.id && ma.martial_art_id === showAcademyModalForArt);
-                return (
-                  <div key={academy.id} className="flex items-center justify-between p-3 rounded-lg bg-theme-text/5 border border-theme-border/10">
-                    <div className="flex items-center gap-3">
-                      <Avatar name={academy.full_name} url={academy.avatar_url} size={36} />
-                      <p className="font-barlow-condensed text-theme-text font-semibold text-sm">{academy.full_name}</p>
-                    </div>
-                    {existing ? (
-                      <span className="text-xs font-barlow-condensed text-theme-text/40 uppercase tracking-wider">
-                        {existing.status === 'active' ? 'Vinculada' : existing.status === 'pending' ? 'Pendente' : 'Rejeitado'}
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => handleRequestAcademyForArt(academy.id, showAcademyModalForArt)}
-                        className="px-3 py-1.5 rounded-lg bg-blue-500/20 border border-blue-500/30 text-blue-400 text-xs font-barlow-condensed uppercase tracking-wider hover:bg-blue-500/30 transition-all"
-                      >
-                        Solicitar
-                      </button>
-                    )}
+          ) : (
+            <>
+              <input
+                type="text"
+                placeholder="Buscar por nome ou @handle..."
+                value={academySearchQuery}
+                onChange={(e) => setAcademySearchQuery(e.target.value)}
+                className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg text-theme-text font-barlow text-sm px-4 py-2.5 mb-3 focus:border-blue-500/50 outline-none transition-colors placeholder:text-theme-text/25"
+              />
+              {(() => {
+                const term = academySearchQuery.toLowerCase().replace(/^@/, '');
+                const filtered = availableAcademiesForBinding.filter(a =>
+                  !term || a.full_name?.toLowerCase().includes(term) || a.handle?.toLowerCase().includes(term)
+                );
+                return filtered.length > 0 ? (
+                  <div className="space-y-2 max-h-[55vh] overflow-y-auto">
+                    {filtered.map((academy) => {
+                      const existing = myAcademies.find(ma => ma.academy_id === academy.id && ma.martial_art_id === showAcademyModalForArt);
+                      return (
+                        <div key={academy.id} className="flex items-center justify-between p-3 rounded-lg bg-theme-text/5 border border-theme-border/10">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <Avatar name={academy.full_name} url={academy.avatar_url} size={36} />
+                            <div className="min-w-0">
+                              <p className="font-barlow-condensed text-theme-text font-semibold text-sm truncate">{academy.full_name}</p>
+                              {academy.handle && <p className="font-barlow text-theme-text/30 text-xs">@{academy.handle}</p>}
+                            </div>
+                          </div>
+                          {existing ? (
+                            <span className="text-xs font-barlow-condensed text-theme-text/40 uppercase tracking-wider shrink-0">
+                              {existing.status === 'active' ? 'Vinculada' : existing.status === 'pending' ? 'Pendente' : 'Rejeitado'}
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => handleRequestAcademyForArt(academy.id, showAcademyModalForArt)}
+                              className="px-3 py-1.5 rounded-lg bg-blue-500/20 border border-blue-500/30 text-blue-400 text-xs font-barlow-condensed uppercase tracking-wider hover:bg-blue-500/30 transition-all shrink-0"
+                            >
+                              Solicitar
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="font-barlow text-theme-text/30 text-sm">{academySearchQuery ? 'Nenhuma academia encontrada.' : 'Nenhuma academia disponível.'}</p>
                   </div>
                 );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="font-barlow text-theme-text/30">Nenhuma academia disponivel na plataforma.</p>
-            </div>
+              })()}
+            </>
           )}
         </Modal>
       )}
