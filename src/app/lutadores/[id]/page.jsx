@@ -6,6 +6,7 @@ import ChallengeButton from './ChallengeButton';
 import FightRecordDisplay from '@/components/FightRecordDisplay';
 import FightRecordByModality from '@/components/FightRecordByModality';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import BackButton from '@/components/BackButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,13 +46,7 @@ export default async function FighterProfile({ params }) {
   if (!fighter) {
     return (
       <main className="min-h-screen px-6 py-12 max-w-4xl mx-auto">
-        <Link
-          href="/lutadores"
-          className="inline-flex items-center gap-2 text-brand-red font-barlow-condensed uppercase tracking-wider text-sm mb-8 hover:text-brand-red/80 transition-colors"
-        >
-          <Icon name="chevronLeft" size={16} />
-          Voltar
-        </Link>
+        <BackButton fallbackHref="/lutadores" />
 
         <div className="text-center py-20">
           <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-theme-border/[0.06] p-12 max-w-md mx-auto">
