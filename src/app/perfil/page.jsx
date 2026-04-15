@@ -354,8 +354,9 @@ export default function PerfilPage() {
       if (pendingErr) {
         alert('Erro ao enviar para aprovação: ' + pendingErr.message);
       } else {
-        setPendingToast('Modalidade enviada para aprovação do administrador.');
-        setTimeout(() => setPendingToast(null), 5000);
+        setPendingToast('Seu perfil é verificado. A modalidade foi enviada para aprovação do administrador e ficará visível após a validação.');
+        setTimeout(() => setPendingToast(null), 8000);
+        alert('Seu perfil é verificado.\n\nA modalidade foi enviada para aprovação do administrador e ficará visível publicamente somente após a validação.');
       }
       setShowArtModal(false);
       fetchUserAndProfile();
@@ -428,8 +429,9 @@ export default function PerfilPage() {
       await supabase.from('pending_profile_changes').insert({
         user_id: user.id, change_type: 'martial_art', action: 'delete', target_id: artId, payload: {},
       });
-      setPendingToast('Exclusão enviada para aprovação do administrador.');
-      setTimeout(() => setPendingToast(null), 5000);
+      setPendingToast('Seu perfil é verificado. A exclusão foi enviada para aprovação do administrador.');
+      setTimeout(() => setPendingToast(null), 8000);
+      alert('Seu perfil é verificado.\n\nA exclusão da modalidade foi enviada para aprovação do administrador.');
       fetchUserAndProfile();
       return;
     }
@@ -771,8 +773,9 @@ export default function PerfilPage() {
           if (avatarFile && avatar_url) directUpdate.avatar_url = avatar_url;
           await supabase.from('profiles').update(directUpdate).eq('id', user.id);
 
-          setPendingToast('Suas alterações foram enviadas para aprovação do administrador.');
-          setTimeout(() => setPendingToast(null), 5000);
+          setPendingToast('Seu perfil é verificado. As alterações foram enviadas para aprovação do administrador.');
+          setTimeout(() => setPendingToast(null), 8000);
+          alert('Seu perfil é verificado.\n\nAs alterações do perfil foram enviadas para aprovação do administrador e ficarão visíveis publicamente somente após a validação.');
           setInitialEditForm(null);
           setShowEditProfile(false);
           fetchUserAndProfile();
