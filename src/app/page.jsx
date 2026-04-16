@@ -5,7 +5,7 @@ import FadeInOnScroll from '@/components/FadeInOnScroll';
 import { scrapeNews } from '@/lib/scrapeNews';
 import { createClient } from '@supabase/supabase-js';
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 
 async function getUpcomingEvents() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

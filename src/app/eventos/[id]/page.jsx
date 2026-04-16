@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import EventDetailClient from './EventDetailClient';
 import EventRegistrationButton from '@/components/EventRegistrationButton';
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 
 async function getEvent(id) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
