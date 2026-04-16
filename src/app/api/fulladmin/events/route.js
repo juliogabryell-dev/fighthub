@@ -67,7 +67,7 @@ export async function POST(request) {
 
   try {
     const body = await request.json();
-    const { title, description_short, description_full, event_date, payment_link, external_link, is_published, venue_name, venue_address, venue_city } = body;
+    const { title, description_short, description_full, event_date, payment_link, external_link, is_published, venue_name, venue_address, venue_city, registration_open, registration_terms } = body;
 
     if (!title || !description_short || !event_date) {
       return NextResponse.json({ error: 'Título, descrição curta e data são obrigatórios' }, { status: 400 });
@@ -86,6 +86,8 @@ export async function POST(request) {
         payment_link: payment_link || null,
         external_link: external_link || null,
         is_published: is_published !== false,
+        registration_open: registration_open !== false,
+        registration_terms: registration_terms || null,
       })
       .select()
       .single();
@@ -110,7 +112,7 @@ export async function PUT(request) {
 
   try {
     const body = await request.json();
-    const { id, title, description_short, description_full, event_date, payment_link, external_link, is_published, venue_name, venue_address, venue_city } = body;
+    const { id, title, description_short, description_full, event_date, payment_link, external_link, is_published, venue_name, venue_address, venue_city, registration_open, registration_terms } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'ID do evento é obrigatório' }, { status: 400 });
@@ -129,6 +131,8 @@ export async function PUT(request) {
         payment_link: payment_link || null,
         external_link: external_link || null,
         is_published,
+        registration_open: registration_open !== false,
+        registration_terms: registration_terms || null,
       })
       .eq('id', id)
       .select()

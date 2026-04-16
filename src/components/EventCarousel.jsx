@@ -353,7 +353,7 @@ function EventModal({ event, eventIndex, totalEvents, formatDateFull, onClose, o
 
           {/* Fighter Registration */}
           <div className="mt-4">
-            <EventRegistrationButton eventId={event.id} />
+            <EventRegistrationButton eventId={event.id} registrationOpen={event.registration_open} registrationTerms={event.registration_terms} />
           </div>
 
           {/* Full description */}

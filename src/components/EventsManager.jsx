@@ -31,6 +31,8 @@ export default function EventsManager() {
     payment_link: '',
     external_link: '',
     is_published: true,
+    registration_open: true,
+    registration_terms: '',
   });
 
   // Image state for the event being edited
@@ -123,6 +125,8 @@ export default function EventsManager() {
       payment_link: '',
       external_link: '',
       is_published: true,
+      registration_open: true,
+      registration_terms: '',
     });
     setEventImages([]);
     setEventFighters([]);
@@ -144,6 +148,8 @@ export default function EventsManager() {
       payment_link: event.payment_link || '',
       external_link: event.external_link || '',
       is_published: event.is_published,
+      registration_open: event.registration_open !== false,
+      registration_terms: event.registration_terms || '',
     });
     setEventImages(event.event_images || []);
     setEditingEvent(event);
@@ -379,6 +385,20 @@ export default function EventsManager() {
               </label>
             </div>
 
+            {/* Registration Open */}
+            <div className="md:col-span-2 flex items-center">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.registration_open}
+                  onChange={(e) => setForm({ ...form, registration_open: e.target.checked })}
+                  className="w-4 h-4 rounded border-white/20 bg-white/5 text-[#C41E3A] focus:ring-[#C41E3A]"
+                />
+                <span className="font-barlow text-white/60 text-sm">Inscrições abertas no portal</span>
+                <span className="font-barlow text-white/30 text-xs">(desmarque se as inscrições são feitas externamente)</span>
+              </label>
+            </div>
+
             {/* Short Description */}
             <div className="md:col-span-2">
               <label className="uppercase text-xs tracking-wider text-white/50 font-barlow-condensed font-semibold mb-1.5 block">
@@ -407,6 +427,23 @@ export default function EventsManager() {
                 className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors resize-y placeholder:text-white/25"
               />
             </div>
+
+            {/* Registration Terms */}
+            {form.registration_open && (
+              <div className="md:col-span-2">
+                <label className="uppercase text-xs tracking-wider text-white/50 font-barlow-condensed font-semibold mb-1.5 block">
+                  Termos e Condições de Inscrição
+                  <span className="normal-case text-white/30 ml-2">(opcional - se preenchido, o lutador deverá aceitar antes de se inscrever)</span>
+                </label>
+                <textarea
+                  value={form.registration_terms}
+                  onChange={(e) => setForm({ ...form, registration_terms: e.target.value })}
+                  placeholder="Ex: Ao se inscrever, o lutador declara estar em plenas condições físicas e psicológicas para competir..."
+                  rows={6}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg text-white font-barlow text-sm px-3.5 py-2.5 focus:border-[#C41E3A]/50 outline-none transition-colors resize-y placeholder:text-white/25"
+                />
+              </div>
+            )}
 
             {/* Venue Name */}
             <div>
@@ -722,6 +759,17 @@ export default function EventsManager() {
                           <Icon name="camera" size={12} />
                           {event.event_images?.length || 0} imagens
                         </span>
+                        {event.registration_open !== false ? (
+                          <span className="flex items-center gap-1 text-green-400/60">
+                            <Icon name="check" size={12} />
+                            Inscrições abertas
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1 text-white/25">
+                            <Icon name="x" size={12} />
+                            Sem inscrição
+                          </span>
+                        )}
                         {event.payment_link && (
                           <span className="flex items-center gap-1 text-green-400/60">
                             <Icon name="link" size={12} />

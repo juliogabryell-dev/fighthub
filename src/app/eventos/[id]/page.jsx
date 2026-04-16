@@ -151,7 +151,7 @@ export default async function EventPage({ params }) {
 
           {/* Fighter Registration */}
           <div className="mt-6">
-            <EventRegistrationButton eventId={event.id} />
+            <EventRegistrationButton eventId={event.id} registrationOpen={event.registration_open} registrationTerms={event.registration_terms} />
           </div>
 
           {/* Full description */}
