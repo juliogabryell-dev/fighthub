@@ -80,14 +80,60 @@ export async function GET(request) {
       return NextResponse.json({ registrations: data || [] });
     }
 
-    // All pending (for admin)
-    const { data } = await supabase
+    // Admin: all or pending
+    const allRegs = searchParams.get('all') === 'true';
+    const statusFilter = searchParams.get('status');
+    let query = supabase
       .from('event_registrations')
       .select('*, event:event_id(id, title, event_date), fighter:fighter_id(id, full_name, handle, avatar_url, city, state, phone, whatsapp, birth_date, father_name, mother_name, height_cm, weight_kg, blood_type, bio, instagram, fighter_verified)')
-      .eq('status', 'pending')
       .order('created_at', { ascending: false });
 
+    if (statusFilter) {
+      query = query.eq('status', statusFilter);
+    } else if (!allRegs) {
+      query = query.eq('status', 'pending');
+    }
+
+    const { data } = await query;
+
     return NextResponse.json({ registrations: data || [] });
+  } catch (err) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+// DELETE: Admin delete/cancel registration(s)
+export async function DELETE(request) {
+  const adminCookie = request.cookies.get('admin_session')?.value;
+  if (!adminCookie) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+
+  const supabase = getAdminClient();
+  if (!supabase) return NextResponse.json({ error: 'Supabase não configurado' }, { status: 500 });
+
+  try {
+    const { id, event_id } = await request.json();
+
+    if (event_id) {
+      // Bulk delete: all registrations for an event
+      const { error } = await supabase
+        .from('event_registrations')
+        .delete()
+        .eq('event_id', event_id);
+      if (error) throw error;
+      return NextResponse.json({ ok: true });
+    }
+
+    if (id) {
+      // Single delete
+      const { error } = await supabase
+        .from('event_registrations')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      return NextResponse.json({ ok: true });
+    }
+
+    return NextResponse.json({ error: 'id ou event_id é obrigatório' }, { status: 400 });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
