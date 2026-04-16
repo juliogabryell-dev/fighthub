@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Icon from '@/components/Icon';
 import Avatar from '@/components/Avatar';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 export default function EventsManager() {
   const [events, setEvents] = useState([]);
@@ -18,6 +19,13 @@ export default function EventsManager() {
   const [fighterResults, setFighterResults] = useState([]);
   const [searchingFighters, setSearchingFighters] = useState(false);
   const fighterSearchTimeout = useRef(null);
+
+  // Registration state
+  const [expandedEventId, setExpandedEventId] = useState(null);
+  const [eventRegs, setEventRegs] = useState([]);
+  const [loadingRegs, setLoadingRegs] = useState(false);
+  const [regActionLoading, setRegActionLoading] = useState(null);
+  const [regDetailModal, setRegDetailModal] = useState(null);
 
   // Form state
   const [form, setForm] = useState({
@@ -303,6 +311,79 @@ export default function EventsManager() {
   function isEventFuture(dateString) {
     return new Date(dateString) > new Date();
   }
+
+  // --- Registration functions ---
+  async function fetchEventRegs(eventId) {
+    setLoadingRegs(true);
+    try {
+      const res = await fetch(`/api/event-registration?event_id=${eventId}`);
+      const data = await res.json();
+      if (res.ok) setEventRegs(data.registrations || []);
+    } catch { /* ignore */ }
+    setLoadingRegs(false);
+  }
+
+  function toggleEventRegs(eventId) {
+    if (expandedEventId === eventId) {
+      setExpandedEventId(null);
+      setEventRegs([]);
+    } else {
+      setExpandedEventId(eventId);
+      fetchEventRegs(eventId);
+    }
+  }
+
+  async function handleRegAction(regId, status) {
+    setRegActionLoading('er-' + regId);
+    try {
+      await fetch('/api/event-registration', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: regId, status }),
+      });
+      if (expandedEventId) await fetchEventRegs(expandedEventId);
+    } catch { /* ignore */ }
+    setRegActionLoading(null);
+  }
+
+  async function handleRegDelete(regId) {
+    if (!confirm('Tem certeza que deseja anular esta inscrição? O lutador poderá se inscrever novamente.')) return;
+    setRegActionLoading('er-del-' + regId);
+    try {
+      await fetch('/api/event-registration', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: regId }),
+      });
+      if (expandedEventId) await fetchEventRegs(expandedEventId);
+    } catch { /* ignore */ }
+    setRegActionLoading(null);
+  }
+
+  async function handleRegBulkDelete(eventId, eventTitle) {
+    if (!confirm(`Anular TODAS as inscrições do evento "${eventTitle}"? Todos os lutadores poderão se inscrever novamente.`)) return;
+    setRegActionLoading('er-bulk-' + eventId);
+    try {
+      await fetch('/api/event-registration', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event_id: eventId }),
+      });
+      if (expandedEventId) await fetchEventRegs(expandedEventId);
+    } catch { /* ignore */ }
+    setRegActionLoading(null);
+  }
+
+  const regStatusLabel = { pending: 'Pendente', approved: 'Aprovado', rejected: 'Rejeitado' };
+  const regStatusStyle = {
+    pending: 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400',
+    approved: 'bg-green-500/10 border-green-500/30 text-green-400',
+    rejected: 'bg-red-500/10 border-red-500/30 text-red-400',
+  };
+
+  const pendingCount = eventRegs.filter((r) => r.status === 'pending').length;
+  const approvedCount = eventRegs.filter((r) => r.status === 'approved').length;
+  const rejectedCount = eventRegs.filter((r) => r.status === 'rejected').length;
 
   if (loading) {
     return (
@@ -719,81 +800,206 @@ export default function EventsManager() {
               {events.map((event) => {
                 const mainImage = event.event_images?.[0];
                 const isFuture = isEventFuture(event.event_date);
+                const isExpanded = expandedEventId === event.id;
                 return (
-                  <div key={event.id} className="p-4 flex flex-col sm:flex-row sm:items-center gap-4 hover:bg-white/[0.02] transition-colors">
-                    {/* Thumbnail */}
-                    <div className="w-16 h-16 rounded-lg overflow-hidden border border-white/10 bg-white/5 flex-shrink-0">
-                      {mainImage ? (
-                        <img src={mainImage.image_url} alt={event.title} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Icon name="calendar" size={24} className="text-white/20" />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-barlow-condensed text-white font-semibold truncate">{event.title}</h3>
-                        {!event.is_published && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border bg-yellow-500/10 border-yellow-500/30 text-yellow-400">
-                            Rascunho
-                          </span>
-                        )}
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border ${
-                          isFuture
-                            ? 'bg-green-500/10 border-green-500/30 text-green-400'
-                            : 'bg-white/5 border-white/10 text-white/40'
-                        }`}>
-                          {isFuture ? 'Futuro' : 'Passado'}
-                        </span>
-                      </div>
-                      <p className="font-barlow text-white/40 text-xs mt-1 truncate">{event.description_short}</p>
-                      <div className="flex items-center gap-3 mt-1 text-white/30 text-xs font-barlow">
-                        <span className="flex items-center gap-1">
-                          <Icon name="calendar" size={12} />
-                          {formatDate(event.event_date)}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Icon name="camera" size={12} />
-                          {event.event_images?.length || 0} imagens
-                        </span>
-                        {event.registration_open !== false ? (
-                          <span className="flex items-center gap-1 text-green-400/60">
-                            <Icon name="check" size={12} />
-                            Inscrições abertas
-                          </span>
+                  <div key={event.id}>
+                    <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4 hover:bg-white/[0.02] transition-colors">
+                      {/* Thumbnail */}
+                      <div className="w-16 h-16 rounded-lg overflow-hidden border border-white/10 bg-white/5 flex-shrink-0">
+                        {mainImage ? (
+                          <img src={mainImage.image_url} alt={event.title} className="w-full h-full object-cover" />
                         ) : (
-                          <span className="flex items-center gap-1 text-white/25">
-                            <Icon name="x" size={12} />
-                            Sem inscrição
-                          </span>
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Icon name="calendar" size={24} className="text-white/20" />
+                          </div>
                         )}
-                        {event.payment_link && (
-                          <span className="flex items-center gap-1 text-green-400/60">
-                            <Icon name="link" size={12} />
-                            Pagamento
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-barlow-condensed text-white font-semibold truncate">{event.title}</h3>
+                          {!event.is_published && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border bg-yellow-500/10 border-yellow-500/30 text-yellow-400">
+                              Rascunho
+                            </span>
+                          )}
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border ${
+                            isFuture
+                              ? 'bg-green-500/10 border-green-500/30 text-green-400'
+                              : 'bg-white/5 border-white/10 text-white/40'
+                          }`}>
+                            {isFuture ? 'Futuro' : 'Passado'}
                           </span>
-                        )}
+                        </div>
+                        <p className="font-barlow text-white/40 text-xs mt-1 truncate">{event.description_short}</p>
+                        <div className="flex items-center gap-3 mt-1 text-white/30 text-xs font-barlow flex-wrap">
+                          <span className="flex items-center gap-1">
+                            <Icon name="calendar" size={12} />
+                            {formatDate(event.event_date)}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Icon name="camera" size={12} />
+                            {event.event_images?.length || 0} imagens
+                          </span>
+                          {event.registration_open !== false ? (
+                            <span className="flex items-center gap-1 text-green-400/60">
+                              <Icon name="check" size={12} />
+                              Inscrições abertas
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1 text-white/25">
+                              <Icon name="x" size={12} />
+                              Sem inscrição
+                            </span>
+                          )}
+                          {event.payment_link && (
+                            <span className="flex items-center gap-1 text-green-400/60">
+                              <Icon name="link" size={12} />
+                              Pagamento
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2 sm:ml-4 flex-wrap">
+                        <button
+                          onClick={() => toggleEventRegs(event.id)}
+                          className={`px-3 py-1.5 rounded-lg border transition-all font-barlow-condensed text-xs uppercase tracking-wider flex items-center gap-1.5 ${
+                            isExpanded
+                              ? 'bg-[#C41E3A]/15 border-[#C41E3A]/30 text-[#C41E3A]'
+                              : 'bg-white/5 border-white/10 text-white/60 hover:text-white hover:border-white/20'
+                          }`}
+                        >
+                          <Icon name="users" size={12} />
+                          Inscritos
+                          <Icon name={isExpanded ? 'chevronDown' : 'chevronRight'} size={10} />
+                        </button>
+                        <button
+                          onClick={() => handleEdit(event)}
+                          className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleDelete(event)}
+                          className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider"
+                        >
+                          Excluir
+                        </button>
                       </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-2 sm:ml-4">
-                      <button
-                        onClick={() => handleEdit(event)}
-                        className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => handleDelete(event)}
-                        className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider"
-                      >
-                        Excluir
-                      </button>
-                    </div>
+                    {/* Expanded Registrations Panel */}
+                    {isExpanded && (
+                      <div className="bg-black/20 border-t border-white/5 px-4 py-4">
+                        {loadingRegs ? (
+                          <div className="flex items-center justify-center py-6">
+                            <svg className="animate-spin h-5 w-5 text-[#C41E3A]" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                          </div>
+                        ) : (
+                          <>
+                            {/* Counters */}
+                            <div className="flex items-center gap-3 mb-3 flex-wrap">
+                              <span className="font-barlow-condensed text-xs uppercase tracking-wider text-white/40 font-semibold">
+                                {eventRegs.length} inscrito{eventRegs.length !== 1 ? 's' : ''}
+                              </span>
+                              {pendingCount > 0 && (
+                                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border bg-yellow-500/10 border-yellow-500/30 text-yellow-400">
+                                  <Icon name="clock" size={10} /> {pendingCount} pendente{pendingCount !== 1 ? 's' : ''}
+                                </span>
+                              )}
+                              {approvedCount > 0 && (
+                                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border bg-green-500/10 border-green-500/30 text-green-400">
+                                  <Icon name="check" size={10} /> {approvedCount} aprovado{approvedCount !== 1 ? 's' : ''}
+                                </span>
+                              )}
+                              {rejectedCount > 0 && (
+                                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border bg-red-500/10 border-red-500/30 text-red-400">
+                                  <Icon name="x" size={10} /> {rejectedCount} rejeitado{rejectedCount !== 1 ? 's' : ''}
+                                </span>
+                              )}
+                              {eventRegs.length > 0 && (
+                                <button
+                                  onClick={() => handleRegBulkDelete(event.id, event.title)}
+                                  disabled={regActionLoading === 'er-bulk-' + event.id}
+                                  className="ml-auto px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/30 text-orange-400 hover:bg-orange-500/20 transition-all font-barlow-condensed text-[10px] uppercase tracking-wider disabled:opacity-50"
+                                >
+                                  {regActionLoading === 'er-bulk-' + event.id ? '...' : 'Anular Todas'}
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Registration rows */}
+                            {eventRegs.length > 0 ? (
+                              <div className="space-y-1.5">
+                                {eventRegs.map((reg) => (
+                                  <div key={reg.id} className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-colors">
+                                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                                      <Avatar name={reg.fighter?.full_name} url={reg.fighter?.avatar_url} size={32} />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="font-barlow-condensed text-sm text-white truncate flex items-center gap-1.5">
+                                          {reg.fighter?.full_name}
+                                          {reg.fighter?.fighter_verified && <VerifiedBadge size={12} />}
+                                          <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-barlow-condensed uppercase tracking-wider border ${regStatusStyle[reg.status] || 'bg-white/5 border-white/10 text-white/40'}`}>
+                                            {regStatusLabel[reg.status] || reg.status}
+                                          </span>
+                                        </p>
+                                        <p className="font-barlow text-[11px] text-white/25 truncate">
+                                          {reg.fighter?.handle && `@${reg.fighter.handle}`}
+                                          {reg.fighter?.city && ` · ${reg.fighter.city}`}
+                                          {reg.created_at && ` · ${new Date(reg.created_at).toLocaleDateString('pt-BR')}`}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                                      <button
+                                        onClick={() => setRegDetailModal(reg)}
+                                        className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all font-barlow-condensed text-[10px] uppercase tracking-wider"
+                                      >
+                                        Perfil
+                                      </button>
+                                      {reg.status === 'pending' && (
+                                        <>
+                                          <button
+                                            onClick={() => handleRegAction(reg.id, 'approved')}
+                                            disabled={regActionLoading === 'er-' + reg.id}
+                                            className="px-2.5 py-1 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 hover:bg-green-500/20 transition-all font-barlow-condensed text-[10px] uppercase tracking-wider disabled:opacity-50"
+                                          >
+                                            {regActionLoading === 'er-' + reg.id ? '...' : 'Aprovar'}
+                                          </button>
+                                          <button
+                                            onClick={() => handleRegAction(reg.id, 'rejected')}
+                                            disabled={regActionLoading === 'er-' + reg.id}
+                                            className="px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all font-barlow-condensed text-[10px] uppercase tracking-wider disabled:opacity-50"
+                                          >
+                                            {regActionLoading === 'er-' + reg.id ? '...' : 'Rejeitar'}
+                                          </button>
+                                        </>
+                                      )}
+                                      <button
+                                        onClick={() => handleRegDelete(reg.id)}
+                                        disabled={regActionLoading === 'er-del-' + reg.id}
+                                        className="px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/30 text-orange-400 hover:bg-orange-500/20 transition-all font-barlow-condensed text-[10px] uppercase tracking-wider disabled:opacity-50"
+                                        title="Anular inscrição"
+                                      >
+                                        {regActionLoading === 'er-del-' + reg.id ? '...' : 'Anular'}
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-center font-barlow text-white/25 text-sm py-4">Nenhuma inscrição neste evento.</p>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -805,6 +1011,94 @@ export default function EventsManager() {
               <p className="font-barlow text-white/25 text-xs mt-1">Clique em &quot;Novo Evento&quot; para criar o primeiro.</p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Registration Detail Modal */}
+      {regDetailModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4" onClick={() => setRegDetailModal(null)}>
+          <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="p-5 border-b border-white/5 flex items-center justify-between">
+              <h3 className="font-bebas text-lg tracking-wider text-white">PERFIL DO LUTADOR</h3>
+              <button onClick={() => setRegDetailModal(null)} className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 transition-all">
+                <Icon name="x" size={14} />
+              </button>
+            </div>
+            <div className="p-5">
+              {/* Fighter info */}
+              <div className="flex items-center gap-3 mb-4">
+                <Avatar name={regDetailModal.fighter?.full_name} url={regDetailModal.fighter?.avatar_url} size={48} />
+                <div>
+                  <p className="font-barlow-condensed text-white font-semibold flex items-center gap-1.5">
+                    {regDetailModal.fighter?.full_name}
+                    {regDetailModal.fighter?.fighter_verified && <VerifiedBadge size={14} />}
+                  </p>
+                  {regDetailModal.fighter?.handle && <p className="font-barlow text-white/30 text-xs">@{regDetailModal.fighter.handle}</p>}
+                </div>
+              </div>
+
+              {/* Status */}
+              <div className={`p-3 rounded-lg border mb-4 ${regStatusStyle[regDetailModal.status] || 'bg-white/5 border-white/10'}`}>
+                <p className="font-barlow-condensed text-[10px] uppercase tracking-widest opacity-60">Status da Inscrição</p>
+                <p className="font-barlow-condensed font-semibold">{regStatusLabel[regDetailModal.status] || regDetailModal.status}</p>
+              </div>
+
+              {/* Fighter data */}
+              <div className="space-y-2">
+                {[
+                  ['Nome Completo', regDetailModal.fighter?.full_name],
+                  ['Data de Nascimento', regDetailModal.fighter?.birth_date && new Date(regDetailModal.fighter.birth_date).toLocaleDateString('pt-BR')],
+                  ['Nome do Pai', regDetailModal.fighter?.father_name],
+                  ['Nome da Mãe', regDetailModal.fighter?.mother_name],
+                  ['Cidade', regDetailModal.fighter?.city],
+                  ['Estado', regDetailModal.fighter?.state],
+                  ['Telefone', regDetailModal.fighter?.phone],
+                  ['WhatsApp', regDetailModal.fighter?.whatsapp],
+                  ['Altura', regDetailModal.fighter?.height_cm ? `${regDetailModal.fighter.height_cm} cm` : null],
+                  ['Peso', regDetailModal.fighter?.weight_kg ? `${regDetailModal.fighter.weight_kg} kg` : null],
+                  ['Tipo Sanguíneo', regDetailModal.fighter?.blood_type],
+                  ['Instagram', regDetailModal.fighter?.instagram],
+                ].filter(([, v]) => v).map(([label, value]) => (
+                  <div key={label} className="flex justify-between items-center py-2 border-b border-white/5">
+                    <span className="font-barlow text-white/40 text-sm">{label}</span>
+                    <span className="font-barlow text-white text-sm text-right max-w-[60%] truncate">{value}</span>
+                  </div>
+                ))}
+                {regDetailModal.fighter?.bio && (
+                  <div className="pt-2">
+                    <span className="font-barlow text-white/40 text-sm">Bio</span>
+                    <p className="font-barlow text-white/70 text-sm mt-1">{regDetailModal.fighter.bio}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 mt-6 pt-4 border-t border-white/5">
+                {regDetailModal.status === 'pending' && (
+                  <>
+                    <button
+                      onClick={() => { handleRegAction(regDetailModal.id, 'approved'); setRegDetailModal(null); }}
+                      className="flex-1 py-2.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 hover:bg-green-500/20 transition-all font-barlow-condensed text-sm uppercase tracking-wider"
+                    >
+                      Aprovar
+                    </button>
+                    <button
+                      onClick={() => { handleRegAction(regDetailModal.id, 'rejected'); setRegDetailModal(null); }}
+                      className="flex-1 py-2.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all font-barlow-condensed text-sm uppercase tracking-wider"
+                    >
+                      Rejeitar
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={() => { handleRegDelete(regDetailModal.id); setRegDetailModal(null); }}
+                  className="flex-1 py-2.5 rounded-lg bg-orange-500/10 border border-orange-500/30 text-orange-400 hover:bg-orange-500/20 transition-all font-barlow-condensed text-sm uppercase tracking-wider"
+                >
+                  Anular
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
