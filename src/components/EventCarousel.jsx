@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import Avatar from '@/components/Avatar';
 import FightRecordDisplay from '@/components/FightRecordDisplay';
+import EventRegistrationButton from '@/components/EventRegistrationButton';
 
 export default function EventCarousel({ events }) {
   const [page, setPage] = useState(0);
@@ -349,6 +350,11 @@ function EventModal({ event, eventIndex, totalEvents, formatDateFull, onClose, o
               )}
             </div>
           )}
+
+          {/* Fighter Registration */}
+          <div className="mt-4">
+            <EventRegistrationButton eventId={event.id} />
+          </div>
 
           {/* Full description */}
           {event.description_full && (

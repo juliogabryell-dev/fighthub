@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import EventDetailClient from './EventDetailClient';
+import EventRegistrationButton from '@/components/EventRegistrationButton';
 
 export const revalidate = 3600;
 
@@ -147,6 +148,11 @@ export default async function EventPage({ params }) {
               )}
             </div>
           )}
+
+          {/* Fighter Registration */}
+          <div className="mt-6">
+            <EventRegistrationButton eventId={event.id} />
+          </div>
 
           {/* Full description */}
           {event.description_full && (

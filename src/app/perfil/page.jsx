@@ -139,6 +139,7 @@ export default function PerfilPage() {
   const [myCoaches, setMyCoaches] = useState([]);
   const [myAcademies, setMyAcademies] = useState([]);
   const [myStudents, setMyStudents] = useState([]); // Fighters linked to this coach
+  const [myEventRegistrations, setMyEventRegistrations] = useState([]);
   const [showCoachModalForArt, setShowCoachModalForArt] = useState(null);
   const [showAcademyModalForArt, setShowAcademyModalForArt] = useState(null);
   const [availableCoaches, setAvailableCoaches] = useState([]);
@@ -216,6 +217,13 @@ export default function PerfilPage() {
         .select('*')
         .eq('fighter_id', currentUser.id);
       setFightRecords(records || []);
+
+      // Fetch event registrations
+      try {
+        const regRes = await fetch(`/api/event-registration?fighter_id=${currentUser.id}`);
+        const regData = await regRes.json();
+        if (regRes.ok) setMyEventRegistrations(regData.registrations || []);
+      } catch { /* ignore */ }
 
       // Fetch challenges
       const { data: challengeData } = await supabase
@@ -1985,6 +1993,48 @@ export default function PerfilPage() {
                   })()}
                 </div>
               ))}
+          </div>
+        )}
+
+        {/* Fighter: Event Registrations */}
+        {isFighter && myEventRegistrations.length > 0 && (
+          <div className="mb-8">
+            <h3 className="font-bebas text-xl tracking-wider text-theme-text/80 mb-4">
+              MEUS EVENTOS
+              <span className="font-barlow text-sm text-theme-text/30 ml-2 normal-case tracking-normal">({myEventRegistrations.length})</span>
+            </h3>
+            <div className="space-y-3">
+              {myEventRegistrations.map((reg) => {
+                const STATUS_STYLES = {
+                  pending: 'bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37]',
+                  approved: 'bg-green-500/10 border-green-500/30 text-green-400',
+                  rejected: 'bg-red-500/10 border-red-500/30 text-red-400',
+                };
+                const STATUS_LABELS = { pending: 'Pendente', approved: 'Aprovado', rejected: 'Recusado' };
+                const STATUS_ICONS = { pending: 'clock', approved: 'check', rejected: 'x' };
+                return (
+                  <div key={reg.id} className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-4 border border-theme-border/10 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-[#C41E3A]/15 flex items-center justify-center flex-shrink-0">
+                      <Icon name="calendar" size={18} className="text-[#C41E3A]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-barlow-condensed text-theme-text font-semibold truncate">
+                        {reg.event?.title || 'Evento'}
+                      </p>
+                      <p className="font-barlow text-theme-text/40 text-xs">
+                        {reg.event?.event_date && new Date(reg.event.event_date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        {reg.event?.venue_name && ` · ${reg.event.venue_name}`}
+                        {reg.event?.venue_city && `, ${reg.event.venue_city}`}
+                      </p>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border flex items-center gap-1 shrink-0 ${STATUS_STYLES[reg.status]}`}>
+                      <Icon name={STATUS_ICONS[reg.status]} size={10} />
+                      {STATUS_LABELS[reg.status]}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 

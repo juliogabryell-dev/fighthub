@@ -46,6 +46,8 @@ export default function FullAdminDashboard() {
   const [pendingVerifications, setPendingVerifications] = useState([]);
   const [pendingProfileChanges, setPendingProfileChanges] = useState([]);
   const [changeDetailModal, setChangeDetailModal] = useState(null);
+  const [pendingEventRegs, setPendingEventRegs] = useState([]);
+  const [eventRegDetailModal, setEventRegDetailModal] = useState(null);
 
   // UI states
   const [actionLoading, setActionLoading] = useState(null);
@@ -156,6 +158,7 @@ export default function FullAdminDashboard() {
       fetchAdmins();
       fetchVerifications();
       fetchPendingChanges();
+      fetchEventRegistrations();
     }
   }, [admin, fetchData]);
 
@@ -311,6 +314,27 @@ export default function FullAdminDashboard() {
       });
       await fetchPendingChanges();
       await fetchData();
+    } catch { /* ignore */ }
+    setActionLoading(null);
+  }
+
+  async function fetchEventRegistrations() {
+    try {
+      const res = await fetch('/api/event-registration?pending=true');
+      const data = await res.json();
+      if (res.ok) setPendingEventRegs(data.registrations || []);
+    } catch { /* ignore */ }
+  }
+
+  async function handleEventRegAction(regId, status) {
+    setActionLoading('er-' + regId);
+    try {
+      await fetch('/api/event-registration', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: regId, status }),
+      });
+      await fetchEventRegistrations();
     } catch { /* ignore */ }
     setActionLoading(null);
   }
@@ -493,6 +517,7 @@ export default function FullAdminDashboard() {
     { id: 'admins', label: 'Admins', count: adminUsers.length },
     { id: 'verification', label: 'Verificações', count: pendingVerifications.length },
     { id: 'profile_changes', label: 'Alt. Perfil', count: pendingProfileChanges.length },
+    { id: 'event_registrations', label: 'Inscrições', count: pendingEventRegs.length },
     { id: 'events', label: 'Eventos' },
   ];
 
@@ -952,6 +977,143 @@ export default function FullAdminDashboard() {
                 <p className="font-barlow text-white/40 text-sm">Nenhuma alteração pendente de aprovação.</p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Tab: Event Registrations */}
+        {activeTab === 'event_registrations' && (
+          <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+            <div className="p-5 border-b border-white/5">
+              <h2 className="font-bebas text-xl tracking-wider text-white">INSCRIÇÕES EM EVENTOS</h2>
+            </div>
+            {pendingEventRegs.length > 0 ? (
+              <div className="divide-y divide-white/5">
+                {pendingEventRegs.map((reg) => (
+                  <div key={reg.id} className="p-4 hover:bg-white/[0.02] transition-colors">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <Avatar name={reg.fighter?.full_name} url={reg.fighter?.avatar_url} size={40} />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-barlow-condensed text-white font-semibold truncate flex items-center gap-1.5">
+                            {reg.fighter?.full_name}
+                            {reg.fighter?.fighter_verified && <VerifiedBadge size={14} />}
+                          </p>
+                          <p className="font-barlow text-white/30 text-xs truncate">
+                            {reg.fighter?.handle && `@${reg.fighter.handle} · `}
+                            Evento: <span className="text-[#C41E3A]">{reg.event?.title}</span>
+                            {reg.event?.event_date && ` · ${new Date(reg.event.event_date).toLocaleDateString('pt-BR')}`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setEventRegDetailModal(reg)}
+                          className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider"
+                        >
+                          Ver Perfil
+                        </button>
+                        <button
+                          onClick={() => handleEventRegAction(reg.id, 'approved')}
+                          disabled={actionLoading === 'er-' + reg.id}
+                          className="px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 hover:bg-green-500/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider disabled:opacity-50"
+                        >
+                          {actionLoading === 'er-' + reg.id ? '...' : 'Aprovar'}
+                        </button>
+                        <button
+                          onClick={() => handleEventRegAction(reg.id, 'rejected')}
+                          disabled={actionLoading === 'er-' + reg.id}
+                          className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all font-barlow-condensed text-xs uppercase tracking-wider disabled:opacity-50"
+                        >
+                          {actionLoading === 'er-' + reg.id ? '...' : 'Rejeitar'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-12 text-center">
+                <Icon name="calendar" size={32} className="text-white/15 mx-auto mb-2" />
+                <p className="font-barlow text-white/40 text-sm">Nenhuma inscrição pendente de aprovação.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Event Registration Detail Modal */}
+        {eventRegDetailModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4" onClick={() => setEventRegDetailModal(null)}>
+            <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-2xl border border-white/10 shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="p-5 border-b border-white/5 flex items-center justify-between">
+                <h3 className="font-bebas text-lg tracking-wider text-white">PERFIL DO LUTADOR</h3>
+                <button onClick={() => setEventRegDetailModal(null)} className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:border-white/20 transition-all">✕</button>
+              </div>
+              <div className="p-5">
+                {/* Fighter info */}
+                <div className="flex items-center gap-3 mb-4">
+                  <Avatar name={eventRegDetailModal.fighter?.full_name} url={eventRegDetailModal.fighter?.avatar_url} size={48} />
+                  <div>
+                    <p className="font-barlow-condensed text-white font-semibold flex items-center gap-1.5">
+                      {eventRegDetailModal.fighter?.full_name}
+                      {eventRegDetailModal.fighter?.fighter_verified && <VerifiedBadge size={14} />}
+                    </p>
+                    {eventRegDetailModal.fighter?.handle && <p className="font-barlow text-white/30 text-xs">@{eventRegDetailModal.fighter.handle}</p>}
+                  </div>
+                </div>
+
+                {/* Event */}
+                <div className="p-3 bg-[#C41E3A]/10 rounded-lg border border-[#C41E3A]/20 mb-4">
+                  <p className="font-barlow-condensed text-[10px] uppercase tracking-widest text-white/40">Evento</p>
+                  <p className="font-barlow-condensed text-white font-semibold">{eventRegDetailModal.event?.title}</p>
+                  <p className="font-barlow text-white/40 text-xs">{eventRegDetailModal.event?.event_date && new Date(eventRegDetailModal.event.event_date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                </div>
+
+                {/* All fighter data */}
+                <div className="space-y-2">
+                  {[
+                    ['Nome Completo', eventRegDetailModal.fighter?.full_name],
+                    ['Data de Nascimento', eventRegDetailModal.fighter?.birth_date && new Date(eventRegDetailModal.fighter.birth_date).toLocaleDateString('pt-BR')],
+                    ['Nome do Pai', eventRegDetailModal.fighter?.father_name],
+                    ['Nome da Mãe', eventRegDetailModal.fighter?.mother_name],
+                    ['Cidade', eventRegDetailModal.fighter?.city],
+                    ['Estado', eventRegDetailModal.fighter?.state],
+                    ['Telefone', eventRegDetailModal.fighter?.phone],
+                    ['WhatsApp', eventRegDetailModal.fighter?.whatsapp],
+                    ['Altura', eventRegDetailModal.fighter?.height_cm ? `${eventRegDetailModal.fighter.height_cm} cm` : null],
+                    ['Peso', eventRegDetailModal.fighter?.weight_kg ? `${eventRegDetailModal.fighter.weight_kg} kg` : null],
+                    ['Tipo Sanguíneo', eventRegDetailModal.fighter?.blood_type],
+                    ['Instagram', eventRegDetailModal.fighter?.instagram],
+                  ].filter(([, v]) => v).map(([label, value]) => (
+                    <div key={label} className="flex justify-between items-center py-2 border-b border-white/5">
+                      <span className="font-barlow text-white/40 text-sm">{label}</span>
+                      <span className="font-barlow text-white text-sm text-right max-w-[60%] truncate">{value}</span>
+                    </div>
+                  ))}
+                  {eventRegDetailModal.fighter?.bio && (
+                    <div className="pt-2">
+                      <span className="font-barlow text-white/40 text-sm">Bio</span>
+                      <p className="font-barlow text-white/70 text-sm mt-1">{eventRegDetailModal.fighter.bio}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3 mt-6 pt-4 border-t border-white/5">
+                  <button
+                    onClick={() => { handleEventRegAction(eventRegDetailModal.id, 'approved'); setEventRegDetailModal(null); }}
+                    className="flex-1 py-2.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 hover:bg-green-500/20 transition-all font-barlow-condensed text-sm uppercase tracking-wider"
+                  >
+                    Aprovar Inscrição
+                  </button>
+                  <button
+                    onClick={() => { handleEventRegAction(eventRegDetailModal.id, 'rejected'); setEventRegDetailModal(null); }}
+                    className="flex-1 py-2.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all font-barlow-condensed text-sm uppercase tracking-wider"
+                  >
+                    Rejeitar
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
