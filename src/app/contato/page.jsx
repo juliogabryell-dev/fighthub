@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Icon from '@/components/Icon';
 
 const contacts = [
@@ -24,6 +25,41 @@ const contacts = [
 ];
 
 export default function ContatoPage() {
+  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
+  const [status, setStatus] = useState('idle'); // idle | sending | success | error
+  const [errorMsg, setErrorMsg] = useState('');
+
+  function update(field) {
+    return (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setStatus('sending');
+    setErrorMsg('');
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMsg(data.error || 'Não foi possível enviar a mensagem.');
+        setStatus('error');
+        return;
+      }
+
+      setStatus('success');
+      setForm({ name: '', email: '', subject: '', message: '' });
+    } catch {
+      setErrorMsg('Ocorreu um erro inesperado. Tente novamente.');
+      setStatus('error');
+    }
+  }
+
   return (
     <main className="min-h-screen px-6 py-16 max-w-4xl mx-auto">
       {/* Header */}
@@ -86,7 +122,19 @@ export default function ContatoPage() {
           <h2 className="font-bebas text-xl text-theme-text tracking-wider mb-5">
             ENVIE UMA <span className="text-brand-gold">MENSAGEM</span>
           </h2>
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+          {status === 'success' && (
+            <div className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/30">
+              <p className="font-barlow text-green-400 text-sm text-center">
+                Mensagem enviada com sucesso! Responderemos em ate 48 horas uteis.
+              </p>
+            </div>
+          )}
+          {status === 'error' && (
+            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30">
+              <p className="font-barlow text-red-400 text-sm text-center">{errorMsg}</p>
+            </div>
+          )}
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
               <label className="font-barlow-condensed text-xs text-theme-text/40 uppercase tracking-wider block mb-1.5">
                 Nome
@@ -94,6 +142,9 @@ export default function ContatoPage() {
               <input
                 type="text"
                 placeholder="Seu nome"
+                value={form.name}
+                onChange={update('name')}
+                required
                 className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg px-4 py-2.5 text-theme-text font-barlow text-sm placeholder:text-theme-text/20 focus:border-brand-red/50 focus:outline-none transition-colors"
               />
             </div>
@@ -104,6 +155,9 @@ export default function ContatoPage() {
               <input
                 type="email"
                 placeholder="seu@email.com"
+                value={form.email}
+                onChange={update('email')}
+                required
                 className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg px-4 py-2.5 text-theme-text font-barlow text-sm placeholder:text-theme-text/20 focus:border-brand-red/50 focus:outline-none transition-colors"
               />
             </div>
@@ -111,7 +165,11 @@ export default function ContatoPage() {
               <label className="font-barlow-condensed text-xs text-theme-text/40 uppercase tracking-wider block mb-1.5">
                 Assunto
               </label>
-              <select className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg px-4 py-2.5 text-theme-text/60 font-barlow text-sm focus:border-brand-red/50 focus:outline-none transition-colors">
+              <select
+                value={form.subject}
+                onChange={update('subject')}
+                className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg px-4 py-2.5 text-theme-text/60 font-barlow text-sm focus:border-brand-red/50 focus:outline-none transition-colors"
+              >
                 <option value="">Selecione...</option>
                 <option value="suporte">Suporte</option>
                 <option value="parceria">Parceria</option>
@@ -127,14 +185,18 @@ export default function ContatoPage() {
               <textarea
                 rows={4}
                 placeholder="Escreva sua mensagem..."
+                value={form.message}
+                onChange={update('message')}
+                required
                 className="w-full bg-theme-text/5 border border-theme-border/10 rounded-lg px-4 py-2.5 text-theme-text font-barlow text-sm placeholder:text-theme-text/20 focus:border-brand-red/50 focus:outline-none transition-colors resize-none"
               />
             </div>
             <button
               type="submit"
-              className="w-full py-2.5 rounded-lg bg-gradient-to-r from-[#C41E3A] to-[#a01830] text-white font-barlow-condensed uppercase tracking-widest text-sm font-semibold hover:from-[#d42a46] hover:to-[#b82040] transition-all duration-300"
+              disabled={status === 'sending'}
+              className="w-full py-2.5 rounded-lg bg-gradient-to-r from-[#C41E3A] to-[#a01830] text-white font-barlow-condensed uppercase tracking-widest text-sm font-semibold hover:from-[#d42a46] hover:to-[#b82040] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Enviar Mensagem
+              {status === 'sending' ? 'Enviando...' : 'Enviar Mensagem'}
             </button>
           </form>
         </div>
