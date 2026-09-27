@@ -7,6 +7,7 @@ import FightRecordDisplay from '@/components/FightRecordDisplay';
 import FightRecordByModality from '@/components/FightRecordByModality';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import BackButton from '@/components/BackButton';
+import FightExperienceCard from '@/components/FightExperienceCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +25,7 @@ async function getFighter(id) {
     const supabase = createClient(url, key);
     const { data: fighter, error } = await supabase
       .from('profiles')
-      .select('*, fighter_martial_arts(*), fight_records!fight_records_fighter_id_fkey(*), fighter_coaches!fighter_coaches_fighter_id_fkey(*, coach:coach_id(id, full_name, avatar_url), martial_art:martial_art_id(id, art_name)), fighter_academies!fighter_academies_fighter_id_fkey(*, academy:academy_id(id, full_name, avatar_url), martial_art:martial_art_id(id, art_name)), fighter_videos(*)')
+      .select('*, fighter_martial_arts(*), fight_records!fight_records_fighter_id_fkey(*), fighter_coaches!fighter_coaches_fighter_id_fkey(*, coach:coach_id(id, full_name, avatar_url), martial_art:martial_art_id(id, art_name)), fighter_academies!fighter_academies_fighter_id_fkey(*, academy:academy_id(id, full_name, avatar_url), martial_art:martial_art_id(id, art_name)), fighter_videos(*), fight_experiences(*)')
       .eq('id', id)
       .single();
 
@@ -376,6 +377,22 @@ export default async function FighterProfile({ params }) {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+          )}
+
+          {/* Fight Experiences Section */}
+          {fighter.fight_experiences && fighter.fight_experiences.length > 0 && (
+            <div className="mb-8">
+              <h2 className="font-barlow-condensed text-brand-gold uppercase tracking-widest text-sm font-semibold mb-4">
+                LUTAS
+              </h2>
+              <div className="space-y-3">
+                {[...fighter.fight_experiences]
+                  .sort((a, b) => (b.fight_date || '').localeCompare(a.fight_date || ''))
+                  .map((fight) => (
+                    <FightExperienceCard key={fight.id} fight={fight} />
+                  ))}
               </div>
             </div>
           )}

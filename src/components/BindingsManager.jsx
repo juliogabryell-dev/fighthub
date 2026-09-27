@@ -8,6 +8,10 @@ import Icon from '@/components/Icon';
 const BINDING_TYPES = [
   { key: 'fighter_coaches', label: 'Lutador → Treinador', color: '#D4AF37', table: 'fighter_coaches', fromField: 'fighter_id', toField: 'coach_id', fromLabel: 'Lutador', toLabel: 'Treinador', fromRole: 'is_fighter', toRole: 'is_coach', hasMA: true },
   { key: 'fighter_academies', label: 'Lutador → Academia', color: '#3b82f6', table: 'fighter_academies', fromField: 'fighter_id', toField: 'academy_id', fromLabel: 'Lutador', toLabel: 'Academia', fromRole: 'is_fighter', toRole: null, toRoleField: 'academy', hasMA: true },
+  { key: 'team_coaches', label: 'Equipe → Treinador', color: '#06b6d4', table: 'team_coaches', fromField: 'team_id', toField: 'coach_id', fromLabel: 'Equipe', toLabel: 'Treinador' },
+  { key: 'coach_academies', label: 'Treinador → Academia', color: '#D4AF37', table: 'coach_academies', fromField: 'coach_id', toField: 'academy_id', fromLabel: 'Treinador', toLabel: 'Academia' },
+  { key: 'coach_federations', label: 'Treinador → Federação', color: '#D4AF37', table: 'coach_federations', fromField: 'coach_id', toField: 'federation_id', fromLabel: 'Treinador', toLabel: 'Federação' },
+  { key: 'coach_match_makers', label: 'Treinador → Match Maker', color: '#D4AF37', table: 'coach_match_makers', fromField: 'coach_id', toField: 'match_maker_id', fromLabel: 'Treinador', toLabel: 'Match Maker' },
   { key: 'team_fighters', label: 'Equipe → Lutador', color: '#06b6d4', table: 'team_fighters', fromField: 'team_id', toField: 'fighter_id', fromLabel: 'Equipe', toLabel: 'Lutador', fromTable: 'teams', fromNameField: 'name' },
   { key: 'federation_referees', label: 'Federação → Árbitro', color: '#10b981', table: 'federation_referees', fromField: 'federation_id', toField: 'referee_id', fromLabel: 'Federação', toLabel: 'Árbitro', fromTable: 'federations', fromNameField: 'official_name', toTable: 'referees' },
   { key: 'federation_teams', label: 'Federação → Equipe', color: '#10b981', table: 'federation_teams', fromField: 'federation_id', toField: 'team_id', fromLabel: 'Federação', toLabel: 'Equipe', fromTable: 'federations', fromNameField: 'official_name', toTable: 'teams', toNameField: 'name' },
@@ -43,6 +47,22 @@ export default function BindingsManager() {
     } else if (bt.key === 'team_fighters') {
       query = supabase.from(bt.table)
         .select('*, team:team_id(id, name, owner:owner_id(full_name, avatar_url)), fighter:fighter_id(id, full_name, handle, avatar_url)')
+        .order('created_at', { ascending: false });
+    } else if (bt.key === 'team_coaches') {
+      query = supabase.from(bt.table)
+        .select('*, team:team_id(id, name, owner:owner_id(full_name, avatar_url)), coach:coach_id(id, full_name, handle, avatar_url)')
+        .order('created_at', { ascending: false });
+    } else if (bt.key === 'coach_academies') {
+      query = supabase.from(bt.table)
+        .select('*, coach:coach_id(id, full_name, handle, avatar_url), academy:academy_id(id, full_name, handle, avatar_url)')
+        .order('created_at', { ascending: false });
+    } else if (bt.key === 'coach_federations') {
+      query = supabase.from(bt.table)
+        .select('*, coach:coach_id(id, full_name, handle, avatar_url), federation:federation_id(id, official_name)')
+        .order('created_at', { ascending: false });
+    } else if (bt.key === 'coach_match_makers') {
+      query = supabase.from(bt.table)
+        .select('*, coach:coach_id(id, full_name, handle, avatar_url), match_maker:match_maker_id(id, owner:owner_id(full_name, avatar_url))')
         .order('created_at', { ascending: false });
     } else if (bt.key === 'federation_referees') {
       query = supabase.from(bt.table)
@@ -129,6 +149,18 @@ export default function BindingsManager() {
     } else if (activeType === 'team_fighters') {
       fromName = b.team?.name || 'Equipe'; toName = b.fighter?.full_name || 'Lutador';
       fromAvatar = b.team?.owner?.avatar_url; toAvatar = b.fighter?.avatar_url;
+    } else if (activeType === 'team_coaches') {
+      fromName = b.team?.name || 'Equipe'; toName = b.coach?.full_name || 'Treinador';
+      fromAvatar = b.team?.owner?.avatar_url; toAvatar = b.coach?.avatar_url;
+    } else if (activeType === 'coach_academies') {
+      fromName = b.coach?.full_name || 'Treinador'; toName = b.academy?.full_name || 'Academia';
+      fromAvatar = b.coach?.avatar_url; toAvatar = b.academy?.avatar_url;
+    } else if (activeType === 'coach_federations') {
+      fromName = b.coach?.full_name || 'Treinador'; toName = b.federation?.official_name || 'Federação';
+      fromAvatar = b.coach?.avatar_url;
+    } else if (activeType === 'coach_match_makers') {
+      fromName = b.coach?.full_name || 'Treinador'; toName = b.match_maker?.owner?.full_name || 'Match Maker';
+      fromAvatar = b.coach?.avatar_url; toAvatar = b.match_maker?.owner?.avatar_url;
     } else if (activeType === 'federation_referees') {
       fromName = b.federation?.official_name || 'Federação'; toName = b.referee?.owner?.full_name || 'Árbitro';
       toAvatar = b.referee?.owner?.avatar_url;

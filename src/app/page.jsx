@@ -41,7 +41,7 @@ export default async function HomePage() {
   return (
     <main>
       {/* ====== HERO SECTION ====== */}
-      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden pt-28 pb-20 sm:pt-32 sm:pb-24">
         {/* Radial gradient overlays */}
         <div
           className="pointer-events-none absolute inset-0"

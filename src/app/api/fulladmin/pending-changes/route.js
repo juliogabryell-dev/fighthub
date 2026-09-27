@@ -148,6 +148,16 @@ export async function POST(request) {
           await supabase.from('fighter_videos').delete().eq('id', change.target_id);
         }
       }
+      else if (change.change_type === 'fight_experience') {
+        // Cartel (fight_records) is kept in sync by a DB trigger on fight_experiences
+        if (change.action === 'create') {
+          await supabase.from('fight_experiences').insert({ ...change.payload, fighter_id: change.user_id });
+        } else if (change.action === 'update' && change.target_id) {
+          await supabase.from('fight_experiences').update(change.payload).eq('id', change.target_id);
+        } else if (change.action === 'delete' && change.target_id) {
+          await supabase.from('fight_experiences').delete().eq('id', change.target_id);
+        }
+      }
       else if (change.change_type === 'experience') {
         if (change.action === 'create') {
           await supabase.from('coach_experiences').insert({ ...change.payload, coach_id: change.user_id });

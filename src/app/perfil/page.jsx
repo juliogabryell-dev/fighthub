@@ -9,7 +9,9 @@ import Avatar from '@/components/Avatar';
 import Icon from '@/components/Icon';
 import Link from 'next/link';
 import FightRecordDisplay from '@/components/FightRecordDisplay';
+import FightExperienceCard, { FightPhotoInput, FIGHT_RESULT_LABELS } from '@/components/FightExperienceCard';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import BindingsPanel, { bindingAction } from '@/components/BindingsPanel';
 import { isProfileVerified } from '@/lib/isProfileVerified';
 
 export default function PerfilPage() {
@@ -114,6 +116,26 @@ export default function PerfilPage() {
     fight_date: '',
   });
 
+  // Fight experiences (Fighter)
+  const emptyFightForm = {
+    modality: '',
+    category: 'amador',
+    result: 'win',
+    opponent_name: '',
+    event_name: '',
+    fight_date: '',
+    video_url: '',
+    faceoff_photo_url: '',
+    hand_raised_photo_url: '',
+  };
+  const [fights, setFights] = useState([]);
+  const [showFightModal, setShowFightModal] = useState(false);
+  const [editingFightId, setEditingFightId] = useState(null);
+  const [fightForm, setFightForm] = useState(emptyFightForm);
+  const [faceoffFile, setFaceoffFile] = useState(null);
+  const [handRaisedFile, setHandRaisedFile] = useState(null);
+  const [fightSaving, setFightSaving] = useState(false);
+
   // Coach-specific
   const [experiences, setExperiences] = useState([]);
   const [showExpModal, setShowExpModal] = useState(false);
@@ -155,12 +177,11 @@ export default function PerfilPage() {
   const [pwSaving, setPwSaving] = useState(false);
 
   // Binding requests (Coach)
-  const [bindingRequests, setBindingRequests] = useState([]);
   const [activeBindings, setActiveBindings] = useState([]);
 
   // Binding requests (Academy)
-  const [academyBindingRequests, setAcademyBindingRequests] = useState([]);
   const [academyActiveBindings, setAcademyActiveBindings] = useState([]);
+  const [bindingsRefresh, setBindingsRefresh] = useState(0);
 
   useEffect(() => {
     fetchUserAndProfile();
@@ -218,6 +239,13 @@ export default function PerfilPage() {
         .eq('fighter_id', currentUser.id);
       setFightRecords(records || []);
 
+      const { data: fightData } = await supabase
+        .from('fight_experiences')
+        .select('*')
+        .eq('fighter_id', currentUser.id)
+        .order('fight_date', { ascending: false, nullsFirst: false });
+      setFights(fightData || []);
+
       // Fetch event registrations
       try {
         const regRes = await fetch(`/api/event-registration?fighter_id=${currentUser.id}`);
@@ -256,14 +284,6 @@ export default function PerfilPage() {
         .order('period_start', { ascending: false });
       setExperiences(exps || []);
 
-      // Fetch binding requests (pending)
-      const { data: pendingReqs } = await supabase
-        .from('fighter_coaches')
-        .select('*, fighter:fighter_id(id, full_name, avatar_url, handle), martial_art:martial_art_id(id, art_name)')
-        .eq('coach_id', currentUser.id)
-        .eq('status', 'pending');
-      setBindingRequests(pendingReqs || []);
-
       // Fetch active students (fighters linked to this coach)
       const { data: students } = await supabase
         .from('fighter_coaches')
@@ -283,13 +303,6 @@ export default function PerfilPage() {
 
     // Academy owner: fetch binding requests
     if (profileData?.role === 'academy') {
-      const { data: acPendingReqs } = await supabase
-        .from('fighter_academies')
-        .select('*, fighter:fighter_id(id, full_name, avatar_url), martial_art:martial_art_id(id, art_name)')
-        .eq('academy_id', currentUser.id)
-        .eq('status', 'pending');
-      setAcademyBindingRequests(acPendingReqs || []);
-
       const { data: acActiveReqs } = await supabase
         .from('fighter_academies')
         .select('*, fighter:fighter_id(id, full_name, avatar_url), martial_art:martial_art_id(id, art_name)')
@@ -298,6 +311,7 @@ export default function PerfilPage() {
       setAcademyActiveBindings(acActiveReqs || []);
     }
 
+    setBindingsRefresh((n) => n + 1);
     setLoading(false);
   }
 
@@ -508,6 +522,133 @@ export default function PerfilPage() {
     if (!url) return null;
     const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/))([^&?\s]+)/);
     return match ? match[1] : null;
+  }
+
+  // ===== Fight Experiences (Fighter) =====
+  function openAddFight() {
+    setEditingFightId(null);
+    setFightForm({ ...emptyFightForm, modality: martialArts[0]?.art_name || '' });
+    setFaceoffFile(null);
+    setHandRaisedFile(null);
+    setShowFightModal(true);
+  }
+
+  function openEditFight(fight) {
+    setEditingFightId(fight.id);
+    setFightForm({
+      modality: fight.modality || '',
+      category: fight.category || 'amador',
+      result: fight.result || 'win',
+      opponent_name: fight.opponent_name || '',
+      event_name: fight.event_name || '',
+      fight_date: fight.fight_date || '',
+      video_url: fight.video_url || '',
+      faceoff_photo_url: fight.faceoff_photo_url || '',
+      hand_raised_photo_url: fight.hand_raised_photo_url || '',
+    });
+    setFaceoffFile(null);
+    setHandRaisedFile(null);
+    setShowFightModal(true);
+  }
+
+  function handleFightPhotoSelect(e, setter) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Selecione um arquivo de imagem.');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert('A imagem deve ter no máximo 10MB.');
+      e.target.value = '';
+      return;
+    }
+    setter(file);
+  }
+
+  async function uploadFightPhoto(file, kind) {
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${user.id}/${Date.now()}-${kind}.${fileExt}`;
+    const { error } = await supabase.storage.from('fight-photos').upload(filePath, file);
+    if (error) throw new Error(error.message);
+    return supabase.storage.from('fight-photos').getPublicUrl(filePath).data.publicUrl;
+  }
+
+  async function handleSaveFight(e) {
+    e.preventDefault();
+    if (!fightForm.modality) {
+      alert('Selecione a modalidade da luta.');
+      return;
+    }
+    if (!faceoffFile && !fightForm.faceoff_photo_url) {
+      alert('A foto encarando o oponente é obrigatória.');
+      return;
+    }
+    if (!handRaisedFile && !fightForm.hand_raised_photo_url) {
+      alert('A foto do resultado (mão levantada com o árbitro) é obrigatória.');
+      return;
+    }
+
+    setFightSaving(true);
+    try {
+      const faceoff_photo_url = faceoffFile ? await uploadFightPhoto(faceoffFile, 'encarada') : fightForm.faceoff_photo_url;
+      const hand_raised_photo_url = handRaisedFile ? await uploadFightPhoto(handRaisedFile, 'resultado') : fightForm.hand_raised_photo_url;
+
+      const payload = {
+        modality: fightForm.modality,
+        category: fightForm.category,
+        result: fightForm.result,
+        opponent_name: fightForm.opponent_name.trim(),
+        event_name: fightForm.event_name.trim() || null,
+        fight_date: fightForm.fight_date || null,
+        video_url: fightForm.video_url.trim() || null,
+        faceoff_photo_url,
+        hand_raised_photo_url,
+      };
+
+      if (isProfileVerified(profile)) {
+        const { error: pendingErr } = await supabase.from('pending_profile_changes').insert({
+          user_id: user.id,
+          change_type: 'fight_experience',
+          action: editingFightId ? 'update' : 'create',
+          target_id: editingFightId || null,
+          payload,
+        });
+        if (pendingErr) throw new Error(pendingErr.message);
+        setPendingToast('Seu perfil é verificado. A luta foi enviada para aprovação do administrador e ficará visível após a validação.');
+        setTimeout(() => setPendingToast(null), 8000);
+        alert('Seu perfil é verificado.\n\nA luta foi enviada para aprovação do administrador e ficará visível publicamente somente após a validação.');
+      } else {
+        const { error } = editingFightId
+          ? await supabase.from('fight_experiences').update(payload).eq('id', editingFightId)
+          : await supabase.from('fight_experiences').insert({ ...payload, fighter_id: user.id });
+        if (error) throw new Error(error.message);
+      }
+
+      setShowFightModal(false);
+      fetchUserAndProfile();
+    } catch (err) {
+      alert('Erro ao salvar luta: ' + err.message);
+    } finally {
+      setFightSaving(false);
+    }
+  }
+
+  async function handleDeleteFight(fightId) {
+    if (!confirm('Tem certeza que deseja excluir esta luta? O cartel será ajustado automaticamente.')) return;
+    if (isProfileVerified(profile)) {
+      await supabase.from('pending_profile_changes').insert({
+        user_id: user.id, change_type: 'fight_experience', action: 'delete', target_id: fightId, payload: {},
+      });
+      setPendingToast('Seu perfil é verificado. A exclusão foi enviada para aprovação do administrador.');
+      setTimeout(() => setPendingToast(null), 8000);
+      alert('Seu perfil é verificado.\n\nA exclusão da luta foi enviada para aprovação do administrador.');
+      fetchUserAndProfile();
+      return;
+    }
+    const { error } = await supabase.from('fight_experiences').delete().eq('id', fightId);
+    if (!error) fetchUserAndProfile();
   }
 
   // ===== Experiences (Coach) =====
@@ -955,28 +1096,23 @@ export default function PerfilPage() {
   }
 
   async function handleRequestCoachForArt(coachId, artId) {
-    const { error } = await supabase
-      .from('fighter_coaches')
-      .insert({ fighter_id: user.id, coach_id: coachId, martial_art_id: artId, status: 'pending' });
-    if (error) {
-      if (error.code === '23505') {
-        alert('Você já possui um vínculo com este treinador nesta modalidade.');
-      } else {
-        alert('Erro ao solicitar vínculo: ' + error.message);
-      }
-    } else {
+    try {
+      await bindingAction({ action: 'request', my_kind: 'fighter', target_kind: 'coach', target_id: coachId, martial_art_id: artId });
       setShowCoachModalForArt(null);
       fetchUserAndProfile();
+    } catch (err) {
+      alert(err.message);
     }
   }
 
   async function handleRemoveCoach(linkId) {
     if (!confirm('Tem certeza que deseja remover este vínculo?')) return;
-    const { error } = await supabase
-      .from('fighter_coaches')
-      .delete()
-      .eq('id', linkId);
-    if (!error) fetchUserAndProfile();
+    try {
+      await bindingAction({ action: 'remove', type: 'fighter_coaches', id: linkId });
+      fetchUserAndProfile();
+    } catch (err) {
+      alert(err.message);
+    }
   }
 
   // ===== Academy Management per Modality (Fighter) =====
@@ -996,46 +1132,23 @@ export default function PerfilPage() {
   }
 
   async function handleRequestAcademyForArt(academyId, artId) {
-    const { error } = await supabase
-      .from('fighter_academies')
-      .insert({ fighter_id: user.id, academy_id: academyId, martial_art_id: artId, status: 'pending' });
-    if (error) {
-      if (error.code === '23505') {
-        alert('Você já possui um vínculo com esta academia nesta modalidade.');
-      } else {
-        alert('Erro ao solicitar vínculo: ' + error.message);
-      }
-    } else {
+    try {
+      await bindingAction({ action: 'request', my_kind: 'fighter', target_kind: 'academy', target_id: academyId, martial_art_id: artId });
       setShowAcademyModalForArt(null);
       fetchUserAndProfile();
+    } catch (err) {
+      alert(err.message);
     }
   }
 
   async function handleRemoveAcademy(linkId) {
     if (!confirm('Tem certeza que deseja remover este vínculo?')) return;
-    const { error } = await supabase
-      .from('fighter_academies')
-      .delete()
-      .eq('id', linkId);
-    if (!error) fetchUserAndProfile();
-  }
-
-  // ===== Binding Requests (Coach) =====
-  async function handleRespondBinding(linkId, newStatus) {
-    const { error } = await supabase
-      .from('fighter_coaches')
-      .update({ status: newStatus })
-      .eq('id', linkId);
-    if (!error) fetchUserAndProfile();
-  }
-
-  // ===== Binding Requests (Academy owner) =====
-  async function handleRespondAcademyBinding(linkId, newStatus) {
-    const { error } = await supabase
-      .from('fighter_academies')
-      .update({ status: newStatus })
-      .eq('id', linkId);
-    if (!error) fetchUserAndProfile();
+    try {
+      await bindingAction({ action: 'remove', type: 'fighter_academies', id: linkId });
+      fetchUserAndProfile();
+    } catch (err) {
+      alert(err.message);
+    }
   }
 
   function getStatusBadge(status) {
@@ -1393,7 +1506,7 @@ export default function PerfilPage() {
             </div>
             <div className="border-t border-[#D4AF37]/15 divide-y divide-[#D4AF37]/10">
               {pendingChanges.map((change) => {
-                const TYPE_LABELS = { profile: 'Edição de Perfil', martial_art: 'Modalidade', fight_record: 'Cartel', video: 'Vídeo', experience: 'Experiência' };
+                const TYPE_LABELS = { profile: 'Edição de Perfil', martial_art: 'Modalidade', fight_record: 'Cartel', video: 'Vídeo', experience: 'Experiência', fight_experience: 'Luta' };
                 const ACTION_LABELS = { create: 'Adição', update: 'Edição', delete: 'Exclusão' };
                 let summary = '';
                 if (change.change_type === 'profile') {
@@ -1401,6 +1514,8 @@ export default function PerfilPage() {
                   summary = keys.slice(0, 3).map(k => k.replace(/_/g, ' ')).join(', ') + (keys.length > 3 ? '...' : '');
                 } else if (change.change_type === 'martial_art' && change.payload?.martial_art) {
                   summary = change.payload.martial_art.art_name || '';
+                } else if (change.change_type === 'fight_experience' && change.payload?.opponent_name) {
+                  summary = `vs ${change.payload.opponent_name}`;
                 }
                 return (
                   <div key={change.id} className="px-4 py-2.5 flex items-center gap-3">
@@ -1696,6 +1811,9 @@ export default function PerfilPage() {
           </div>
         )}
 
+        {/* Bindings: requests received/sent and active links (all roles) */}
+        <BindingsPanel refreshKey={bindingsRefresh} onChange={fetchUserAndProfile} />
+
         {/* Fighter Section */}
         {isFighter && isDualRole && (
           <div className="mb-4 flex items-center gap-3">
@@ -1859,6 +1977,51 @@ export default function PerfilPage() {
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {/* Fighter: Fight Experiences List */}
+        {isFighter && (fights.length > 0 || pendingChanges.some(c => c.change_type === 'fight_experience' && c.action === 'create')) && (
+          <div className="mb-8">
+            <h3 className="font-bebas text-xl tracking-wider text-theme-text/80 mb-4">
+              MINHAS LUTAS
+              <span className="font-barlow text-sm text-theme-text/30 ml-2 normal-case tracking-normal">({fights.length})</span>
+            </h3>
+            <div className="space-y-3">
+              {fights.map((fight) => (
+                <FightExperienceCard
+                  key={fight.id}
+                  fight={fight}
+                  actions={
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        onClick={() => openEditFight(fight)}
+                        className="p-1.5 rounded-lg text-theme-text/30 hover:text-[#C41E3A] hover:bg-[#C41E3A]/10 transition-all"
+                        title="Editar"
+                      >
+                        <Icon name="settings" size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteFight(fight.id)}
+                        className="p-1.5 rounded-lg text-theme-text/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                        title="Excluir"
+                      >
+                        <Icon name="x" size={14} />
+                      </button>
+                    </div>
+                  }
+                />
+              ))}
+              {pendingChanges
+                .filter(c => c.change_type === 'fight_experience' && c.action === 'create')
+                .map((change) => (
+                  <FightExperienceCard
+                    key={change.id}
+                    fight={change.payload}
+                    pending
+                  />
+                ))}
             </div>
           </div>
         )}
@@ -2040,7 +2203,7 @@ export default function PerfilPage() {
 
         {/* Fighter: Action Cards */}
         {isFighter && (
-          <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <button
               onClick={openAddArt}
               className="group bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-5 border border-theme-border/10 hover:border-[#C41E3A]/30 transition-all text-left"
@@ -2068,6 +2231,21 @@ export default function PerfilPage() {
               </p>
               <p className="font-barlow text-theme-text/40 text-xs mt-1">
                 {videos.length > 0 ? `${videos.length} video(s)` : 'Registre suas lutas'}
+              </p>
+            </button>
+
+            <button
+              onClick={openAddFight}
+              className="group bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-5 border border-theme-border/10 hover:border-[#C41E3A]/30 transition-all text-left"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#C41E3A]/20 flex items-center justify-center mb-3 group-hover:bg-[#C41E3A]/30 transition-colors">
+                <Icon name="trophy" size={18} className="text-[#C41E3A]" />
+              </div>
+              <p className="font-barlow-condensed text-theme-text font-semibold text-sm uppercase tracking-wider">
+                Adicionar Luta
+              </p>
+              <p className="font-barlow text-theme-text/40 text-xs mt-1">
+                {fights.length > 0 ? `${fights.length} luta(s)` : 'Registre sua experiência'}
               </p>
             </button>
 
@@ -2323,54 +2501,6 @@ export default function PerfilPage() {
           </div>
         )}
 
-        {/* Coach: Binding Requests */}
-        {isCoach && bindingRequests.length > 0 && (
-          <div className="mb-8">
-            <h3 className="font-bebas text-xl tracking-wider text-theme-text/80 mb-4">
-              PEDIDOS DE VINCULO
-            </h3>
-            <div className="space-y-3">
-              {bindingRequests.map((req) => (
-                <div
-                  key={req.id}
-                  className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-4 border border-[#D4AF37]/20"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <Avatar name={req.fighter?.full_name} url={req.fighter?.avatar_url} size={40} />
-                      <div>
-                        <Link
-                          href={`/lutadores/${req.fighter?.id}?from=/perfil`}
-                          className="font-barlow-condensed text-theme-text font-semibold hover:text-[#D4AF37] transition-colors"
-                        >
-                          {req.fighter?.full_name || 'Lutador'}
-                        </Link>
-                        <p className="font-barlow text-theme-text/40 text-xs">
-                          Solicitou vinculo · {req.martial_art?.art_name || 'Modalidade'}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        onClick={() => handleRespondBinding(req.id, 'active')}
-                        className="px-3 py-1.5 rounded-lg bg-green-500/20 border border-green-500/30 text-green-400 text-xs font-barlow-condensed uppercase tracking-wider hover:bg-green-500/30 transition-all"
-                      >
-                        Aceitar
-                      </button>
-                      <button
-                        onClick={() => handleRespondBinding(req.id, 'rejected')}
-                        className="px-3 py-1.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-barlow-condensed uppercase tracking-wider hover:bg-red-500/30 transition-all"
-                      >
-                        Rejeitar
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Coach Section */}
         {isCoach && isDualRole && (
           <div className="mb-4 mt-8 flex items-center gap-3">
@@ -2503,54 +2633,6 @@ export default function PerfilPage() {
                 </p>
               </div>
             )}
-          </div>
-        )}
-
-        {/* Academy: Binding Requests */}
-        {isAcademy && academyBindingRequests.length > 0 && (
-          <div className="mb-8">
-            <h3 className="font-bebas text-xl tracking-wider text-theme-text/80 mb-4">
-              PEDIDOS DE VINCULO
-            </h3>
-            <div className="space-y-3">
-              {academyBindingRequests.map((req) => (
-                <div
-                  key={req.id}
-                  className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-4 border border-blue-400/20"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <Avatar name={req.fighter?.full_name} url={req.fighter?.avatar_url} size={40} />
-                      <div>
-                        <Link
-                          href={`/lutadores/${req.fighter?.id}?from=/perfil`}
-                          className="font-barlow-condensed text-theme-text font-semibold hover:text-blue-400 transition-colors"
-                        >
-                          {req.fighter?.full_name || 'Lutador'}
-                        </Link>
-                        <p className="font-barlow text-theme-text/40 text-xs">
-                          Solicitou vinculo · {req.martial_art?.art_name || 'Modalidade'}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        onClick={() => handleRespondAcademyBinding(req.id, 'active')}
-                        className="px-3 py-1.5 rounded-lg bg-green-500/20 border border-green-500/30 text-green-400 text-xs font-barlow-condensed uppercase tracking-wider hover:bg-green-500/30 transition-all"
-                      >
-                        Aceitar
-                      </button>
-                      <button
-                        onClick={() => handleRespondAcademyBinding(req.id, 'rejected')}
-                        className="px-3 py-1.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-barlow-condensed uppercase tracking-wider hover:bg-red-500/30 transition-all"
-                      >
-                        Rejeitar
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         )}
 
@@ -3095,6 +3177,135 @@ export default function PerfilPage() {
               SALVAR
             </button>
           </form>
+        </Modal>
+      )}
+
+      {/* Add/Edit Fight Experience Modal (Fighter) */}
+      {showFightModal && (
+        <Modal onClose={() => setShowFightModal(false)} title={editingFightId ? 'Editar Luta' : 'Adicionar Luta'}>
+          {martialArts.length === 0 ? (
+            <div className="space-y-4">
+              <p className="font-barlow text-sm text-theme-text/60">
+                Cadastre uma modalidade antes de registrar suas lutas.
+              </p>
+              <button
+                type="button"
+                onClick={() => { setShowFightModal(false); openAddArt(); }}
+                className="w-full py-3 rounded-lg bg-gradient-to-r from-[#C41E3A] to-[#a01830] text-white font-barlow-condensed uppercase tracking-widest text-sm font-semibold hover:from-[#d42a46] hover:to-[#b82040] transition-all"
+              >
+                ADICIONAR MODALIDADE
+              </button>
+            </div>
+          ) : (
+          <form onSubmit={handleSaveFight} className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/50 mb-1.5 font-semibold">
+                  Modalidade
+                </label>
+                <select
+                  value={fightForm.modality}
+                  onChange={(e) => setFightForm({ ...fightForm, modality: e.target.value })}
+                  required
+                  className="w-full bg-dark-card border border-theme-border/10 rounded-lg px-4 py-3 text-theme-text font-barlow text-sm focus:outline-none focus:border-[#C41E3A]/50 transition-colors"
+                >
+                  {martialArts.map((art) => (
+                    <option key={art.id} value={art.art_name} className="bg-dark-card text-theme-text">{art.art_name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/50 mb-1.5 font-semibold">
+                  Categoria
+                </label>
+                <select
+                  value={fightForm.category}
+                  onChange={(e) => setFightForm({ ...fightForm, category: e.target.value })}
+                  className="w-full bg-dark-card border border-theme-border/10 rounded-lg px-4 py-3 text-theme-text font-barlow text-sm focus:outline-none focus:border-[#C41E3A]/50 transition-colors"
+                >
+                  <option value="profissional" className="bg-dark-card text-theme-text">Profissional</option>
+                  <option value="semi_profissional" className="bg-dark-card text-theme-text">Semi-Profissional</option>
+                  <option value="amador" className="bg-dark-card text-theme-text">Amador</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="block font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/50 mb-1.5 font-semibold">
+                Resultado
+              </label>
+              <div className="grid grid-cols-4 gap-2">
+                {Object.entries(FIGHT_RESULT_LABELS).map(([key, label]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setFightForm({ ...fightForm, result: key })}
+                    className={`py-2 rounded-lg border font-barlow-condensed text-xs uppercase tracking-wider transition-all ${
+                      fightForm.result === key
+                        ? 'bg-[#C41E3A]/20 border-[#C41E3A]/60 text-theme-text'
+                        : 'border-theme-border/10 text-theme-text/40 hover:border-theme-border/30'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <InputField
+              label="Oponente"
+              type="text"
+              value={fightForm.opponent_name}
+              onChange={(e) => setFightForm({ ...fightForm, opponent_name: e.target.value })}
+              placeholder="Nome do oponente"
+              required
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <InputField
+                label="Evento"
+                type="text"
+                value={fightForm.event_name}
+                onChange={(e) => setFightForm({ ...fightForm, event_name: e.target.value })}
+                placeholder="Ex: Campeonato Estadual"
+              />
+              <InputField
+                label="Data da Luta"
+                type="date"
+                value={fightForm.fight_date}
+                onChange={(e) => setFightForm({ ...fightForm, fight_date: e.target.value })}
+              />
+            </div>
+
+            <FightPhotoInput
+              label="Foto encarando o oponente *"
+              file={faceoffFile}
+              currentUrl={fightForm.faceoff_photo_url}
+              onChange={(e) => handleFightPhotoSelect(e, setFaceoffFile)}
+            />
+            <FightPhotoInput
+              label="Foto do resultado (mão levantada com o árbitro) *"
+              file={handRaisedFile}
+              currentUrl={fightForm.hand_raised_photo_url}
+              onChange={(e) => handleFightPhotoSelect(e, setHandRaisedFile)}
+            />
+
+            <InputField
+              label="Vídeo da luta (link, opcional)"
+              type="url"
+              value={fightForm.video_url}
+              onChange={(e) => setFightForm({ ...fightForm, video_url: e.target.value })}
+              placeholder="https://www.youtube.com/watch?v=..."
+            />
+            <p className="font-barlow text-[11px] text-theme-text/30">
+              O resultado será somado automaticamente ao seu cartel em {fightForm.modality || 'modalidade'}.
+            </p>
+            <button
+              type="submit"
+              disabled={fightSaving}
+              className="w-full py-3 rounded-lg bg-gradient-to-r from-[#C41E3A] to-[#a01830] text-white font-barlow-condensed uppercase tracking-widest text-sm font-semibold hover:from-[#d42a46] hover:to-[#b82040] transition-all disabled:opacity-50"
+            >
+              {fightSaving ? 'SALVANDO...' : 'SALVAR'}
+            </button>
+          </form>
+          )}
         </Modal>
       )}
 

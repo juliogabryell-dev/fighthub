@@ -90,21 +90,14 @@ export default function RequestAcademyBindingButton({ academyId }) {
         return;
       }
 
-      const { error } = await supabase
-        .from('fighter_academies')
-        .insert({
-          fighter_id: user.id,
-          academy_id: academyId,
-          martial_art_id: artId,
-          status: 'pending',
-        });
-
-      if (error) {
-        if (error.code === '23505') {
-          setFeedback('Solicitação já enviada para esta modalidade.');
-        } else {
-          setFeedback('Erro ao enviar solicitação. Tente novamente.');
-        }
+      const res = await fetch('/api/bindings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'request', my_kind: 'fighter', target_kind: 'academy', target_id: academyId, martial_art_id: artId }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setFeedback(data.error || 'Erro ao enviar solicitação. Tente novamente.');
         setSubmitting(null);
         return;
       }

@@ -8,6 +8,7 @@ import Icon from '@/components/Icon';
 import EventsManager from '@/components/EventsManager';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import BindingsManager from '@/components/BindingsManager';
+import FightExperienceCard from '@/components/FightExperienceCard';
 
 export default function FullAdminDashboard() {
   const router = useRouter();
@@ -878,7 +879,7 @@ export default function FullAdminDashboard() {
             {pendingProfileChanges.length > 0 ? (
               <div className="divide-y divide-white/5">
                 {pendingProfileChanges.map((change) => {
-                  const TYPE_LABELS = { profile: 'Perfil', martial_art: 'Modalidade', fight_record: 'Cartel', video: 'Vídeo', experience: 'Experiência' };
+                  const TYPE_LABELS = { profile: 'Perfil', martial_art: 'Modalidade', fight_record: 'Cartel', video: 'Vídeo', experience: 'Experiência', fight_experience: 'Luta' };
                   const ACTION_LABELS = { create: 'Adição', update: 'Edição', delete: 'Exclusão' };
                   const ACTION_COLORS = { create: 'bg-green-500/10 border-green-500/30 text-green-400', update: 'bg-blue-500/10 border-blue-500/30 text-blue-400', delete: 'bg-red-500/10 border-red-500/30 text-red-400' };
 
@@ -894,6 +895,8 @@ export default function FullAdminDashboard() {
                     else if (change.action === 'delete') summary = 'Solicitou exclusão de modalidade';
                   } else if (change.change_type === 'video') {
                     summary = change.action === 'delete' ? 'Solicitou exclusão de vídeo' : `${change.action === 'create' ? 'Adicionou' : 'Editou'} vídeo`;
+                  } else if (change.change_type === 'fight_experience') {
+                    summary = change.action === 'delete' ? 'Solicitou exclusão de luta' : `${change.action === 'create' ? 'Adicionou' : 'Editou'} luta vs ${change.payload?.opponent_name || ''}`;
                   }
 
                   return (
@@ -976,7 +979,7 @@ export default function FullAdminDashboard() {
                 {/* Meta */}
                 <div className="flex gap-2 mb-4">
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37]">
-                    {{ profile: 'Perfil', martial_art: 'Modalidade', fight_record: 'Cartel', video: 'Vídeo', experience: 'Experiência' }[changeDetailModal.change_type]}
+                    {{ profile: 'Perfil', martial_art: 'Modalidade', fight_record: 'Cartel', video: 'Vídeo', experience: 'Experiência', fight_experience: 'Luta' }[changeDetailModal.change_type]}
                   </span>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border ${{ create: 'bg-green-500/10 border-green-500/30 text-green-400', update: 'bg-blue-500/10 border-blue-500/30 text-blue-400', delete: 'bg-red-500/10 border-red-500/30 text-red-400' }[changeDetailModal.action]}`}>
                     {{ create: 'Adição', update: 'Edição', delete: 'Exclusão' }[changeDetailModal.action]}
@@ -1050,6 +1053,16 @@ export default function FullAdminDashboard() {
                           })}
                         </>
                       )}
+                    </div>
+                  )}
+
+                  {changeDetailModal.change_type === 'fight_experience' && changeDetailModal.action !== 'delete' && (
+                    <FightExperienceCard fight={changeDetailModal.payload} />
+                  )}
+
+                  {changeDetailModal.change_type === 'fight_experience' && changeDetailModal.action === 'delete' && (
+                    <div className="p-3 bg-red-500/10 rounded-lg border border-red-500/20">
+                      <p className="font-barlow text-red-400 text-sm">Solicitou a exclusão desta luta (o cartel será ajustado).</p>
                     </div>
                   )}
 

@@ -11,7 +11,7 @@ async function getData(id) {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) return null;
   const supabase = createClient(url, key);
-  const { data } = await supabase.from('teams').select('*, owner:owner_id(full_name, handle, avatar_url), team_fighters(id, fighter:fighter_id(id, full_name, handle, avatar_url))').eq('id', id).eq('status', 'active').single();
+  const { data } = await supabase.from('teams').select('*, owner:owner_id(full_name, handle, avatar_url), team_fighters(id, status, fighter:fighter_id(id, full_name, handle, avatar_url)), team_coaches(id, status, coach:coach_id(id, full_name, handle, avatar_url))').eq('id', id).eq('status', 'active').single();
   return data;
 }
 
@@ -19,7 +19,8 @@ export default async function EquipeDetailPage({ params }) {
   const { id } = await params;
   const item = await getData(id);
   if (!item) notFound();
-  const fighters = (item.team_fighters || []).filter((tf) => tf.fighter);
+  const fighters = (item.team_fighters || []).filter((tf) => tf.fighter && tf.status === 'active');
+  const coaches = (item.team_coaches || []).filter((tc) => tc.coach && tc.status === 'active');
 
   return (
     <main className="min-h-screen px-6 py-12 max-w-4xl mx-auto">
@@ -66,6 +67,22 @@ export default async function EquipeDetailPage({ params }) {
                     <div className="min-w-0">
                       <p className="font-barlow-condensed text-sm text-theme-text truncate group-hover:text-brand-red transition-colors">{tf.fighter.full_name}</p>
                       {tf.fighter.handle && <p className="font-barlow text-[10px] text-theme-text/30 truncate">@{tf.fighter.handle}</p>}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+          {coaches.length > 0 && (
+            <div>
+              <h3 className="font-barlow-condensed text-brand-gold uppercase tracking-widest text-sm font-semibold mb-3">Treinadores ({coaches.length})</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {coaches.map((tc) => (
+                  <Link key={tc.id} href={`/treinadores/${tc.coach.id}`} className="flex items-center gap-2.5 p-2.5 rounded-lg bg-theme-text/[0.03] border border-theme-border/[0.06] hover:border-brand-red/30 transition-all group">
+                    <Avatar name={tc.coach.full_name} url={tc.coach.avatar_url} size={32} />
+                    <div className="min-w-0">
+                      <p className="font-barlow-condensed text-sm text-theme-text truncate group-hover:text-brand-red transition-colors">{tc.coach.full_name}</p>
+                      {tc.coach.handle && <p className="font-barlow text-[10px] text-theme-text/30 truncate">@{tc.coach.handle}</p>}
                     </div>
                   </Link>
                 ))}

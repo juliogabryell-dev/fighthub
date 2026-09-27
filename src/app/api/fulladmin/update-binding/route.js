@@ -14,7 +14,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Dados incompletos' }, { status: 400 });
     }
 
-    const ALLOWED_TABLES = ['fighter_coaches', 'fighter_academies', 'team_fighters', 'federation_referees', 'federation_teams', 'match_maker_athletes', 'match_maker_teams', 'match_maker_federations'];
+    const ALLOWED_TABLES = ['fighter_coaches', 'fighter_academies', 'team_fighters', 'federation_referees', 'federation_teams', 'match_maker_athletes', 'match_maker_teams', 'match_maker_federations', 'team_coaches', 'coach_academies', 'coach_federations', 'coach_match_makers'];
     if (!ALLOWED_TABLES.includes(table)) {
       return NextResponse.json({ error: 'Tabela inválida' }, { status: 400 });
     }
@@ -59,7 +59,7 @@ export async function DELETE(request) {
       return NextResponse.json({ error: 'Dados incompletos' }, { status: 400 });
     }
 
-    const ALLOWED_TABLES = ['fighter_coaches', 'fighter_academies', 'team_fighters', 'federation_referees', 'federation_teams', 'match_maker_athletes', 'match_maker_teams', 'match_maker_federations'];
+    const ALLOWED_TABLES = ['fighter_coaches', 'fighter_academies', 'team_fighters', 'federation_referees', 'federation_teams', 'match_maker_athletes', 'match_maker_teams', 'match_maker_federations', 'team_coaches', 'coach_academies', 'coach_federations', 'coach_match_makers'];
     if (!ALLOWED_TABLES.includes(table)) {
       return NextResponse.json({ error: 'Tabela inválida' }, { status: 400 });
     }
