@@ -44,6 +44,7 @@ export default function FightExperienceCard({ fight, actions = null, pending = f
   const photos = [
     { url: fight.faceoff_photo_url, label: 'Encarada' },
     { url: fight.hand_raised_photo_url, label: 'Resultado' },
+    { url: fight.event_poster_url, label: 'Cartaz' },
   ].filter((p) => p.url);
 
   return (
@@ -53,7 +54,7 @@ export default function FightExperienceCard({ fight, actions = null, pending = f
       }`}
     >
       {photos.length > 0 && (
-        <div className="grid grid-cols-2 gap-px bg-theme-border/10">
+        <div className={`grid ${photos.length === 3 ? 'grid-cols-3' : 'grid-cols-2'} gap-px bg-theme-border/10`}>
           {photos.map((p) => (
             <button
               key={p.label}
@@ -126,7 +127,7 @@ export default function FightExperienceCard({ fight, actions = null, pending = f
   );
 }
 
-export function FightPhotoInput({ label, file, currentUrl, onChange }) {
+export function FightPhotoInput({ label, file, currentUrl, onChange, onRemove }) {
   const previewUrl = file ? URL.createObjectURL(file) : currentUrl;
   return (
     <div>
@@ -147,6 +148,11 @@ export function FightPhotoInput({ label, file, currentUrl, onChange }) {
         </span>
         <input type="file" accept="image/*" onChange={onChange} className="hidden" />
       </label>
+      {onRemove && previewUrl && (
+        <button type="button" onClick={onRemove} className="mt-1 font-barlow text-xs text-theme-text/40 hover:text-red-400 transition-colors">
+          Remover foto
+        </button>
+      )}
     </div>
   );
 }

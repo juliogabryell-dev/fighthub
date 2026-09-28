@@ -127,6 +127,7 @@ export default function PerfilPage() {
     video_url: '',
     faceoff_photo_url: '',
     hand_raised_photo_url: '',
+    event_poster_url: '',
   };
   const [fights, setFights] = useState([]);
   const [showFightModal, setShowFightModal] = useState(false);
@@ -134,6 +135,7 @@ export default function PerfilPage() {
   const [fightForm, setFightForm] = useState(emptyFightForm);
   const [faceoffFile, setFaceoffFile] = useState(null);
   const [handRaisedFile, setHandRaisedFile] = useState(null);
+  const [posterFile, setPosterFile] = useState(null);
   const [fightSaving, setFightSaving] = useState(false);
 
   // Coach-specific
@@ -530,6 +532,7 @@ export default function PerfilPage() {
     setFightForm({ ...emptyFightForm, modality: martialArts[0]?.art_name || '' });
     setFaceoffFile(null);
     setHandRaisedFile(null);
+    setPosterFile(null);
     setShowFightModal(true);
   }
 
@@ -545,9 +548,11 @@ export default function PerfilPage() {
       video_url: fight.video_url || '',
       faceoff_photo_url: fight.faceoff_photo_url || '',
       hand_raised_photo_url: fight.hand_raised_photo_url || '',
+      event_poster_url: fight.event_poster_url || '',
     });
     setFaceoffFile(null);
     setHandRaisedFile(null);
+    setPosterFile(null);
     setShowFightModal(true);
   }
 
@@ -594,6 +599,7 @@ export default function PerfilPage() {
     try {
       const faceoff_photo_url = faceoffFile ? await uploadFightPhoto(faceoffFile, 'encarada') : fightForm.faceoff_photo_url;
       const hand_raised_photo_url = handRaisedFile ? await uploadFightPhoto(handRaisedFile, 'resultado') : fightForm.hand_raised_photo_url;
+      const event_poster_url = posterFile ? await uploadFightPhoto(posterFile, 'cartaz') : (fightForm.event_poster_url || null);
 
       const payload = {
         modality: fightForm.modality,
@@ -605,6 +611,7 @@ export default function PerfilPage() {
         video_url: fightForm.video_url.trim() || null,
         faceoff_photo_url,
         hand_raised_photo_url,
+        event_poster_url,
       };
 
       // Visible right away with the "Aguardando validação" seal; admins validate it later.
@@ -3265,6 +3272,13 @@ export default function PerfilPage() {
               file={handRaisedFile}
               currentUrl={fightForm.hand_raised_photo_url}
               onChange={(e) => handleFightPhotoSelect(e, setHandRaisedFile)}
+            />
+            <FightPhotoInput
+              label="Cartaz do evento (opcional)"
+              file={posterFile}
+              currentUrl={fightForm.event_poster_url}
+              onChange={(e) => handleFightPhotoSelect(e, setPosterFile)}
+              onRemove={() => { setPosterFile(null); setFightForm({ ...fightForm, event_poster_url: '' }); }}
             />
 
             <InputField
