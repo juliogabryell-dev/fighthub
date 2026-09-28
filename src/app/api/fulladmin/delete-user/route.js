@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { verifyAdminSession } from '@/lib/adminSession';
 
 export async function POST(request) {
   try {
-    const adminCookie = request.cookies.get('admin_session')?.value;
+    const adminCookie = await verifyAdminSession(request);
     if (!adminCookie) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }

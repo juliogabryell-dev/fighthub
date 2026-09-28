@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
+import { verifyAdminSession } from '@/lib/adminSession';
 
 export async function middleware(request) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -37,13 +38,12 @@ export async function middleware(request) {
 
   // Protected: /fulladmin (independent admin system — cookie-based)
   if (pathname.startsWith('/fulladmin') && !pathname.startsWith('/fulladmin/login')) {
-    const adminCookie = request.cookies.get('admin_session')?.value;
-    if (!adminCookie) {
+    const admin = await verifyAdminSession(request);
+    if (!admin) {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = '/fulladmin/login';
       return NextResponse.redirect(loginUrl);
     }
-    // Cookie exists — let the API route validate it on the client side
     return supabaseResponse;
   }
 

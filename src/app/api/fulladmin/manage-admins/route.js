@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { verifyAdminSession } from '@/lib/adminSession';
 
 function getAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -13,7 +14,7 @@ function getAdminClient() {
 // GET: List all admin users
 export async function GET(request) {
   try {
-    const adminCookie = request.cookies.get('admin_session')?.value;
+    const adminCookie = await verifyAdminSession(request);
     if (!adminCookie) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
@@ -41,7 +42,7 @@ export async function GET(request) {
 // POST: Create a new admin user
 export async function POST(request) {
   try {
-    const adminCookie = request.cookies.get('admin_session')?.value;
+    const adminCookie = await verifyAdminSession(request);
     if (!adminCookie) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
@@ -84,7 +85,7 @@ export async function POST(request) {
 // DELETE: Delete an admin user
 export async function DELETE(request) {
   try {
-    const adminCookie = request.cookies.get('admin_session')?.value;
+    const adminCookie = await verifyAdminSession(request);
     if (!adminCookie) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }

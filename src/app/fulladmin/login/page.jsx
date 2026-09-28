@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
 import Icon from '@/components/Icon';
 
 export default function FullAdminLoginPage() {
@@ -19,31 +18,16 @@ export default function FullAdminLoginPage() {
     setLoading(true);
 
     try {
-      const supabase = createClient();
-      const { data, error: rpcError } = await supabase.rpc('verify_admin_login', {
-        p_email: email,
-        p_password: password,
-      });
-
-      if (rpcError || !data) {
-        setError('Email ou senha inválidos.');
-        setLoading(false);
-        return;
-      }
-
-      // Create admin session via API route
+      // Password is verified on the server, which then sets the signed session cookie
       const res = await fetch('/api/fulladmin/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          admin_id: data.id,
-          admin_name: data.name,
-          admin_email: data.email,
-        }),
+        body: JSON.stringify({ email, password }),
       });
 
       if (!res.ok) {
-        setError('Erro ao criar sessão. Tente novamente.');
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || 'Email ou senha inválidos.');
         setLoading(false);
         return;
       }

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { verifyAdminSession } from '@/lib/adminSession';
 
 function getAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -10,13 +11,13 @@ function getAdminClient() {
   });
 }
 
-function checkAuth(request) {
-  return !!request.cookies.get('admin_session')?.value;
+async function checkAuth(request) {
+  return !!(await verifyAdminSession(request));
 }
 
 // GET: Search fighters or list event fighters
 export async function GET(request) {
-  if (!checkAuth(request)) {
+  if (!(await checkAuth(request))) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
   }
 
@@ -66,7 +67,7 @@ export async function GET(request) {
 
 // POST: Add fighter to event
 export async function POST(request) {
-  if (!checkAuth(request)) {
+  if (!(await checkAuth(request))) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
   }
 
@@ -102,7 +103,7 @@ export async function POST(request) {
 
 // DELETE: Remove fighter from event
 export async function DELETE(request) {
-  if (!checkAuth(request)) {
+  if (!(await checkAuth(request))) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
   }
 

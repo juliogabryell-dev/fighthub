@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { verifyAdminSession } from '@/lib/adminSession';
 
 function getAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -10,13 +11,13 @@ function getAdminClient() {
   });
 }
 
-function checkAuth(request) {
-  return !!request.cookies.get('admin_session')?.value;
+async function checkAuth(request) {
+  return !!(await verifyAdminSession(request));
 }
 
 // POST: Upload image for event
 export async function POST(request) {
-  if (!checkAuth(request)) {
+  if (!(await checkAuth(request))) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
   }
 
@@ -76,7 +77,7 @@ export async function POST(request) {
 
 // PUT: Update image order
 export async function PUT(request) {
-  if (!checkAuth(request)) {
+  if (!(await checkAuth(request))) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
   }
 
@@ -108,7 +109,7 @@ export async function PUT(request) {
 
 // DELETE: Delete image
 export async function DELETE(request) {
-  if (!checkAuth(request)) {
+  if (!(await checkAuth(request))) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
   }
 

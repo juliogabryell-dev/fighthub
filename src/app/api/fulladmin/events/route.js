@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { verifyAdminSession } from '@/lib/adminSession';
 
 function getAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -10,10 +11,8 @@ function getAdminClient() {
   });
 }
 
-function checkAuth(request) {
-  const adminCookie = request.cookies.get('admin_session')?.value;
-  if (!adminCookie) return false;
-  return true;
+async function checkAuth(request) {
+  return !!(await verifyAdminSession(request));
 }
 
 // GET: List all events (admin sees all, public sees published future events)
@@ -56,7 +55,7 @@ export async function GET(request) {
 
 // POST: Create event
 export async function POST(request) {
-  if (!checkAuth(request)) {
+  if (!(await checkAuth(request))) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
   }
 
@@ -101,7 +100,7 @@ export async function POST(request) {
 
 // PUT: Update event
 export async function PUT(request) {
-  if (!checkAuth(request)) {
+  if (!(await checkAuth(request))) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
   }
 
@@ -147,7 +146,7 @@ export async function PUT(request) {
 
 // DELETE: Delete event
 export async function DELETE(request) {
-  if (!checkAuth(request)) {
+  if (!(await checkAuth(request))) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
   }
 

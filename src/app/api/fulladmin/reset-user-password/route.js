@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { verifyAdminSession } from '@/lib/adminSession';
 
 // POST: Reset a user's password (admin action)
 export async function POST(request) {
   try {
     // Verify admin session cookie exists
-    const adminCookie = request.cookies.get('admin_session')?.value;
+    const adminCookie = await verifyAdminSession(request);
     if (!adminCookie) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }

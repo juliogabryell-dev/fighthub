@@ -147,7 +147,6 @@ export default async function HomePage() {
             <div className="mb-6">
               <span className="font-bebas text-4xl text-[#C41E3A]">R$ 129,99</span>
               <span className="font-barlow text-theme-text/40 text-sm"> / ano</span>
-              <p className="font-barlow text-xs text-theme-text/40 mt-1">Indique amigos com seu código e renove por R$ 114,99</p>
             </div>
             <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/30 mb-3">Inclui:</p>
             <ul className="space-y-2.5 flex-1">
@@ -185,7 +184,7 @@ export default async function HomePage() {
             <div className="mb-6">
               <span className="font-bebas text-4xl text-blue-400">R$ 499</span>
               <span className="font-barlow text-theme-text/40 text-sm"> / ano</span>
-              <p className="inline-block mt-2 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 font-barlow-condensed text-xs uppercase tracking-wider text-[#D4AF37]">
+              <p className="w-fit mt-4 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 font-barlow-condensed text-xs uppercase tracking-wider text-[#D4AF37]">
                 1º ano bônus — você só paga na renovação
               </p>
             </div>

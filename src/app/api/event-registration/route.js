@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { verifyAdminSession } from '@/lib/adminSession';
 
 function getAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -104,7 +105,7 @@ export async function GET(request) {
 
 // DELETE: Admin delete/cancel registration(s)
 export async function DELETE(request) {
-  const adminCookie = request.cookies.get('admin_session')?.value;
+  const adminCookie = await verifyAdminSession(request);
   if (!adminCookie) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
 
   const supabase = getAdminClient();
@@ -141,7 +142,7 @@ export async function DELETE(request) {
 
 // PUT: Admin approve/reject
 export async function PUT(request) {
-  const adminCookie = request.cookies.get('admin_session')?.value;
+  const adminCookie = await verifyAdminSession(request);
   if (!adminCookie) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
 
   const supabase = getAdminClient();
