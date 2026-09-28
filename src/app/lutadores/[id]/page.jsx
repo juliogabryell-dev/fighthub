@@ -391,7 +391,7 @@ export default async function FighterProfile({ params }) {
                 {[...fighter.fight_experiences]
                   .sort((a, b) => (b.fight_date || '').localeCompare(a.fight_date || ''))
                   .map((fight) => (
-                    <FightExperienceCard key={fight.id} fight={fight} />
+                    <FightExperienceCard key={fight.id} fight={fight} showNote={false} />
                   ))}
               </div>
             </div>

@@ -607,24 +607,14 @@ export default function PerfilPage() {
         hand_raised_photo_url,
       };
 
-      if (isProfileVerified(profile)) {
-        const { error: pendingErr } = await supabase.from('pending_profile_changes').insert({
-          user_id: user.id,
-          change_type: 'fight_experience',
-          action: editingFightId ? 'update' : 'create',
-          target_id: editingFightId || null,
-          payload,
-        });
-        if (pendingErr) throw new Error(pendingErr.message);
-        setPendingToast('Seu perfil é verificado. A luta foi enviada para aprovação do administrador e ficará visível após a validação.');
-        setTimeout(() => setPendingToast(null), 8000);
-        alert('Seu perfil é verificado.\n\nA luta foi enviada para aprovação do administrador e ficará visível publicamente somente após a validação.');
-      } else {
-        const { error } = editingFightId
-          ? await supabase.from('fight_experiences').update(payload).eq('id', editingFightId)
-          : await supabase.from('fight_experiences').insert({ ...payload, fighter_id: user.id });
-        if (error) throw new Error(error.message);
-      }
+      // Visible right away with the "Aguardando validação" seal; admins validate it later.
+      // Editing sends the fight back to validation (enforced by DB trigger).
+      const { error } = editingFightId
+        ? await supabase.from('fight_experiences').update(payload).eq('id', editingFightId)
+        : await supabase.from('fight_experiences').insert({ ...payload, fighter_id: user.id });
+      if (error) throw new Error(error.message);
+      setPendingToast('Luta salva! Ela já aparece no seu perfil com o selo "Aguardando validação" até um administrador validar.');
+      setTimeout(() => setPendingToast(null), 8000);
 
       setShowFightModal(false);
       fetchUserAndProfile();
@@ -637,16 +627,6 @@ export default function PerfilPage() {
 
   async function handleDeleteFight(fightId) {
     if (!confirm('Tem certeza que deseja excluir esta luta? O cartel será ajustado automaticamente.')) return;
-    if (isProfileVerified(profile)) {
-      await supabase.from('pending_profile_changes').insert({
-        user_id: user.id, change_type: 'fight_experience', action: 'delete', target_id: fightId, payload: {},
-      });
-      setPendingToast('Seu perfil é verificado. A exclusão foi enviada para aprovação do administrador.');
-      setTimeout(() => setPendingToast(null), 8000);
-      alert('Seu perfil é verificado.\n\nA exclusão da luta foi enviada para aprovação do administrador.');
-      fetchUserAndProfile();
-      return;
-    }
     const { error } = await supabase.from('fight_experiences').delete().eq('id', fightId);
     if (!error) fetchUserAndProfile();
   }
@@ -3295,7 +3275,8 @@ export default function PerfilPage() {
               placeholder="https://www.youtube.com/watch?v=..."
             />
             <p className="font-barlow text-[11px] text-theme-text/30">
-              O resultado será somado automaticamente ao seu cartel em {fightForm.modality || 'modalidade'}.
+              A luta fica visível no seu perfil com o selo &quot;Aguardando validação&quot; até um administrador conferir as fotos.
+              {editingFightId && ' Ao editar, ela volta para validação.'} O resultado é somado ao seu cartel em {fightForm.modality || 'modalidade'} (lutas não validadas deixam de contar).
             </p>
             <button
               type="submit"

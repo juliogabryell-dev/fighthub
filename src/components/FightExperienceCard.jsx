@@ -17,13 +17,29 @@ const RESULT_STYLES = {
   no_contest: 'bg-theme-text/5 border-theme-border/20 text-theme-text/50',
 };
 
+export const VALIDATION_SEALS = {
+  pending: { label: 'Aguardando validação', icon: 'clock', className: 'bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37]' },
+  validated: { label: 'Validado', icon: 'check', className: 'bg-[#1D9BF0]/10 border-[#1D9BF0]/30 text-[#1D9BF0]' },
+  rejected: { label: 'Não validado', icon: 'x', className: 'bg-red-500/10 border-red-500/30 text-red-400' },
+};
+
+export function ValidationSeal({ status }) {
+  const seal = VALIDATION_SEALS[status] || VALIDATION_SEALS.pending;
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-barlow-condensed uppercase tracking-wider shrink-0 ${seal.className}`}>
+      <Icon name={seal.icon} size={10} />
+      {seal.label}
+    </span>
+  );
+}
+
 const CATEGORY_LABELS = {
   profissional: 'Profissional',
   semi_profissional: 'Semi-Profissional',
   amador: 'Amador',
 };
 
-export default function FightExperienceCard({ fight, actions = null, pending = false }) {
+export default function FightExperienceCard({ fight, actions = null, pending = false, showNote = true }) {
   const [zoomUrl, setZoomUrl] = useState(null);
   const photos = [
     { url: fight.faceoff_photo_url, label: 'Encarada' },
@@ -64,10 +80,12 @@ export default function FightExperienceCard({ fight, actions = null, pending = f
               <p className="font-barlow-condensed text-theme-text font-semibold truncate">
                 vs {fight.opponent_name}
               </p>
-              {pending && (
+              {pending ? (
                 <span className="px-2 py-0.5 rounded-full text-[9px] font-barlow-condensed uppercase tracking-wider bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#D4AF37]">
                   Aguardando Aprovação
                 </span>
+              ) : (
+                <ValidationSeal status={fight.validation_status} />
               )}
             </div>
             <p className="font-barlow text-theme-text/40 text-xs mt-1">
@@ -75,6 +93,11 @@ export default function FightExperienceCard({ fight, actions = null, pending = f
                 .filter(Boolean)
                 .join(' · ')}
             </p>
+            {showNote && fight.validation_status === 'rejected' && fight.validation_note && (
+              <p className="font-barlow text-xs text-red-400/80 mt-1">
+                Motivo: {fight.validation_note}
+              </p>
+            )}
             {fight.video_url && (
               <a
                 href={fight.video_url}

@@ -9,6 +9,7 @@ import EventsManager from '@/components/EventsManager';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import BindingsManager from '@/components/BindingsManager';
 import FightExperienceCard from '@/components/FightExperienceCard';
+import FightValidationManager from '@/components/FightValidationManager';
 
 export default function FullAdminDashboard() {
   const router = useRouter();
@@ -47,6 +48,7 @@ export default function FullAdminDashboard() {
   const [pendingVerifications, setPendingVerifications] = useState([]);
   const [pendingProfileChanges, setPendingProfileChanges] = useState([]);
   const [changeDetailModal, setChangeDetailModal] = useState(null);
+  const [pendingFightsCount, setPendingFightsCount] = useState(0);
 
   // UI states
   const [actionLoading, setActionLoading] = useState(null);
@@ -494,6 +496,7 @@ export default function FullAdminDashboard() {
     { id: 'admins', label: 'Admins', count: adminUsers.length },
     { id: 'verification', label: 'Verificações', count: pendingVerifications.length },
     { id: 'profile_changes', label: 'Alt. Perfil', count: pendingProfileChanges.length },
+    { id: 'fights', label: 'Lutas', count: pendingFightsCount },
     { id: 'events', label: 'Eventos' },
   ];
 
@@ -572,7 +575,7 @@ export default function FullAdminDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center gap-2 mb-6 border-b border-white/10 pb-0">
+        <div className="flex items-center gap-2 mb-6 border-b border-white/10 pb-0 overflow-x-auto whitespace-nowrap">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -1092,6 +1095,11 @@ export default function FullAdminDashboard() {
             </div>
           </div>
         )}
+
+        {/* Tab: Fight validation (always mounted so the tab badge count loads) */}
+        <div className={activeTab === 'fights' ? '' : 'hidden'}>
+          <FightValidationManager onPendingCount={setPendingFightsCount} />
+        </div>
 
         {activeTab === 'events' && (
           <EventsManager />
