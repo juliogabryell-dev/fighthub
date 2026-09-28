@@ -10,6 +10,7 @@ import VerifiedBadge from '@/components/VerifiedBadge';
 import BindingsManager from '@/components/BindingsManager';
 import FightExperienceCard from '@/components/FightExperienceCard';
 import FightValidationManager from '@/components/FightValidationManager';
+import PaymentsManager from '@/components/PaymentsManager';
 
 export default function FullAdminDashboard() {
   const router = useRouter();
@@ -49,6 +50,7 @@ export default function FullAdminDashboard() {
   const [pendingProfileChanges, setPendingProfileChanges] = useState([]);
   const [changeDetailModal, setChangeDetailModal] = useState(null);
   const [pendingFightsCount, setPendingFightsCount] = useState(0);
+  const [pendingPaymentsCount, setPendingPaymentsCount] = useState(0);
 
   // UI states
   const [actionLoading, setActionLoading] = useState(null);
@@ -497,6 +499,7 @@ export default function FullAdminDashboard() {
     { id: 'verification', label: 'Verificações', count: pendingVerifications.length },
     { id: 'profile_changes', label: 'Alt. Perfil', count: pendingProfileChanges.length },
     { id: 'fights', label: 'Lutas', count: pendingFightsCount },
+    { id: 'payments', label: 'Pagamentos', count: pendingPaymentsCount },
     { id: 'events', label: 'Eventos' },
   ];
 
@@ -1095,6 +1098,11 @@ export default function FullAdminDashboard() {
             </div>
           </div>
         )}
+
+        {/* Tab: Registrations, payments, renewals and referrals */}
+        <div className={activeTab === 'payments' ? '' : 'hidden'}>
+          <PaymentsManager onPendingCount={setPendingPaymentsCount} />
+        </div>
 
         {/* Tab: Fight validation (always mounted so the tab badge count loads) */}
         <div className={activeTab === 'fights' ? '' : 'hidden'}>

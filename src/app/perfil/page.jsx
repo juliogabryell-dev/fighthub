@@ -12,6 +12,7 @@ import FightRecordDisplay from '@/components/FightRecordDisplay';
 import FightExperienceCard, { FightPhotoInput, FIGHT_RESULT_LABELS } from '@/components/FightExperienceCard';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import BindingsPanel, { bindingAction } from '@/components/BindingsPanel';
+import MyPlanCard from '@/components/MyPlanCard';
 import { isProfileVerified } from '@/lib/isProfileVerified';
 
 export default function PerfilPage() {
@@ -1797,6 +1798,9 @@ export default function PerfilPage() {
             </button>
           </div>
         )}
+
+        {/* Plan status + referral code */}
+        <MyPlanCard profile={profile} />
 
         {/* Bindings: requests received/sent and active links (all roles) */}
         <BindingsPanel refreshKey={bindingsRefresh} onChange={fetchUserAndProfile} />

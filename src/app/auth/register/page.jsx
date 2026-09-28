@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import InputField from '@/components/InputField';
@@ -43,6 +43,25 @@ export default function RegisterPage() {
   const [motherName, setMotherName] = useState('');
   const [foundingDate, setFoundingDate] = useState('');
 
+  // Referral code (optional) — can come from a shared link: /auth/register?ref=CODE
+  const [referralCode, setReferralCode] = useState('');
+  const [referrerName, setReferrerName] = useState(null); // null = not checked, '' = invalid
+
+  useEffect(() => {
+    const ref = new URLSearchParams(window.location.search).get('ref');
+    if (ref) setReferralCode(ref.toUpperCase());
+  }, []);
+
+  useEffect(() => {
+    const code = referralCode.trim();
+    if (code.length < 6) { setReferrerName(null); return; }
+    const t = setTimeout(async () => {
+      const { data } = await createClient().rpc('lookup_referral_code', { p_code: code });
+      setReferrerName(data || '');
+    }, 300);
+    return () => clearTimeout(t);
+  }, [referralCode]);
+
   const isOrg = ['academy', 'team', 'federation'].includes(role);
   const isPerson = !isOrg;
 
@@ -60,6 +79,12 @@ export default function RegisterPage() {
 
     if (handle && !/^[a-z0-9_]{3,30}$/.test(handle)) {
       setError('O @ deve ter entre 3 e 30 caracteres (letras minúsculas, números e _ apenas).');
+      setLoading(false);
+      return;
+    }
+
+    if (referralCode.trim() && referrerName === '') {
+      setError('Código de indicação inválido. Confira o código ou deixe o campo em branco.');
       setLoading(false);
       return;
     }
@@ -99,6 +124,7 @@ export default function RegisterPage() {
           status: 'pending',
           is_fighter: role === 'fighter',
           is_coach: role === 'coach',
+          referral_code_used: referralCode.trim() || null,
         };
 
         if (isPerson) {
@@ -123,7 +149,7 @@ export default function RegisterPage() {
           } else if (profileError.code === '23503') {
             await supabase.from('profiles').upsert(profileData, { onConflict: 'id' });
           } else {
-            const minimalProfile = { id: user.id, full_name: name, role, status: 'pending', is_fighter: role === 'fighter', is_coach: role === 'coach' };
+            const minimalProfile = { id: user.id, full_name: name, role, status: 'pending', is_fighter: role === 'fighter', is_coach: role === 'coach', referral_code_used: referralCode.trim() || null };
             await supabase.from('profiles').upsert(minimalProfile, { onConflict: 'id' });
           }
         }
@@ -329,6 +355,21 @@ export default function RegisterPage() {
 
             <InputField label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value.toLowerCase())} placeholder="seu@email.com" required />
             <InputField label="Senha" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres" required />
+            <div>
+              <InputField
+                label="Código de indicação (opcional)"
+                type="text"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
+                placeholder="Ex: K7M2QX"
+              />
+              {referrerName && (
+                <p className="font-barlow text-xs text-green-400 mt-1">Indicado por {referrerName}</p>
+              )}
+              {referrerName === '' && (
+                <p className="font-barlow text-xs text-red-400 mt-1">Código não encontrado</p>
+              )}
+            </div>
 
             <div className="p-4 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30">
               <p className="font-barlow text-[#D4AF37] text-sm text-center">

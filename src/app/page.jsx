@@ -131,7 +131,7 @@ export default async function HomePage() {
         </FadeInOnScroll>
 
         {/* Plans Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
           {/* Plano Lutador */}
           <FadeInOnScroll delay={0}>
           <div className="relative bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-theme-border/10 p-8 flex flex-col hover:border-[#C41E3A]/30 transition-all duration-300 group h-full">
@@ -141,12 +141,13 @@ export default async function HomePage() {
               </div>
               <div>
                 <h3 className="font-bebas text-2xl text-theme-text tracking-wider">PLANO LUTADOR</h3>
-                <p className="font-barlow text-theme-text/40 text-xs">Para atletas amadores e profissionais</p>
+                <p className="font-barlow text-theme-text/40 text-xs">Para atletas, treinadores, árbitros e match makers</p>
               </div>
             </div>
             <div className="mb-6">
-              <span className="font-bebas text-4xl text-[#C41E3A]">R$ 79</span>
+              <span className="font-bebas text-4xl text-[#C41E3A]">R$ 129,99</span>
               <span className="font-barlow text-theme-text/40 text-sm"> / ano</span>
+              <p className="font-barlow text-xs text-theme-text/40 mt-1">Indique amigos com seu código e renove por R$ 114,99</p>
             </div>
             <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/30 mb-3">Inclui:</p>
             <ul className="space-y-2.5 flex-1">
@@ -169,47 +170,6 @@ export default async function HomePage() {
           </div>
           </FadeInOnScroll>
 
-          {/* Plano Academia / Clube */}
-          <FadeInOnScroll delay={150}>
-          <div className="relative bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-[#D4AF37]/20 p-8 flex flex-col hover:border-[#D4AF37]/40 transition-all duration-300 group ring-1 ring-[#D4AF37]/10 h-full">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-              <span className="bg-gradient-to-r from-[#D4AF37] to-[#b8962e] text-dark-bg font-barlow-condensed text-[10px] uppercase tracking-widest font-bold px-4 py-1 rounded-full">
-                Popular
-              </span>
-            </div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-xl bg-[#D4AF37]/15 flex items-center justify-center">
-                <span className="text-2xl">🏆</span>
-              </div>
-              <div>
-                <h3 className="font-bebas text-2xl text-theme-text tracking-wider">PLANO ACADEMIA / CLUBE</h3>
-                <p className="font-barlow text-theme-text/40 text-xs">Para academias, clubes e equipes</p>
-              </div>
-            </div>
-            <div className="mb-6">
-              <span className="font-bebas text-4xl text-[#D4AF37]">R$ 399</span>
-              <span className="font-barlow text-theme-text/40 text-sm"> / ano</span>
-            </div>
-            <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/30 mb-3">Inclui:</p>
-            <ul className="space-y-2.5 flex-1">
-              {[
-                'Página pública da academia ou clube',
-                'Associação de atletas vinculados',
-                'Confirmação de lutas como equipe',
-                'Visibilidade institucional no Fight Log',
-              ].map((item) => (
-                <li key={item} className="flex items-start gap-2.5">
-                  <svg className="w-4 h-4 text-[#D4AF37] mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  <span className="font-barlow text-sm text-theme-text/60">{item}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="font-barlow text-xs text-[#D4AF37]/60 italic mt-6 pt-4 border-t border-theme-border/5">
-              Academias fortes constroem atletas com histórico real.
-            </p>
-          </div>
-          </FadeInOnScroll>
-
           {/* Plano Entidade Oficial */}
           <FadeInOnScroll delay={300}>
           <div className="relative bg-gradient-to-br from-dark-card to-dark-card2 rounded-2xl border border-theme-border/10 p-8 flex flex-col hover:border-blue-500/30 transition-all duration-300 group h-full">
@@ -219,17 +179,21 @@ export default async function HomePage() {
               </div>
               <div>
                 <h3 className="font-bebas text-2xl text-theme-text tracking-wider">PLANO ENTIDADE OFICIAL</h3>
-                <p className="font-barlow text-theme-text/40 text-xs">Para confederações, federações, associações e ligas</p>
+                <p className="font-barlow text-theme-text/40 text-xs">Para academias, clubes, equipes, federações, confederações, associações e ligas</p>
               </div>
             </div>
             <div className="mb-6">
               <span className="font-bebas text-4xl text-blue-400">R$ 499</span>
               <span className="font-barlow text-theme-text/40 text-sm"> / ano</span>
+              <p className="inline-block mt-2 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 font-barlow-condensed text-xs uppercase tracking-wider text-[#D4AF37]">
+                1º ano bônus — você só paga na renovação
+              </p>
             </div>
             <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/30 mb-3">Inclui:</p>
             <ul className="space-y-2.5 flex-1">
               {[
-                'Página institucional verificada',
+                'Página institucional verificada (academias, clubes e entidades)',
+                'Associação de atletas e treinadores vinculados',
                 'Registro e confirmação oficial de lutas',
                 'Associação de eventos, atletas e clubes',
                 'Selo de entidade oficial no Fight Log',
