@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import Avatar from '@/components/Avatar';
 import Icon from '@/components/Icon';
@@ -12,12 +13,14 @@ export default function TreinadoresPage() {
   const [search, setSearch] = useState('');
   const [selectedCoach, setSelectedCoach] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [modalTab, setModalTab] = useState('sobre');
+  const [students, setStudents] = useState([]);
 
   useEffect(() => {
     async function fetchCoaches() {
       const { data } = await supabase
         .from('profiles')
-        .select('*, coach_experiences!coach_experiences_coach_id_fkey(*)')
+        .select('*, coach_experiences!coach_experiences_coach_id_fkey(*), fighter_coaches!fighter_coaches_coach_id_fkey(fighter_id, status, fighter:fighter_id(status))')
         .eq('is_coach', true)
         .eq('status', 'active');
       setCoaches(data || []);
@@ -30,15 +33,41 @@ export default function TreinadoresPage() {
   async function openCoachModal(coach) {
     setDetailLoading(true);
     setSelectedCoach(coach);
+    setModalTab('sobre');
+    setStudents([]);
 
-    const { data } = await supabase
-      .from('profiles')
-      .select('*, coach_experiences!coach_experiences_coach_id_fkey(*)')
-      .eq('id', coach.id)
-      .single();
+    const [{ data }, { data: links }] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('*, coach_experiences!coach_experiences_coach_id_fkey(*)')
+        .eq('id', coach.id)
+        .single(),
+      supabase
+        .from('fighter_coaches')
+        .select('fighter:fighter_id(id, full_name, handle, avatar_url, status), martial_art:martial_art_id(art_name)')
+        .eq('coach_id', coach.id)
+        .eq('status', 'active'),
+    ]);
 
-    if (data) setSelectedCoach(data);
+    if (data) setSelectedCoach({ ...coach, ...data });
+
+    // One entry per fighter, with every modality they train with this coach
+    const byFighter = new Map();
+    for (const link of links || []) {
+      if (!link.fighter || link.fighter.status !== 'active') continue;
+      const entry = byFighter.get(link.fighter.id) || { ...link.fighter, modalities: [] };
+      if (link.martial_art?.art_name && !entry.modalities.includes(link.martial_art.art_name)) {
+        entry.modalities.push(link.martial_art.art_name);
+      }
+      byFighter.set(link.fighter.id, entry);
+    }
+    setStudents([...byFighter.values()].sort((a, b) => (a.full_name || '').localeCompare(b.full_name || '')));
     setDetailLoading(false);
+  }
+
+  // Distinct fighters with an active binding to this coach
+  function studentCount(coach) {
+    return new Set((coach.fighter_coaches || []).filter((fc) => fc.status === 'active' && fc.fighter?.status === 'active').map((fc) => fc.fighter_id)).size;
   }
 
   function closeModal() {
@@ -138,6 +167,15 @@ export default function TreinadoresPage() {
                       </span>
                     </div>
                   </div>
+                  {(() => {
+                    const count = studentCount(coach);
+                    return (
+                      <div className="flex flex-col items-center shrink-0 px-2.5 py-1.5 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/20" title={`${count} aluno(s) vinculado(s)`}>
+                        <span className="font-bebas text-xl leading-none text-[#D4AF37]">{count}</span>
+                        <span className="font-barlow-condensed text-[9px] uppercase tracking-widest text-theme-text/40">{count === 1 ? 'aluno' : 'alunos'}</span>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Experiences */}
@@ -235,12 +273,56 @@ export default function TreinadoresPage() {
                 </div>
               </div>
 
+              {/* Tabs */}
+              <div className="flex border-b border-theme-border/10 px-8">
+                {[
+                  { key: 'sobre', label: 'Sobre' },
+                  { key: 'alunos', label: `Alunos (${detailLoading ? studentCount(selectedCoach) : students.length})` },
+                ].map((t) => (
+                  <button
+                    key={t.key}
+                    onClick={() => setModalTab(t.key)}
+                    className={`px-4 py-3 -mb-px border-b-2 font-barlow-condensed text-sm uppercase tracking-wider transition-colors ${
+                      modalTab === t.key ? 'border-[#D4AF37] text-[#D4AF37]' : 'border-transparent text-theme-text/40 hover:text-theme-text/70'
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+
               {detailLoading ? (
                 <div className="p-10 flex justify-center">
                   <svg className="animate-spin h-8 w-8 text-[#D4AF37]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
+                </div>
+              ) : modalTab === 'alunos' ? (
+                <div className="p-6">
+                  {students.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {students.map((st) => (
+                        <Link
+                          key={st.id}
+                          href={`/lutadores/${st.id}?from=/treinadores`}
+                          className="flex items-center gap-2.5 p-2.5 rounded-lg bg-theme-text/[0.03] border border-theme-border/[0.06] hover:border-[#D4AF37]/30 transition-all group"
+                        >
+                          <Avatar name={st.full_name} url={st.avatar_url} size={32} />
+                          <div className="min-w-0">
+                            <p className="font-barlow-condensed text-sm text-theme-text truncate group-hover:text-[#D4AF37] transition-colors">{st.full_name}</p>
+                            <p className="font-barlow text-[11px] text-theme-text/35 truncate">
+                              {[st.handle && `@${st.handle}`, st.modalities.join(', ')].filter(Boolean).join(' · ')}
+                            </p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center py-6 font-barlow-condensed text-theme-text/30 uppercase tracking-wider text-sm">
+                      Nenhum aluno vinculado ainda
+                    </p>
+                  )}
                 </div>
               ) : (
                 <div className="p-8">
