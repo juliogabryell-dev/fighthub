@@ -169,6 +169,7 @@ export default function TreinadoresPage() {
                   </div>
                   {(() => {
                     const count = studentCount(coach);
+                    if (count === 0) return null;
                     return (
                       <div className="flex flex-col items-center shrink-0 px-2.5 py-1.5 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/20" title={`${count} aluno(s) vinculado(s)`}>
                         <span className="font-bebas text-xl leading-none text-[#D4AF37]">{count}</span>
@@ -273,7 +274,8 @@ export default function TreinadoresPage() {
                 </div>
               </div>
 
-              {/* Tabs */}
+              {/* Tabs (only when the coach has students) */}
+              {(detailLoading ? studentCount(selectedCoach) : students.length) > 0 && (
               <div className="flex border-b border-theme-border/10 px-8">
                 {[
                   { key: 'sobre', label: 'Sobre' },
@@ -290,6 +292,7 @@ export default function TreinadoresPage() {
                   </button>
                 ))}
               </div>
+              )}
 
               {detailLoading ? (
                 <div className="p-10 flex justify-center">
@@ -298,7 +301,7 @@ export default function TreinadoresPage() {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
                 </div>
-              ) : modalTab === 'alunos' ? (
+              ) : modalTab === 'alunos' && students.length > 0 ? (
                 <div className="p-6">
                   {students.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
