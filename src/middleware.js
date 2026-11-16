@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import { verifyAdminSession } from '@/lib/adminSession';
+import { isMembershipBlocked } from '@/lib/plans';
 
 export async function middleware(request) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -54,8 +55,25 @@ export async function middleware(request) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // Unpaid plan: 7 days of access after sign-up / expiry, then only the payment page
+  if (user && !BLOCK_EXEMPT.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+    const { data: membership } = await supabase
+      .from('memberships')
+      .select('status, grace_until, period_end, created_at')
+      .eq('profile_id', user.id)
+      .maybeSingle();
+    if (isMembershipBlocked(membership)) {
+      const payUrl = request.nextUrl.clone();
+      payUrl.pathname = '/assinatura';
+      payUrl.search = '';
+      return NextResponse.redirect(payUrl);
+    }
+  }
+
   return supabaseResponse;
 }
+
+const BLOCK_EXEMPT = ['/assinatura', '/auth', '/api', '/termos', '/privacidade', '/contato'];
 
 export const config = {
   matcher: [

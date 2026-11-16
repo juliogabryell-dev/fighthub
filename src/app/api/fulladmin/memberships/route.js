@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { verifyAdminSession } from '@/lib/adminSession';
+import { syncSubscriptionAmount } from '@/lib/mercadopago';
 
 export const dynamic = 'force-dynamic';
 
@@ -96,5 +97,17 @@ export async function POST(request) {
   }
 
   if (result.error) return NextResponse.json({ error: result.error.message }, { status: 400 });
+
+  // Keep Mercado Pago subscription amounts in line (renewal price / referral discount)
+  if (body.action === 'confirm_payment') {
+    const { data: pay } = await supabase.from('payments').select('profile_id').eq('id', body.payment_id).maybeSingle();
+    if (pay) {
+      await syncSubscriptionAmount(supabase, pay.profile_id);
+      const { data: p } = await supabase.from('profiles').select('referred_by').eq('id', pay.profile_id).maybeSingle();
+      if (p?.referred_by) await syncSubscriptionAmount(supabase, p.referred_by);
+    }
+  } else if (body.action === 'confirm_renewal') {
+    await syncSubscriptionAmount(supabase, body.profile_id);
+  }
   return NextResponse.json({ ok: true });
 }

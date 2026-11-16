@@ -5,7 +5,7 @@ import Avatar from '@/components/Avatar';
 import Icon from '@/components/Icon';
 import {
   PLANS, ROLE_LABELS, EVENT_LABELS, MEMBERSHIP_STATUS_STYLES,
-  formatBRL, formatDate, formatDateTime, membershipStatus,
+  formatBRL, formatDate, formatDateTime, membershipStatus, accessDeadline,
 } from '@/lib/plans';
 
 const STATUS_FILTERS = [
@@ -15,6 +15,7 @@ const STATUS_FILTERS = [
   { key: 'bonus', label: '1º ano bônus' },
   { key: 'expiring', label: 'Vencendo' },
   { key: 'expired', label: 'Vencidos' },
+  { key: 'blocked', label: 'Bloqueados' },
 ];
 
 function accountTypes(a) {
@@ -185,6 +186,11 @@ export default function PaymentsManager({ onPendingCount }) {
                       <span className="font-barlow text-[11px] text-white/40 whitespace-nowrap">
                         {a.membership?.period_end ? `até ${formatDate(a.membership.period_end)}` : PLANS[a.membership?.plan]?.label || ''}
                       </span>
+                      {a.membership?.mp_subscription_status === 'authorized' && (
+                        <span className="px-2 py-0.5 rounded-full border border-[#009EE3]/40 bg-[#009EE3]/10 text-[#4fc3f7] text-[10px] font-barlow-condensed uppercase tracking-wider" title="Assinatura Mercado Pago ativa">
+                          Cartão automático
+                        </span>
+                      )}
                       {a.pending_payment ? (
                         <button
                           disabled={busy === a.id}
@@ -329,12 +335,14 @@ function AccountDetail({ account, onClose }) {
           <button onClick={onClose} className="p-1.5 text-white/40 hover:text-white"><Icon name="x" size={18} /></button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-6">
           {[
             ['Plano', PLANS[m?.plan]?.label || '—'],
             ['Situação', st.label],
             ['Validade', m?.period_end ? formatDate(m.period_end) : '—'],
             ['Próx. renovação', formatBRL(m?.next_renewal_price)],
+            ['Renovação automática', m?.mp_subscription_status === 'authorized' ? 'Ativa (cartão)' : m?.mp_subscription_status === 'pending' ? 'Checkout iniciado' : 'Não'],
+            ['Acesso até', accessDeadline(m) ? formatDate(accessDeadline(m)) : '—'],
           ].map(([k, v]) => (
             <div key={k} className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
               <p className="font-barlow-condensed text-[10px] uppercase tracking-widest text-white/30">{k}</p>
@@ -376,7 +384,10 @@ function AccountDetail({ account, onClose }) {
               <div className="divide-y divide-white/5 rounded-lg border border-white/5">
                 {data.payments.map((p) => (
                   <div key={p.id} className="px-3 py-2 flex items-center gap-3 font-barlow text-sm">
-                    <span className="text-white/70 flex-1">{p.kind === 'registration' ? 'Cadastro' : 'Renovação'}</span>
+                    <span className="text-white/70 flex-1">
+                      {p.kind === 'registration' ? 'Cadastro' : 'Renovação'}
+                      {p.method === 'mercadopago' && <span className="text-white/35 text-xs"> · Mercado Pago #{p.mp_payment_id}</span>}
+                    </span>
                     <span className="text-white/80">{formatBRL(p.amount)}</span>
                     <span className={p.status === 'paid' ? 'text-green-400' : 'text-[#D4AF37]'}>{p.status === 'paid' ? 'Pago' : p.status === 'pending' ? 'Pendente' : 'Cancelado'}</span>
                     <span className="text-white/30 text-xs w-40 text-right">{formatDateTime(p.paid_at || p.created_at)}</span>

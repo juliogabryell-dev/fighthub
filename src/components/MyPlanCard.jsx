@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Icon from '@/components/Icon';
-import { PLANS, formatBRL, formatDate, membershipStatus } from '@/lib/plans';
+import Link from 'next/link';
+import { PLANS, formatBRL, formatDate, membershipStatus, accessDeadline, hasAutoRenewal } from '@/lib/plans';
 
 const STATUS_STYLES = {
   none: 'bg-theme-text/5 border-theme-border/20 text-theme-text/50',
@@ -12,6 +13,7 @@ const STATUS_STYLES = {
   bonus: 'bg-[#1D9BF0]/10 border-[#1D9BF0]/30 text-[#1D9BF0]',
   expiring: 'bg-orange-500/10 border-orange-500/30 text-orange-500',
   expired: 'bg-red-500/10 border-red-500/30 text-red-500',
+  blocked: 'bg-red-500/20 border-red-500/50 text-red-500',
 };
 
 export default function MyPlanCard({ profile }) {
@@ -66,8 +68,8 @@ export default function MyPlanCard({ profile }) {
         </div>
         {membership?.status === 'awaiting_payment' ? (
           <p className="font-barlow text-sm text-theme-text/50">
-            Pagamento do cadastro: <strong className="text-theme-text">{formatBRL(PLANS[membership.plan]?.price)}</strong>/ano.
-            Seu plano é ativado assim que o pagamento for confirmado pela nossa equipe.
+            Assinatura: <strong className="text-theme-text">{formatBRL(PLANS[membership.plan]?.price)}</strong>/ano no cartão de crédito.
+            {accessDeadline(membership) && <> Pague até <strong className="text-[#D4AF37]">{formatDate(accessDeadline(membership))}</strong> para não perder o acesso.</>}
           </p>
         ) : membership ? (
           <p className="font-barlow text-sm text-theme-text/50">
@@ -75,8 +77,23 @@ export default function MyPlanCard({ profile }) {
             {membership.is_bonus && ' (1º ano bônus)'}.
             {' '}Próxima renovação: <strong className="text-theme-text">{formatBRL(membership.next_renewal_price)}</strong>
             {Number(membership.next_renewal_price) < Number(PLANS[membership.plan]?.price) && ' — desconto por indicação'}
+            {hasAutoRenewal(membership) && ' · Renovação automática no cartão ativa.'}
           </p>
         ) : null}
+        {membership && (
+          <Link
+            href="/assinatura"
+            className={`inline-block mt-3 px-3 py-1.5 rounded-lg font-barlow-condensed text-[11px] uppercase tracking-wider ${
+              hasAutoRenewal(membership)
+                ? 'border border-theme-border/20 text-theme-text/60 hover:bg-theme-text/5'
+                : 'bg-[#C41E3A] text-white hover:bg-[#d42a46]'
+            }`}
+          >
+            {hasAutoRenewal(membership)
+              ? 'Gerenciar assinatura'
+              : membership.status === 'awaiting_payment' ? 'Pagar agora' : 'Ativar renovação automática'}
+          </Link>
+        )}
       </div>
 
       {/* Referral code */}
