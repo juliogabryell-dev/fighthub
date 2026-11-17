@@ -74,9 +74,15 @@ export function verifyWebhookSignature(headers, dataId) {
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
+// TEMPORARY production test: registrations awaiting payment are charged this
+// value instead of the plan price. Set to null to go back to the real prices.
+// Renewals always use the real price.
+export const TEST_REGISTRATION_PRICE = 1.0;
+
 // Amount the subscription must charge next, from the database
 export async function expectedAmount(supabase, membership) {
   if (membership.status === 'awaiting_payment') {
+    if (TEST_REGISTRATION_PRICE) return TEST_REGISTRATION_PRICE;
     const { data } = await supabase
       .from('payments')
       .select('amount')

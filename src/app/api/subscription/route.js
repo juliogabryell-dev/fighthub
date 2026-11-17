@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { PLANS } from '@/lib/plans';
 import {
-  getServiceClient, mpFetch, cancelPreapproval, siteUrl, expectedAmount, applyPreapproval, syncSubscriptionAmount,
-  reconcileSubscription, logNotification,
+  getServiceClient, mpFetch, cancelPreapproval, siteUrl, expectedAmount, applyPreapproval,
+  reconcileSubscription, logNotification, TEST_REGISTRATION_PRICE,
 } from '@/lib/mercadopago';
 
 export const dynamic = 'force-dynamic';
@@ -66,16 +66,29 @@ export async function POST(request) {
         await applyPreapproval(supabase, current);
         return NextResponse.json({ error: 'Você já tem a renovação automática ativa.' }, { status: 409 });
       }
-      if (current.status === 'pending' && current.init_point) {
-        await syncSubscriptionAmount(supabase, user.id);
+      // A pending checkout keeps the amount it was created with: reuse it only
+      // when the amount is still right, otherwise cancel it and create a new one
+      const target = await expectedAmount(supabase, m);
+      if (current.status === 'pending' && current.init_point
+        && Math.abs(Number(current.auto_recurring?.transaction_amount) - target) < 0.01) {
         return NextResponse.json({ init_point: current.init_point });
       }
-      if (current.status === 'paused') {
+      if (['pending', 'paused'].includes(current.status)) {
         await cancelPreapproval(m.mp_preapproval_id);
       }
     }
 
     const amount = await expectedAmount(supabase, m);
+    // Test price: the pending registration charge must match what MP will charge,
+    // otherwise mp_record_charge flags it as a mismatch and doesn't release the plan
+    if (TEST_REGISTRATION_PRICE && m.status === 'awaiting_payment') {
+      await supabase
+        .from('payments')
+        .update({ amount })
+        .eq('profile_id', user.id)
+        .eq('kind', 'registration')
+        .eq('status', 'pending');
+    }
     const autoRecurring = { frequency: 12, frequency_type: 'months', transaction_amount: amount, currency_id: 'BRL' };
     // Plan still valid (e.g. entity bonus year): first charge only when it ends
     if (m.status === 'active' && m.period_end && new Date(m.period_end) > new Date()) {

@@ -51,19 +51,38 @@ export default function AssinaturaPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [waiting]);
 
+  // Mercado Pago opens in a new tab so the portal stays open here. The tab is
+  // opened right on the click (before the fetch) so browsers don't block it.
   async function subscribe() {
     setBusy(true);
     setError('');
+    const tab = window.open('', '_blank');
     const res = await fetch('/api/subscription', { method: 'POST' });
     const json = await res.json().catch(() => ({}));
     if (res.ok && json.init_point) {
-      window.location.href = json.init_point;
+      if (tab && !tab.closed) {
+        tab.location.href = json.init_point;
+        setReturned(true);
+        setBusy(false);
+      } else {
+        window.location.href = json.init_point;
+      }
       return;
     }
+    if (tab && !tab.closed) tab.close();
     setError(json.error || 'Não foi possível iniciar o pagamento.');
     setBusy(false);
     load(true);
   }
+
+  // Coming back to this tab (e.g. after paying in the Mercado Pago tab): check right away
+  useEffect(() => {
+    if (!returned) return undefined;
+    const onFocus = () => load(true);
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [returned]);
 
   async function cancel() {
     if (!window.confirm('Cancelar a renovação automática? Seu plano continua válido até o fim do período já pago.')) return;
@@ -125,7 +144,7 @@ export default function AssinaturaPage() {
               {returned && awaiting && (
                 <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/30">
                   <p className="font-barlow text-green-400 text-sm text-center">
-                    Recebemos sua assinatura! O Mercado Pago processa a primeira cobrança em até 1 hora; assim que for aprovada seu plano é ativado automaticamente. Esta página confere sozinha a cada 30 segundos.
+                    Conclua o pagamento na guia do Mercado Pago. Após a aprovação (pode levar até 1 hora) seu plano é ativado automaticamente. Esta página confere sozinha a cada 30 segundos.
                   </p>
                 </div>
               )}
