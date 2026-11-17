@@ -1559,8 +1559,8 @@ export default function PerfilPage() {
                 : 'bg-gradient-to-r from-[#C41E3A]/20 to-[#C41E3A]/5'
             }`}
           >
-            <div className="flex flex-col lg:flex-row lg:items-center gap-6">
-            <div className="flex items-center gap-5 min-w-0 lg:flex-1">
+            <div className="flex flex-col lg:flex-row lg:items-start gap-6">
+            <div className="flex items-start gap-5 min-w-0 lg:flex-1">
               <Avatar
                 name={profile?.full_name}
                 url={profile?.avatar_url}
