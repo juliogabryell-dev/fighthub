@@ -6,6 +6,10 @@ import { createClient } from '@/lib/supabase/client';
 import InputField from '@/components/InputField';
 import Icon from '@/components/Icon';
 import Link from 'next/link';
+import { PLANS, GRACE_DAYS, formatBRL } from '@/lib/plans';
+
+// Roles on the Entidade plan (see plan_for_role() in migration_plans_referrals.sql)
+const ENTITY_ROLES = ['academy', 'team', 'federation'];
 
 const ROLES = [
   { key: 'fighter', label: 'Lutador', icon: 'swords', category: 'pessoa' },
@@ -30,6 +34,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [hasSession, setHasSession] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Entity-specific fields
@@ -114,6 +119,7 @@ export default function RegisterPage() {
       }
 
       const user = data?.user;
+      setHasSession(!!data?.session);
       if (user) {
         // Create profile
         const profileData = {
@@ -190,7 +196,10 @@ export default function RegisterPage() {
         }
       }
 
-      setSuccess('Cadastro realizado! Aguarde aprovação do administrador.');
+      setSuccess(ENTITY_ROLES.includes(role)
+        ? 'Cadastro realizado! Seu 1º ano do Plano Entidade Oficial é bônus.'
+        : `Cadastro realizado! Pague o Plano Lutador em até ${GRACE_DAYS} dias para manter o acesso.`);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch {
       setError('Ocorreu um erro inesperado. Tente novamente.');
     } finally {
@@ -255,12 +264,39 @@ export default function RegisterPage() {
             </div>
           )}
           {success && (
-            <div className="mb-6 p-3 rounded-lg bg-green-500/10 border border-green-500/30">
-              <p className="font-barlow text-green-400 text-sm text-center">{success}</p>
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/30">
+                <p className="font-barlow text-green-400 text-sm text-center">{success}</p>
+              </div>
+              {ENTITY_ROLES.includes(role) ? (
+                <Link
+                  href={hasSession ? '/perfil' : '/auth/login'}
+                  className="block w-full py-3 rounded-lg bg-gradient-to-r from-[#C41E3A] to-[#a01830] text-white font-barlow-condensed uppercase tracking-widest text-sm font-semibold text-center hover:from-[#d42a46] hover:to-[#b82040]"
+                >
+                  {hasSession ? 'Ir para o perfil' : 'Entrar'}
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href={hasSession ? '/assinatura' : '/auth/login'}
+                    className="block w-full py-3 rounded-lg bg-gradient-to-r from-[#C41E3A] to-[#a01830] text-white font-barlow-condensed uppercase tracking-widest text-sm font-semibold text-center hover:from-[#d42a46] hover:to-[#b82040] animate-soft-pulse"
+                  >
+                    {hasSession ? `Pagar agora · ${formatBRL(PLANS.lutador.price)}/ano` : 'Entrar para pagar'}
+                  </Link>
+                  {hasSession && (
+                    <Link
+                      href="/perfil"
+                      className="block w-full py-2.5 rounded-lg border border-theme-border/20 text-theme-text/60 hover:text-theme-text hover:bg-theme-text/5 font-barlow-condensed uppercase tracking-widest text-xs text-center"
+                    >
+                      Pagar depois e ir para o perfil
+                    </Link>
+                  )}
+                </>
+              )}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className={success ? 'hidden' : 'space-y-5'}>
             {/* Organization fields */}
             {isOrg && (
               <>
@@ -373,7 +409,9 @@ export default function RegisterPage() {
 
             <div className="p-4 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30">
               <p className="font-barlow text-[#D4AF37] text-sm text-center">
-                Seu cadastro passará por aprovação do administrador antes de ser ativado.
+                {ENTITY_ROLES.includes(role)
+                  ? `Plano Entidade Oficial: o 1º ano é bônus, sem cobrança. Depois, ${formatBRL(PLANS.entidade.price)}/ano no cartão de crédito.`
+                  : `Para usar o portal é preciso pagar o Plano Lutador: ${formatBRL(PLANS.lutador.price)}/ano no cartão de crédito. Após o cadastro você tem ${GRACE_DAYS} dias para concluir o pagamento.`}
               </p>
             </div>
 
