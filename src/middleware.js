@@ -55,13 +55,28 @@ export async function middleware(request) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Unpaid plan: 7 days of access after sign-up / expiry, then only the payment page
   if (user && !BLOCK_EXEMPT.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
-    const { data: membership } = await supabase
-      .from('memberships')
-      .select('status, grace_until, period_end, created_at')
-      .eq('profile_id', user.id)
-      .maybeSingle();
+    const [{ data: profile }, { data: membership }] = await Promise.all([
+      supabase.from('profiles').select('status').eq('id', user.id).maybeSingle(),
+      supabase
+        .from('memberships')
+        .select('status, grace_until, period_end, created_at')
+        .eq('profile_id', user.id)
+        .maybeSingle(),
+    ]);
+
+    // Account deactivated by the admin: end the session and explain on the login page
+    if (profile?.status === 'inactive') {
+      await supabase.auth.signOut();
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = '/auth/login';
+      loginUrl.search = '?inativo=1';
+      const res = NextResponse.redirect(loginUrl);
+      supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c));
+      return res;
+    }
+
+    // Unpaid plan: 7 days of access after sign-up / expiry, then only the payment page
     if (isMembershipBlocked(membership)) {
       const payUrl = request.nextUrl.clone();
       payUrl.pathname = '/assinatura';

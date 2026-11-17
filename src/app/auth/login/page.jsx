@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import InputField from '@/components/InputField';
@@ -12,10 +12,17 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [inactive, setInactive] = useState(false);
+
+  // Redirected here by the middleware after the account was deactivated
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has('inativo')) setInactive(true);
+  }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
+    setInactive(false);
     setLoading(true);
 
     try {
@@ -34,9 +41,15 @@ export default function LoginPage() {
       if (signInData?.user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('force_password_change')
+          .select('force_password_change, status')
           .eq('id', signInData.user.id)
           .single();
+
+        if (profile?.status === 'inactive') {
+          await supabase.auth.signOut();
+          setInactive(true);
+          return;
+        }
 
         if (profile?.force_password_change) {
           router.push('/auth/change-password');
@@ -66,6 +79,23 @@ export default function LoginPage() {
               Acesse sua conta
             </p>
           </div>
+
+          {inactive && (
+            <div className="mb-6 p-4 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-center">
+              <p className="font-barlow-condensed uppercase tracking-wider text-sm font-semibold text-[#D4AF37]">
+                Cadastro com pendência
+              </p>
+              <p className="font-barlow text-theme-text/70 text-sm mt-1">
+                Seu cadastro está com alguma pendência e o acesso foi suspenso. Entre em contato com o nosso time para regularizar.
+              </p>
+              <Link
+                href="/contato"
+                className="inline-block mt-3 px-4 py-2 rounded-lg border border-[#D4AF37]/40 text-[#D4AF37] hover:bg-[#D4AF37]/10 font-barlow-condensed text-xs uppercase tracking-wider"
+              >
+                Falar com o time
+              </Link>
+            </div>
+          )}
 
           {/* Error Display */}
           {error && (

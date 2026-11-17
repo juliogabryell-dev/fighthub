@@ -244,6 +244,28 @@ export default function FullAdminDashboard() {
     setActionLoading(null);
   }
 
+  async function handleToggleActive(user) {
+    const deactivate = user.status !== 'inactive';
+    const msg = deactivate
+      ? `Inativar "${user.full_name}"? A pessoa perde o acesso ao portal e, ao tentar entrar, verá que o cadastro tem uma pendência e deve contatar o time. O perfil também deixa de aparecer publicamente.`
+      : `Reativar "${user.full_name}"? O acesso ao portal volta a ser liberado.`;
+    if (!confirm(msg)) return;
+    setActionLoading(user.id);
+    try {
+      const res = await fetch('/api/fulladmin/user-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id, status: deactivate ? 'inactive' : 'active' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) await fetchData();
+      else alert('Erro: ' + (data.error || 'Erro desconhecido'));
+    } catch {
+      alert('Erro ao alterar o status do usuário.');
+    }
+    setActionLoading(null);
+  }
+
   async function handleResetPassword(userId, userName) {
     setActionLoading(userId);
     try {
@@ -718,7 +740,7 @@ export default function FullAdminDashboard() {
                         </td>
                         <td className="px-4 py-3 hidden md:table-cell">
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border ${getStatusColor(user.status)}`}>
-                            {user.status}
+                            {{ active: 'Ativo', pending: 'Pendente', inactive: 'Inativo', rejected: 'Rejeitado' }[user.status] || user.status}
                           </span>
                         </td>
                         <td className="px-4 py-3 hidden lg:table-cell">
@@ -734,6 +756,17 @@ export default function FullAdminDashboard() {
                             </button>
                             <button onClick={() => handleResetPassword(user.id, user.full_name)} disabled={actionLoading === user.id} className="px-2.5 py-1 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37]/20 transition-all font-barlow-condensed text-[10px] uppercase tracking-wider disabled:opacity-50">
                               {actionLoading === user.id ? '...' : 'Reset Senha'}
+                            </button>
+                            <button
+                              onClick={() => handleToggleActive(user)}
+                              disabled={actionLoading === user.id}
+                              className={`px-2.5 py-1 rounded-lg border transition-all font-barlow-condensed text-[10px] uppercase tracking-wider disabled:opacity-50 ${
+                                user.status === 'inactive'
+                                  ? 'bg-green-500/10 border-green-500/30 text-green-400 hover:bg-green-500/20'
+                                  : 'bg-gray-500/10 border-gray-500/30 text-gray-300 hover:bg-gray-500/20'
+                              }`}
+                            >
+                              {actionLoading === user.id ? '...' : user.status === 'inactive' ? 'Reativar' : 'Inativar'}
                             </button>
                             <button onClick={() => handleDeleteUser(user.id, user.full_name)} disabled={actionLoading === user.id} className="px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all font-barlow-condensed text-[10px] uppercase tracking-wider disabled:opacity-50">
                               {actionLoading === user.id ? '...' : 'Excluir'}
