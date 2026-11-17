@@ -73,6 +73,20 @@ export default function MyPlanCard({ profile, inline = false, className = '' }) 
           <span className={`px-2 py-0.5 rounded-full border text-[10px] font-barlow-condensed uppercase tracking-wider ${STATUS_STYLES[st.key]}`}>
             {st.label}
           </span>
+          {membership && (
+            <Link
+              href="/assinatura"
+              className={`ml-auto px-3 py-1.5 rounded-lg font-barlow-condensed text-[11px] uppercase tracking-wider whitespace-nowrap ${
+                hasAutoRenewal(membership)
+                  ? 'border border-theme-border/20 text-theme-text/60 hover:bg-theme-text/5'
+                  : `bg-[#C41E3A] text-white hover:bg-[#d42a46] ${membership.status === 'awaiting_payment' ? 'animate-soft-pulse' : ''}`
+              }`}
+            >
+              {hasAutoRenewal(membership)
+                ? 'Gerenciar assinatura'
+                : membership.status === 'awaiting_payment' ? 'Pagar agora' : 'Ativar renovação automática'}
+            </Link>
+          )}
         </div>
         {membership?.status === 'awaiting_payment' ? (
           <p className="font-barlow text-sm text-theme-text/50">
@@ -99,20 +113,6 @@ export default function MyPlanCard({ profile, inline = false, className = '' }) 
           </p>
           </>
         ) : null}
-        {membership && (
-          <Link
-            href="/assinatura"
-            className={`inline-block mt-3 px-3 py-1.5 rounded-lg font-barlow-condensed text-[11px] uppercase tracking-wider ${
-              hasAutoRenewal(membership)
-                ? 'border border-theme-border/20 text-theme-text/60 hover:bg-theme-text/5'
-                : `bg-[#C41E3A] text-white hover:bg-[#d42a46] ${membership.status === 'awaiting_payment' ? 'animate-soft-pulse' : ''}`
-            }`}
-          >
-            {hasAutoRenewal(membership)
-              ? 'Gerenciar assinatura'
-              : membership.status === 'awaiting_payment' ? 'Pagar agora' : 'Ativar renovação automática'}
-          </Link>
-        )}
       </div>
 
       {/* Referral code */}
