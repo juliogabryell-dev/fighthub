@@ -105,7 +105,7 @@ export default function MyPlanCard({ profile, inline = false, className = '' }) 
             className={`inline-block mt-3 px-3 py-1.5 rounded-lg font-barlow-condensed text-[11px] uppercase tracking-wider ${
               hasAutoRenewal(membership)
                 ? 'border border-theme-border/20 text-theme-text/60 hover:bg-theme-text/5'
-                : 'bg-[#C41E3A] text-white hover:bg-[#d42a46]'
+                : `bg-[#C41E3A] text-white hover:bg-[#d42a46] ${membership.status === 'awaiting_payment' ? 'animate-soft-pulse' : ''}`
             }`}
           >
             {hasAutoRenewal(membership)
