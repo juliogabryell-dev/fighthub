@@ -137,14 +137,12 @@ export async function applyPreapproval(supabase, pre) {
   }
 }
 
-// Records an approved recurring charge
-export async function applyAuthorizedPayment(supabase, ap) {
+// Records one approved charge of a subscription (idempotent).
+// Returns 'ignored' | 'duplicate' | 'registration' | 'renewal' | 'linked' | 'mismatch'.
+async function recordCharge(supabase, pre, ap) {
   const payment = ap.payment || {};
-  if (payment.status !== 'approved' || !payment.id || !ap.preapproval_id) return 'ignored';
-
-  const pre = await mpFetch(`/preapproval/${ap.preapproval_id}`);
   const profileId = pre.external_reference;
-  if (!profileId) return 'ignored';
+  if (payment.status !== 'approved' || !payment.id || !profileId) return 'ignored';
 
   const { data: result, error } = await supabase.rpc('mp_record_charge', {
     p_profile_id: profileId,
@@ -154,7 +152,6 @@ export async function applyAuthorizedPayment(supabase, ap) {
   if (error) throw new Error(error.message);
   if (result === 'duplicate') return result;
 
-  await applyPreapproval(supabase, pre);
   await syncSubscriptionAmount(supabase, profileId);
   // A registration may have granted the referrer a renewal discount
   if (result === 'registration') {
@@ -162,4 +159,40 @@ export async function applyAuthorizedPayment(supabase, ap) {
     if (p?.referred_by) await syncSubscriptionAmount(supabase, p.referred_by);
   }
   return result;
+}
+
+// Webhook: one authorized payment (subscription invoice)
+export async function applyAuthorizedPayment(supabase, ap) {
+  if (!ap.preapproval_id) return { result: 'ignored', profileId: null };
+  const pre = await mpFetch(`/preapproval/${ap.preapproval_id}`);
+  await applyPreapproval(supabase, pre);
+  const result = await recordCharge(supabase, pre, ap);
+  return { result, profileId: pre.external_reference || null };
+}
+
+// Reconciliation: re-reads the subscription and all its invoices from Mercado
+// Pago and records any approved charge the webhook missed.
+export async function reconcileSubscription(supabase, profileId) {
+  const { data: m } = await supabase
+    .from('memberships')
+    .select('profile_id, mp_preapproval_id')
+    .eq('profile_id', profileId)
+    .maybeSingle();
+  if (!m?.mp_preapproval_id) return { status: 'none', recorded: [] };
+
+  const pre = await mpFetch(`/preapproval/${m.mp_preapproval_id}`);
+  await applyPreapproval(supabase, pre);
+
+  const search = await mpFetch(`/authorized_payments/search?preapproval_id=${encodeURIComponent(m.mp_preapproval_id)}`);
+  const recorded = [];
+  for (const ap of search.results || []) {
+    const result = await recordCharge(supabase, pre, ap);
+    if (!['ignored', 'duplicate'].includes(result)) recorded.push({ payment_id: ap.payment?.id, result });
+  }
+  return { status: pre.status, recorded };
+}
+
+export async function logNotification(supabase, entry) {
+  const { error } = await supabase.from('mp_notifications').insert(entry);
+  if (error) console.error('[mercadopago] falha ao gravar log', error.message);
 }

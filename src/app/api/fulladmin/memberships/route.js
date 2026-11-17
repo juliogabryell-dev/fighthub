@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { verifyAdminSession } from '@/lib/adminSession';
-import { syncSubscriptionAmount } from '@/lib/mercadopago';
+import { syncSubscriptionAmount, reconcileSubscription, logNotification } from '@/lib/mercadopago';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,7 +66,33 @@ export async function GET(request) {
     });
   }
 
+  if (view === 'mp_log') {
+    const { data, error } = await supabase
+      .from('mp_notifications')
+      .select('*, profile:profiles(id, full_name, handle)')
+      .order('created_at', { ascending: false })
+      .limit(200);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ log: data || [] });
+  }
+
   return NextResponse.json({ error: 'view inválida' }, { status: 400 });
+}
+
+// Reconciles one account with Mercado Pago and logs the outcome
+async function syncAccount(supabase, profileId, actor) {
+  try {
+    const r = await reconcileSubscription(supabase, profileId);
+    const recorded = r.recorded.map((x) => `${x.result} (${x.payment_id})`).join(', ');
+    await logNotification(supabase, {
+      source: 'sync', type: 'reconcile', profile_id: profileId, status: 'ok',
+      result: `${actor}: assinatura ${r.status}${recorded ? ` · registrado: ${recorded}` : ' · nada novo'}`,
+    });
+    return { ok: true, ...r };
+  } catch (e) {
+    await logNotification(supabase, { source: 'sync', type: 'reconcile', profile_id: profileId, status: 'error', error: e.message });
+    return { ok: false, error: e.message };
+  }
 }
 
 // POST { action: 'confirm_payment', payment_id }
@@ -86,6 +112,20 @@ export async function POST(request) {
     result = await supabase.rpc('admin_confirm_payment', { p_payment_id: body.payment_id, p_actor: actor });
   } else if (body.action === 'confirm_renewal' && body.profile_id) {
     result = await supabase.rpc('admin_confirm_renewal', { p_profile_id: body.profile_id, p_actor: actor });
+  } else if (body.action === 'mp_sync' && body.profile_id) {
+    const r = await syncAccount(supabase, body.profile_id, actor);
+    if (!r.ok) return NextResponse.json({ error: `Mercado Pago: ${r.error}` }, { status: 502 });
+    return NextResponse.json(r);
+  } else if (body.action === 'mp_sync_all') {
+    const { data: list } = await supabase.from('memberships').select('profile_id').not('mp_preapproval_id', 'is', null);
+    let recorded = 0;
+    let errors = 0;
+    for (const row of list || []) {
+      const r = await syncAccount(supabase, row.profile_id, actor);
+      if (!r.ok) errors += 1;
+      else recorded += r.recorded.length;
+    }
+    return NextResponse.json({ ok: true, checked: (list || []).length, recorded, errors });
   } else if (body.action === 'pay_reward' && body.reward_id) {
     const amount = Number(String(body.amount ?? '').replace(',', '.'));
     if (!Number.isFinite(amount) || amount <= 0) {

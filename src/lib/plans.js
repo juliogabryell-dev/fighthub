@@ -87,4 +87,5 @@ export const EVENT_LABELS = {
   subscription_paused: 'Assinatura pausada',
   subscription_canceled: 'Assinatura cancelada',
   mp_amount_mismatch: 'Valor divergente (MP)',
+  mp_linked_manual: 'Cobrança MP vinculada',
 };

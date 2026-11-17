@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { PLANS } from '@/lib/plans';
 import {
   getServiceClient, mpFetch, cancelPreapproval, siteUrl, expectedAmount, applyPreapproval, syncSubscriptionAmount,
+  reconcileSubscription, logNotification,
 } from '@/lib/mercadopago';
 
 export const dynamic = 'force-dynamic';
@@ -33,7 +34,13 @@ export async function GET(request) {
   const sync = new URL(request.url).searchParams.get('sync');
   if (sync && membership?.mp_preapproval_id) {
     try {
-      await applyPreapproval(supabase, await mpFetch(`/preapproval/${membership.mp_preapproval_id}`));
+      const r = await reconcileSubscription(supabase, user.id);
+      if (r.recorded.length) {
+        await logNotification(supabase, {
+          source: 'sync', type: 'reconcile', data_id: membership.mp_preapproval_id, profile_id: user.id, status: 'ok',
+          result: `usuário: ${r.recorded.map((x) => `${x.result} (${x.payment_id})`).join(', ')}`,
+        });
+      }
       membership = await readMembership(supabase, user.id);
     } catch (e) {
       console.error('[mercadopago] sync', e.message, e.details);

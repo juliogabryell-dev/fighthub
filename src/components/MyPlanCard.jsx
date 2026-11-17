@@ -16,7 +16,9 @@ const STATUS_STYLES = {
   blocked: 'bg-red-500/20 border-red-500/50 text-red-500',
 };
 
-export default function MyPlanCard({ profile }) {
+// inline: rendered inside the profile header, without its own boxes,
+// plan and referral code side by side with a divider between them
+export default function MyPlanCard({ profile, inline = false, className = '' }) {
   const [membership, setMembership] = useState(null);
   const [referrals, setReferrals] = useState(0);
   const [rewards, setRewards] = useState([]);
@@ -56,9 +58,15 @@ export default function MyPlanCard({ profile }) {
   }
 
   return (
-    <div className="mb-8 grid md:grid-cols-2 gap-4">
+    <div
+      className={
+        inline
+          ? `flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-theme-border/15 ${className}`
+          : `mb-8 grid md:grid-cols-2 gap-4 ${className}`
+      }
+    >
       {/* Plan */}
-      <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-5 border border-theme-border/10">
+      <div className={inline ? 'pb-4 sm:pb-0 sm:pr-6 sm:flex-1 min-w-0' : 'bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-5 border border-theme-border/10'}>
         <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/40 mb-2">Meu plano</p>
         <div className="flex items-center gap-2 flex-wrap mb-2">
           <p className="font-bebas text-2xl tracking-wider text-theme-text">{PLANS[membership?.plan]?.label || '—'}</p>
@@ -97,9 +105,9 @@ export default function MyPlanCard({ profile }) {
       </div>
 
       {/* Referral code */}
-      <div className="bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-5 border border-[#D4AF37]/20">
+      <div className={inline ? 'pt-4 sm:pt-0 sm:pl-6 sm:flex-1 min-w-0' : 'bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-5 border border-[#D4AF37]/20'}>
         <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/40 mb-2">Meu código de indicação</p>
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex flex-wrap items-center gap-2 mb-2">
           <span className="font-mono text-2xl tracking-[0.25em] text-[#D4AF37]">{profile.referral_code}</span>
           <button onClick={() => copy(profile.referral_code, 'code')} className="p-1.5 rounded-lg text-theme-text/40 hover:text-[#D4AF37] hover:bg-[#D4AF37]/10" title="Copiar código">
             <Icon name={copied === 'code' ? 'check' : 'link'} size={14} />

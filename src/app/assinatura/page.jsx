@@ -36,6 +36,21 @@ export default function AssinaturaPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Back from the checkout and still awaiting payment: check Mercado Pago every
+  // 30s for up to 15 minutes so the plan is released as soon as it is approved.
+  const waiting = returned && data?.membership?.status === 'awaiting_payment';
+  useEffect(() => {
+    if (!waiting) return undefined;
+    let tries = 0;
+    const timer = setInterval(() => {
+      tries += 1;
+      if (tries > 30) clearInterval(timer);
+      else load(true);
+    }, 30000);
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [waiting]);
+
   async function subscribe() {
     setBusy(true);
     setError('');
@@ -101,10 +116,16 @@ export default function AssinaturaPage() {
                 </div>
               )}
 
-              {returned && !blocked && awaiting && (
+              {returned && !awaiting && m.status === 'active' && !m.is_bonus && (
+                <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/30">
+                  <p className="font-barlow text-green-400 text-sm text-center">Pagamento aprovado! Seu plano está ativo.</p>
+                </div>
+              )}
+
+              {returned && awaiting && (
                 <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/30">
                   <p className="font-barlow text-green-400 text-sm text-center">
-                    Recebemos sua assinatura! O Mercado Pago processa a primeira cobrança em até 1 hora; assim que for aprovada seu plano é ativado.
+                    Recebemos sua assinatura! O Mercado Pago processa a primeira cobrança em até 1 hora; assim que for aprovada seu plano é ativado automaticamente. Esta página confere sozinha a cada 30 segundos.
                   </p>
                 </div>
               )}

@@ -1559,7 +1559,8 @@ export default function PerfilPage() {
                 : 'bg-gradient-to-r from-[#C41E3A]/20 to-[#C41E3A]/5'
             }`}
           >
-            <div className="flex items-center gap-5">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+            <div className="flex items-center gap-5 min-w-0">
               <Avatar
                 name={profile?.full_name}
                 url={profile?.avatar_url}
@@ -1659,6 +1660,14 @@ export default function PerfilPage() {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Plan status + referral code (no boxes, divider between them) */}
+            <MyPlanCard
+              profile={profile}
+              inline
+              className="lg:ml-auto lg:max-w-[620px] w-full"
+            />
             </div>
           </div>
 
@@ -1798,9 +1807,6 @@ export default function PerfilPage() {
             </button>
           </div>
         )}
-
-        {/* Plan status + referral code */}
-        <MyPlanCard profile={profile} />
 
         {/* Bindings: requests received/sent and active links (all roles) */}
         <BindingsPanel refreshKey={bindingsRefresh} onChange={fetchUserAndProfile} />

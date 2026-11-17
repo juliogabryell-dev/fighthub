@@ -33,7 +33,22 @@ async function post(body) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || 'Erro inesperado');
+  return data;
 }
+
+const MP_STATUS_STYLES = {
+  ok: 'bg-green-500/10 border-green-500/30 text-green-400',
+  ignored: 'bg-white/5 border-white/10 text-white/40',
+  error: 'bg-red-500/10 border-red-500/30 text-red-400',
+  invalid_signature: 'bg-orange-500/10 border-orange-500/30 text-orange-400',
+};
+const MP_STATUS_LABELS = { ok: 'OK', ignored: 'Ignorado', error: 'Erro', invalid_signature: 'Assinatura inválida' };
+const MP_TYPE_LABELS = {
+  subscription_preapproval: 'Assinatura',
+  subscription_authorized_payment: 'Cobrança',
+  reconcile: 'Sincronização',
+};
+const isMpProblem = (l) => ['error', 'invalid_signature'].includes(l.status);
 
 export default function PaymentsManager({ onPendingCount }) {
   const [view, setView] = useState('accounts');
@@ -45,16 +60,19 @@ export default function PaymentsManager({ onPendingCount }) {
   const [statusFilter, setStatusFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [detail, setDetail] = useState(null);
+  const [mpLog, setMpLog] = useState([]);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [acc, rew] = await Promise.all([
+      const [acc, rew, mp] = await Promise.all([
         fetch('/api/fulladmin/memberships?view=accounts', { cache: 'no-store' }).then((r) => r.json()),
         fetch('/api/fulladmin/memberships?view=rewards', { cache: 'no-store' }).then((r) => r.json()),
+        fetch('/api/fulladmin/memberships?view=mp_log', { cache: 'no-store' }).then((r) => r.json()).catch(() => ({})),
       ]);
       setAccounts(acc.accounts || []);
       setRewards(rew.rewards || []);
+      setMpLog(mp.log || []);
       const pendingPayments = (acc.accounts || []).filter((a) => a.pending_payment).length;
       const pendingRewards = (rew.rewards || []).filter((r) => r.status === 'pending').length;
       onPendingCount?.(pendingPayments + pendingRewards);
@@ -65,11 +83,12 @@ export default function PaymentsManager({ onPendingCount }) {
 
   useEffect(() => { load(); }, [load]);
 
-  async function run(key, body, confirmText) {
+  async function run(key, body, confirmText, describe) {
     if (confirmText && !confirm(confirmText)) return false;
     setBusy(key);
     try {
-      await post(body);
+      const data = await post(body);
+      if (describe) alert(describe(data));
       await load();
       return true;
     } catch (e) {
@@ -98,6 +117,7 @@ export default function PaymentsManager({ onPendingCount }) {
         {[
           { key: 'accounts', label: 'Cadastros', count: accounts.filter((a) => a.pending_payment).length },
           { key: 'rewards', label: 'Indicações', count: pendingRewards },
+          { key: 'mp', label: 'Mercado Pago', count: mpLog.filter((l) => isMpProblem(l) && Date.now() - new Date(l.created_at) < 7 * 864e5).length },
         ].map((v) => (
           <button
             key={v.key}
@@ -210,6 +230,19 @@ export default function PaymentsManager({ onPendingCount }) {
                           Confirmar renovação {formatBRL(a.membership.next_renewal_price)}
                         </button>
                       ) : null}
+                      {a.membership?.mp_preapproval_id && (
+                        <button
+                          disabled={busy === `mp-${a.id}`}
+                          onClick={() => run(`mp-${a.id}`, { action: 'mp_sync', profile_id: a.id }, null, (d) =>
+                            d.recorded?.length
+                              ? `Mercado Pago: ${d.recorded.length} cobrança(s) registrada(s). Plano atualizado.`
+                              : `Mercado Pago: assinatura ${d.status}. Nenhuma cobrança nova aprovada.`)}
+                          title="Busca no Mercado Pago as cobranças desta assinatura e libera o plano se houver pagamento aprovado"
+                          className="px-3 py-1.5 rounded-lg border border-[#009EE3]/40 text-[#4fc3f7] hover:bg-[#009EE3]/10 font-barlow-condensed text-[11px] uppercase tracking-wider disabled:opacity-40 whitespace-nowrap"
+                        >
+                          {busy === `mp-${a.id}` ? 'Sincronizando...' : 'Sincronizar MP'}
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
@@ -218,6 +251,17 @@ export default function PaymentsManager({ onPendingCount }) {
             </div>
           )}
         </>
+      )}
+
+      {view === 'mp' && (
+        <MpLog
+          log={mpLog}
+          loading={loading}
+          busy={busy === 'mp-all'}
+          onSyncAll={() => run('mp-all', { action: 'mp_sync_all' },
+            'Buscar no Mercado Pago as cobranças de todas as assinaturas e liberar quem pagou?',
+            (d) => `${d.checked} assinatura(s) verificada(s) · ${d.recorded} cobrança(s) registrada(s)${d.errors ? ` · ${d.errors} erro(s)` : ''}.`)}
+        />
       )}
 
       {view === 'rewards' && <RewardsList rewards={rewards} loading={loading} busy={busy} run={run} />}
@@ -303,6 +347,55 @@ function RewardsList({ rewards, loading, busy, run }) {
             </div>
           ))}
           {list.length === 0 && <p className="font-barlow text-sm text-white/40 py-8 text-center">Nenhuma indicação nesta lista.</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MpLog({ log, loading, busy, onSyncAll }) {
+  const [onlyProblems, setOnlyProblems] = useState(false);
+  const rows = onlyProblems ? log.filter(isMpProblem) : log;
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="font-barlow text-xs text-white/40 flex-1 min-w-[200px]">
+          Notificações recebidas do Mercado Pago e sincronizações. Pagamento aprovado libera o plano automaticamente;
+          se algo falhar, use <strong className="text-white/60">Sincronizar todos</strong> ou a confirmação manual na aba Cadastros.
+        </p>
+        <button
+          onClick={() => setOnlyProblems(!onlyProblems)}
+          className={`px-3 py-1.5 rounded-lg font-barlow-condensed text-[10px] uppercase tracking-wider border ${onlyProblems ? 'bg-red-500/15 border-red-500/40 text-red-400' : 'border-white/10 text-white/40'}`}
+        >
+          Só problemas
+        </button>
+        <button
+          onClick={onSyncAll}
+          disabled={busy}
+          className="px-3 py-1.5 rounded-lg border border-[#009EE3]/40 text-[#4fc3f7] hover:bg-[#009EE3]/10 font-barlow-condensed text-[11px] uppercase tracking-wider disabled:opacity-40"
+        >
+          {busy ? 'Sincronizando...' : 'Sincronizar todos'}
+        </button>
+      </div>
+      {loading ? (
+        <p className="font-barlow text-sm text-white/40 py-8 text-center">Carregando...</p>
+      ) : (
+        <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl border border-white/10 divide-y divide-white/5">
+          {rows.map((l) => (
+            <div key={l.id} className="p-3 flex flex-col sm:flex-row sm:items-center gap-2 font-barlow text-sm">
+              <span className="text-white/30 text-xs w-32 shrink-0">{formatDateTime(l.created_at)}</span>
+              <span className={`px-2 py-0.5 rounded-full border text-[10px] font-barlow-condensed uppercase tracking-wider w-fit ${MP_STATUS_STYLES[l.status] || MP_STATUS_STYLES.ignored}`}>
+                {MP_STATUS_LABELS[l.status] || l.status}
+              </span>
+              <span className="text-white/60 w-28 shrink-0">{MP_TYPE_LABELS[l.type] || l.type || '—'}</span>
+              <span className="text-white/80 truncate w-40 shrink-0">{l.profile?.full_name || '—'}</span>
+              <span className="text-white/40 text-xs flex-1 break-all">
+                {l.error ? <span className="text-red-400">{l.error}</span> : l.result}
+                {l.data_id && <span className="text-white/25"> · id {l.data_id}</span>}
+              </span>
+            </div>
+          ))}
+          {rows.length === 0 && <p className="font-barlow text-sm text-white/40 py-8 text-center">Nenhum registro.</p>}
         </div>
       )}
     </div>
