@@ -118,24 +118,28 @@ export default function MyPlanCard({ profile, inline = false, className = '' }) 
       {/* Referral code */}
       <div className={inline ? 'pt-4 min-w-0' :'bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-5 border border-[#D4AF37]/20'}>
         <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/40 mb-2">Meu código de indicação</p>
-        <div className="flex flex-wrap items-center gap-2 mb-2">
-          <span className="font-mono text-2xl tracking-[0.25em] text-[#D4AF37]">{profile.referral_code}</span>
-          <button onClick={() => copy(profile.referral_code, 'code')} className="p-1.5 rounded-lg text-theme-text/40 hover:text-[#D4AF37] hover:bg-[#D4AF37]/10" title="Copiar código">
-            <Icon name={copied === 'code' ? 'check' : 'link'} size={14} />
-          </button>
-          <button
-            onClick={() => copy(link, 'link')}
-            className="ml-auto px-3 py-1.5 rounded-lg border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37]/10 font-barlow-condensed text-[11px] uppercase tracking-wider"
-          >
-            {copied === 'link' ? 'Link copiado!' : 'Copiar link de cadastro'}
-          </button>
+        <div className="flex flex-wrap items-start gap-2">
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-2xl tracking-[0.25em] text-[#D4AF37]">{profile.referral_code}</span>
+            <button onClick={() => copy(profile.referral_code, 'code')} className="p-1.5 rounded-lg text-theme-text/40 hover:text-[#D4AF37] hover:bg-[#D4AF37]/10" title="Copiar código">
+              <Icon name={copied === 'code' ? 'check' : 'link'} size={14} />
+            </button>
+          </div>
+          <div className="ml-auto flex flex-col items-end gap-1">
+            <button
+              onClick={() => copy(link, 'link')}
+              className="px-3 py-1.5 rounded-lg border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37]/10 font-barlow-condensed text-[11px] uppercase tracking-wider"
+            >
+              {copied === 'link' ? 'Link copiado!' : 'Copiar link de cadastro'}
+            </button>
+            <p className="font-barlow text-[11px] text-theme-text/35 text-right">
+              {referrals} cadastro(s) com seu código
+              {pendingCash > 0 && ` · ${pendingCash} comissão(ões) a receber`}
+              {paidTotal > 0 && ` · ${formatBRL(paidTotal)} recebido`}
+              {discounts > 0 && ` · ${discounts} desconto(s) de renovação disponível(is)`}
+            </p>
+          </div>
         </div>
-        <p className="font-barlow text-xs text-theme-text/60">
-          {referrals} cadastro(s) com seu código
-          {pendingCash > 0 && ` · ${pendingCash} comissão(ões) a receber`}
-          {paidTotal > 0 && ` · ${formatBRL(paidTotal)} recebido`}
-          {discounts > 0 && ` · ${discounts} desconto(s) de renovação disponível(is)`}
-        </p>
       </div>
     </div>
   );
