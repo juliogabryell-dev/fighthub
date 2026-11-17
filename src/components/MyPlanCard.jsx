@@ -61,12 +61,12 @@ export default function MyPlanCard({ profile, inline = false, className = '' }) 
     <div
       className={
         inline
-          ? `flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-theme-border/15 ${className}`
+          ? `flex flex-col divide-y divide-theme-border/15 ${className}`
           : `mb-8 grid md:grid-cols-2 gap-4 ${className}`
       }
     >
       {/* Plan */}
-      <div className={inline ? 'pb-4 sm:pb-0 sm:pr-6 sm:flex-1 min-w-0' : 'bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-5 border border-theme-border/10'}>
+      <div className={inline ? 'pb-4 min-w-0' :'bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-5 border border-theme-border/10'}>
         <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/40 mb-2">Meu plano</p>
         <div className="flex items-center gap-2 flex-wrap mb-2">
           <p className="font-bebas text-2xl tracking-wider text-theme-text">{PLANS[membership?.plan]?.label || '—'}</p>
@@ -105,7 +105,7 @@ export default function MyPlanCard({ profile, inline = false, className = '' }) 
       </div>
 
       {/* Referral code */}
-      <div className={inline ? 'pt-4 sm:pt-0 sm:pl-6 sm:flex-1 min-w-0' : 'bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-5 border border-[#D4AF37]/20'}>
+      <div className={inline ? 'pt-4 min-w-0' :'bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-5 border border-[#D4AF37]/20'}>
         <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/40 mb-2">Meu código de indicação</p>
         <div className="flex flex-wrap items-center gap-2 mb-2">
           <span className="font-mono text-2xl tracking-[0.25em] text-[#D4AF37]">{profile.referral_code}</span>
@@ -119,12 +119,7 @@ export default function MyPlanCard({ profile, inline = false, className = '' }) 
             {copied === 'link' ? 'Link copiado!' : 'Copiar link de cadastro'}
           </button>
         </div>
-        <p className="font-barlow text-xs text-theme-text/40">
-          {profile.is_fighter
-            ? 'Divulgue seu código: a cada cadastro indicado com pagamento confirmado, sua próxima renovação sai por R$ 114,99.'
-            : 'Divulgue seu código: a cada cadastro indicado com pagamento confirmado, você recebe uma comissão (paga uma única vez por cadastro).'}
-        </p>
-        <p className="font-barlow text-xs text-theme-text/60 mt-2">
+        <p className="font-barlow text-xs text-theme-text/60">
           {referrals} cadastro(s) com seu código
           {pendingCash > 0 && ` · ${pendingCash} comissão(ões) a receber`}
           {paidTotal > 0 && ` · ${formatBRL(paidTotal)} recebido`}

@@ -1560,7 +1560,7 @@ export default function PerfilPage() {
             }`}
           >
             <div className="flex flex-col lg:flex-row lg:items-center gap-6">
-            <div className="flex items-center gap-5 min-w-0">
+            <div className="flex items-center gap-5 min-w-0 lg:flex-1">
               <Avatar
                 name={profile?.full_name}
                 url={profile?.avatar_url}
@@ -1666,7 +1666,7 @@ export default function PerfilPage() {
             <MyPlanCard
               profile={profile}
               inline
-              className="lg:ml-auto lg:max-w-[620px] w-full"
+              className="lg:ml-auto w-full lg:w-[380px] lg:shrink-0"
             />
             </div>
           </div>
