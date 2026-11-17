@@ -117,25 +117,28 @@ export default function MyPlanCard({ profile, inline = false, className = '' }) 
 
       {/* Referral code */}
       <div className={inline ? 'pt-4 min-w-0' :'bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-5 border border-[#D4AF37]/20'}>
-        <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/40 mb-2">Meu código de indicação</p>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="font-mono text-2xl leading-none tracking-[0.25em] text-[#D4AF37]">{profile.referral_code}</span>
-          <button onClick={() => copy(profile.referral_code, 'code')} className="p-1.5 rounded-lg text-theme-text/40 hover:text-[#D4AF37] hover:bg-[#D4AF37]/10" title="Copiar código">
-            <Icon name={copied === 'code' ? 'check' : 'link'} size={14} />
-          </button>
+        {/* 2 columns: [label | code] / [copy-link button | referral count] */}
+        <div className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2">
+          <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/40">Meu código de indicação</p>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="font-mono text-2xl leading-none tracking-[0.25em] text-[#D4AF37]">{profile.referral_code}</span>
+            <button onClick={() => copy(profile.referral_code, 'code')} className="p-1.5 rounded-lg text-theme-text/40 hover:text-[#D4AF37] hover:bg-[#D4AF37]/10" title="Copiar código">
+              <Icon name={copied === 'code' ? 'check' : 'link'} size={14} />
+            </button>
+          </div>
           <button
             onClick={() => copy(link, 'link')}
-            className="ml-auto px-3 py-1.5 rounded-lg border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37]/10 font-barlow-condensed text-[11px] uppercase tracking-wider whitespace-nowrap"
+            className="justify-self-start px-3 py-1.5 rounded-lg border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37]/10 font-barlow-condensed text-[11px] uppercase tracking-wider whitespace-nowrap"
           >
             {copied === 'link' ? 'Link copiado!' : 'Copiar link de cadastro'}
           </button>
+          <p className="font-barlow text-[11px] text-theme-text/35 min-w-0">
+            {referrals} cadastro(s) com seu código
+            {pendingCash > 0 && ` · ${pendingCash} comissão(ões) a receber`}
+            {paidTotal > 0 && ` · ${formatBRL(paidTotal)} recebido`}
+            {discounts > 0 && ` · ${discounts} desconto(s) de renovação disponível(is)`}
+          </p>
         </div>
-        <p className="font-barlow text-[11px] text-theme-text/35 mt-1.5">
-          {referrals} cadastro(s) com seu código
-          {pendingCash > 0 && ` · ${pendingCash} comissão(ões) a receber`}
-          {paidTotal > 0 && ` · ${formatBRL(paidTotal)} recebido`}
-          {discounts > 0 && ` · ${discounts} desconto(s) de renovação disponível(is)`}
-        </p>
       </div>
     </div>
   );
