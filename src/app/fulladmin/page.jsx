@@ -11,6 +11,7 @@ import BindingsManager from '@/components/BindingsManager';
 import FightExperienceCard from '@/components/FightExperienceCard';
 import FightValidationManager from '@/components/FightValidationManager';
 import PaymentsManager from '@/components/PaymentsManager';
+import { membershipStatus, accessDeadline, hasAutoRenewal, MEMBERSHIP_STATUS_STYLES, formatDate as formatDay } from '@/lib/plans';
 
 export default function FullAdminDashboard() {
   const router = useRouter();
@@ -35,6 +36,7 @@ export default function FullAdminDashboard() {
   // Data states
   const [pendingUsers, setPendingUsers] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
+  const [memberships, setMemberships] = useState({});
   const [pendingCoachBindings, setPendingCoachBindings] = useState([]);
   const [pendingAcademyBindings, setPendingAcademyBindings] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -135,6 +137,15 @@ export default function FullAdminDashboard() {
       .select('*')
       .order('created_at', { ascending: false });
     setAllUsers(all || []);
+
+    // Subscription of each user (service role API: memberships aren't readable from the browser)
+    try {
+      const res = await fetch('/api/fulladmin/memberships?view=accounts', { cache: 'no-store' });
+      const json = await res.json();
+      setMemberships(Object.fromEntries((json.accounts || []).map((a) => [a.id, a.membership])));
+    } catch {
+      setMemberships({});
+    }
 
     // Pending coach bindings
     const { data: coachBindings } = await supabase
@@ -713,6 +724,8 @@ export default function FullAdminDashboard() {
                       <th className="text-left px-4 py-3 font-barlow-condensed text-xs uppercase tracking-wider text-white/40">Usuário</th>
                       <th className="text-left px-4 py-3 font-barlow-condensed text-xs uppercase tracking-wider text-white/40 hidden sm:table-cell">Tipo</th>
                       <th className="text-left px-4 py-3 font-barlow-condensed text-xs uppercase tracking-wider text-white/40 hidden md:table-cell">Status</th>
+                      <th className="text-left px-4 py-3 font-barlow-condensed text-xs uppercase tracking-wider text-white/40 hidden md:table-cell">Assinatura</th>
+                      <th className="text-left px-4 py-3 font-barlow-condensed text-xs uppercase tracking-wider text-white/40 hidden md:table-cell">Expira</th>
                       <th className="text-left px-4 py-3 font-barlow-condensed text-xs uppercase tracking-wider text-white/40 hidden lg:table-cell">Data</th>
                       <th className="text-right px-4 py-3 font-barlow-condensed text-xs uppercase tracking-wider text-white/40">Ações</th>
                     </tr>
@@ -743,6 +756,7 @@ export default function FullAdminDashboard() {
                             {{ active: 'Ativo', pending: 'Pendente', inactive: 'Inativo', rejected: 'Rejeitado' }[user.status] || user.status}
                           </span>
                         </td>
+                        <SubscriptionCells m={memberships[user.id]} />
                         <td className="px-4 py-3 hidden lg:table-cell">
                           <span className="font-barlow text-white/30 text-xs">{formatDate(user.created_at)}</span>
                         </td>
@@ -1452,5 +1466,46 @@ export default function FullAdminDashboard() {
         </div>
       )}
     </div>
+  );
+}
+
+// Subscription status + expiry for the users table
+const SUB_LABELS = {
+  awaiting_payment: 'Pendente',
+  active: 'Pago',
+  bonus: '1º ano bônus',
+  expiring: 'Pago · vence em breve',
+  expired: 'Vencido',
+  blocked: 'Bloqueado',
+};
+
+function SubscriptionCells({ m }) {
+  if (!m) {
+    return (
+      <>
+        <td className="px-4 py-3 hidden md:table-cell"><span className="font-barlow text-white/20 text-xs">Sem plano</span></td>
+        <td className="px-4 py-3 hidden md:table-cell"><span className="font-barlow text-white/20 text-xs">—</span></td>
+      </>
+    );
+  }
+  const st = membershipStatus(m);
+  const awaiting = m.status === 'awaiting_payment';
+  const date = awaiting ? accessDeadline(m) : m.period_end;
+  return (
+    <>
+      <td className="px-4 py-3 hidden md:table-cell">
+        <div className="flex flex-col items-start gap-1">
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-barlow-condensed uppercase tracking-wider border whitespace-nowrap ${MEMBERSHIP_STATUS_STYLES[st.key]}`}>
+            {SUB_LABELS[st.key] || st.label}
+          </span>
+          {hasAutoRenewal(m) && <span className="font-barlow text-[10px] text-white/30">Cartão automático</span>}
+        </div>
+      </td>
+      <td className="px-4 py-3 hidden md:table-cell">
+        <span className={`font-barlow text-xs whitespace-nowrap ${['expired', 'blocked'].includes(st.key) ? 'text-red-400' : 'text-white/50'}`}>
+          {awaiting ? 'Pagar até ' : ''}{formatDay(date)}
+        </span>
+      </td>
+    </>
   );
 }
