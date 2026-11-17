@@ -28,13 +28,23 @@ export async function GET(request) {
   if (view === 'accounts') {
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, full_name, handle, avatar_url, role, is_fighter, is_coach, status, created_at, referral_code, referral_code_used, referrer:profiles!profiles_referred_by_fkey(id, full_name, referral_code), membership:memberships(*), payments(id, kind, status, amount, created_at)')
+      .select('id, full_name, handle, avatar_url, role, is_fighter, is_coach, status, created_at, referral_code, referral_code_used, referred_by, membership:memberships(*), payments(id, kind, status, amount, created_at)')
       .neq('role', 'admin')
       .order('created_at', { ascending: false });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+    // Referrer resolved here: the self-referencing embed (profiles -> profiles)
+    // isn't found by PostgREST's schema cache and made this whole query fail
+    const byId = new Map((data || []).map((p) => [p.id, p]));
     const accounts = (data || []).map((p) => ({
       ...p,
+      referrer: p.referred_by && byId.get(p.referred_by)
+        ? {
+          id: p.referred_by,
+          full_name: byId.get(p.referred_by).full_name,
+          referral_code: byId.get(p.referred_by).referral_code,
+        }
+        : null,
       membership: Array.isArray(p.membership) ? p.membership[0] || null : p.membership,
       pending_payment: (p.payments || []).find((x) => x.status === 'pending') || null,
       payments: undefined,

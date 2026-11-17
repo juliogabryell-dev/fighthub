@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -19,13 +19,21 @@ export default function AssinaturaPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
+  // One request at a time (polling + window focus could overlap)
+  const loading = useRef(false);
   async function load(sync) {
-    const res = await fetch(`/api/subscription${sync ? '?sync=1' : ''}`, { cache: 'no-store' });
-    if (res.status === 401) {
-      router.replace('/auth/login');
-      return;
+    if (loading.current) return;
+    loading.current = true;
+    try {
+      const res = await fetch(`/api/subscription${sync ? '?sync=1' : ''}`, { cache: 'no-store' });
+      if (res.status === 401) {
+        router.replace('/auth/login');
+        return;
+      }
+      setData(await res.json());
+    } finally {
+      loading.current = false;
     }
-    setData(await res.json());
   }
 
   useEffect(() => {
