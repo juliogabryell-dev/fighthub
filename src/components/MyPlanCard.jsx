@@ -118,7 +118,7 @@ export default function MyPlanCard({ profile, inline = false, className = '' }) 
       {/* Referral code */}
       <div className={inline ? 'pt-4 min-w-0' :'bg-gradient-to-br from-dark-card to-dark-card2 rounded-xl p-5 border border-[#D4AF37]/20'}>
         {/* 2 columns: [label | code] / [copy-link button | referral count] */}
-        <div className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2">
+        <div className="grid grid-cols-[auto_1fr] items-center gap-x-8 gap-y-2">
           <p className="font-barlow-condensed text-xs uppercase tracking-widest text-theme-text/40">Meu código de indicação</p>
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="font-mono text-2xl leading-none tracking-[0.25em] text-[#D4AF37]">{profile.referral_code}</span>
