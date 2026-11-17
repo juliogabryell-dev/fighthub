@@ -80,13 +80,24 @@ export default function MyPlanCard({ profile, inline = false, className = '' }) 
             {accessDeadline(membership) && <> Pague até <strong className="text-[#D4AF37]">{formatDate(accessDeadline(membership))}</strong> para não perder o acesso.</>}
           </p>
         ) : membership ? (
+          <>
+          {['active', 'bonus', 'expiring'].includes(st.key) ? (
+            <p className={`flex items-center gap-1.5 font-barlow text-sm font-semibold mb-1 ${st.key === 'expiring' ? 'text-orange-500' : 'text-green-500'}`}>
+              <Icon name="check" size={15} />
+              Plano ativo · válido até {formatDate(membership.period_end)}
+            </p>
+          ) : (
+            <p className="flex items-center gap-1.5 font-barlow text-sm font-semibold mb-1 text-red-500">
+              Plano vencido em {formatDate(membership.period_end)}
+            </p>
+          )}
           <p className="font-barlow text-sm text-theme-text/50">
-            Válido até <strong className="text-theme-text">{formatDate(membership.period_end)}</strong>
-            {membership.is_bonus && ' (1º ano bônus)'}.
-            {' '}Próxima renovação: <strong className="text-theme-text">{formatBRL(membership.next_renewal_price)}</strong>
+            {membership.is_bonus && '1º ano bônus. '}
+            Próxima renovação: <strong className="text-theme-text">{formatBRL(membership.next_renewal_price)}</strong>
             {Number(membership.next_renewal_price) < Number(PLANS[membership.plan]?.price) && ' — desconto por indicação'}
             {hasAutoRenewal(membership) && ' · Renovação automática no cartão ativa.'}
           </p>
+          </>
         ) : null}
         {membership && (
           <Link
