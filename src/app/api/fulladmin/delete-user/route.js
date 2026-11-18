@@ -25,6 +25,12 @@ export async function POST(request) {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
+    // Only portal user accounts: admin profiles are managed in the Admins tab
+    const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user_id).maybeSingle();
+    if (profile?.role === 'admin') {
+      return NextResponse.json({ error: 'Esta conta é de administrador. Gerencie admins na aba Admins.' }, { status: 400 });
+    }
+
     // Delete user from auth (profile is cascade-deleted automatically)
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(user_id);
 

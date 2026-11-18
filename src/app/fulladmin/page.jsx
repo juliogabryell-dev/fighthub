@@ -81,28 +81,16 @@ export default function FullAdminDashboard() {
   }, [router]);
 
   const fetchData = useCallback(async () => {
-    // Stats
-    const [
-      { count: pendingCount },
-      { count: fighterCount },
-      { count: coachCount },
-      { count: academyCount },
-      { count: totalCount },
-      { count: refereeCount },
-      { count: teamCount },
-      { count: matchMakerCount },
-      { count: federationCount },
-    ] = await Promise.all([
-      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('is_fighter', true).eq('status', 'active'),
-      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('is_coach', true).eq('status', 'active'),
-      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'academy').eq('status', 'active'),
-      supabase.from('profiles').select('*', { count: 'exact', head: true }),
-      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'referee').eq('status', 'active'),
-      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'team').eq('status', 'active'),
-      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'match_maker').eq('status', 'active'),
-      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'federation').eq('status', 'active'),
-    ]);
+    // Portal user accounts (server API with service role; admin profiles excluded)
+    let all = [];
+    try {
+      const res = await fetch('/api/fulladmin/users', { cache: 'no-store' });
+      all = (await res.json()).users || [];
+    } catch {
+      all = [];
+    }
+    const active = all.filter((u) => u.status === 'active');
+    const countActive = (fn) => active.filter(fn).length;
 
     // Pending bindings count
     const [{ count: coachBindingsCount }, { count: academyBindingsCount }] = await Promise.all([
@@ -111,32 +99,20 @@ export default function FullAdminDashboard() {
     ]);
 
     setStats({
-      pending: pendingCount || 0,
-      activeFighters: fighterCount || 0,
-      activeCoaches: coachCount || 0,
-      activeAcademies: academyCount || 0,
-      activeReferees: refereeCount || 0,
-      activeTeams: teamCount || 0,
-      activeMatchMakers: matchMakerCount || 0,
-      activeFederations: federationCount || 0,
-      total: totalCount || 0,
+      pending: all.filter((u) => u.status === 'pending').length,
+      activeFighters: countActive((u) => u.is_fighter),
+      activeCoaches: countActive((u) => u.is_coach),
+      activeAcademies: countActive((u) => u.role === 'academy'),
+      activeReferees: countActive((u) => u.role === 'referee'),
+      activeTeams: countActive((u) => u.role === 'team'),
+      activeMatchMakers: countActive((u) => u.role === 'match_maker'),
+      activeFederations: countActive((u) => u.role === 'federation'),
+      total: all.length,
       pendingBindings: (coachBindingsCount || 0) + (academyBindingsCount || 0),
     });
 
-    // Pending users
-    const { data: pending } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false });
-    setPendingUsers(pending || []);
-
-    // All users
-    const { data: all } = await supabase
-      .from('profiles')
-      .select('*')
-      .order('created_at', { ascending: false });
-    setAllUsers(all || []);
+    setPendingUsers(all.filter((u) => u.status === 'pending'));
+    setAllUsers(all);
 
     // Subscription of each user (service role API: memberships aren't readable from the browser)
     try {
@@ -184,26 +160,31 @@ export default function FullAdminDashboard() {
     return () => clearInterval(interval);
   }, [admin, fetchData]);
 
-  // Actions
+  // Actions on portal accounts go through the service-role API
+  async function userAction(body) {
+    try {
+      const res = await fetch('/api/fulladmin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) alert('Erro: ' + (data.error || 'Erro desconhecido'));
+    } catch {
+      alert('Erro ao salvar.');
+    }
+  }
+
   async function handleApprove(userId) {
     setActionLoading(userId);
-    await supabase.from('profiles').update({ status: 'active' }).eq('id', userId);
-    // Also approve entity-specific records
-    const entityTables = ['referees', 'teams', 'match_makers', 'federations'];
-    for (const table of entityTables) {
-      await supabase.from(table).update({ status: 'active' }).eq('owner_id', userId);
-    }
+    await userAction({ action: 'approve', user_id: userId });
     await fetchData();
     setActionLoading(null);
   }
 
   async function handleReject(userId) {
     setActionLoading(userId);
-    await supabase.from('profiles').update({ status: 'rejected' }).eq('id', userId);
-    const entityTables = ['referees', 'teams', 'match_makers', 'federations'];
-    for (const table of entityTables) {
-      await supabase.from(table).update({ status: 'rejected' }).eq('owner_id', userId);
-    }
+    await userAction({ action: 'reject', user_id: userId });
     await fetchData();
     setActionLoading(null);
   }
@@ -300,16 +281,20 @@ export default function FullAdminDashboard() {
   async function handleEditSave() {
     if (!editModal) return;
     setActionLoading(editModal.id);
-    await supabase.from('profiles').update({
-      full_name: editModal.full_name,
-      role: editModal.role,
-      status: editModal.status,
-      city: editModal.city,
-      state: editModal.state,
-      bio: editModal.bio,
-      is_fighter: editModal.is_fighter,
-      is_coach: editModal.is_coach,
-    }).eq('id', editModal.id);
+    await userAction({
+      action: 'edit',
+      user_id: editModal.id,
+      fields: {
+        full_name: editModal.full_name,
+        role: editModal.role,
+        status: editModal.status,
+        city: editModal.city,
+        state: editModal.state,
+        bio: editModal.bio,
+        is_fighter: editModal.is_fighter,
+        is_coach: editModal.is_coach,
+      },
+    });
     await fetchData();
     setActionLoading(null);
     setEditModal(null);
